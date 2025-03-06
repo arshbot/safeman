@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { CRMProvider, useCRM } from "@/context/CRMContext";
 import { Plus, Users, Layers } from "lucide-react";
@@ -9,7 +8,7 @@ import { RoundHeader } from "@/components/RoundHeader";
 import { VCRow } from "@/components/VCRow";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VC } from "@/types";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable, DroppableProvided, DraggableProvided, DropResult } from "react-beautiful-dnd";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -27,8 +26,8 @@ const CRMDashboard = () => {
   };
 
   // Handle drag end for rounds and VCs
-  const handleDragEnd = (result: any) => {
-    const { source, destination, type, draggableId } = result;
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination, type } = result;
     if (!destination) return;
     
     // Handle round reordering
@@ -148,7 +147,7 @@ const CRMDashboard = () => {
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="rounds" type="ROUND">
-          {(provided) => (
+          {(provided: DroppableProvided) => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
@@ -162,7 +161,7 @@ const CRMDashboard = () => {
                   
                   return (
                     <Draggable key={round.id} draggableId={round.id} index={index}>
-                      {(provided) => (
+                      {(provided: DraggableProvided) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
@@ -177,7 +176,7 @@ const CRMDashboard = () => {
                           
                           {filteredVCs.length > 0 && (
                             <Droppable droppableId={round.id} type="VC">
-                              {(provided) => (
+                              {(provided: DroppableProvided) => (
                                 <motion.div
                                   ref={provided.innerRef}
                                   {...provided.droppableProps}
@@ -190,8 +189,8 @@ const CRMDashboard = () => {
                                   className="pl-6 mt-2"
                                 >
                                   {filteredVCs.map((vcId, vcIndex) => (
-                                    <Draggable key={`${round.id}-${vcId}`} draggableId={`${round.id}-${vcId}`} index={vcIndex}>
-                                      {(provided) => (
+                                    <Draggable key={vcId} draggableId={`${round.id}-${vcId}`} index={vcIndex}>
+                                      {(provided: DraggableProvided) => (
                                         <div
                                           ref={provided.innerRef}
                                           {...provided.draggableProps}
@@ -259,7 +258,7 @@ const CRMDashboard = () => {
 
         {sortedUnsortedVCs.length > 0 ? (
           <Droppable droppableId="unsorted" type="VC">
-            {(provided) => (
+            {(provided: DroppableProvided) => (
               <div 
                 className="space-y-1" 
                 ref={provided.innerRef}
@@ -267,7 +266,7 @@ const CRMDashboard = () => {
               >
                 {sortedUnsortedVCs.map((vcId, index) => (
                   <Draggable key={`unsorted-${vcId}`} draggableId={`unsorted-${vcId}`} index={index}>
-                    {(provided) => (
+                    {(provided: DraggableProvided) => (
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
