@@ -8,18 +8,19 @@ import { AddVCModal } from "@/components/AddVCModal";
 import { RoundHeader } from "@/components/RoundHeader";
 import { VCRow } from "@/components/VCRow";
 import { 
-  DragDropContext, 
-  Droppable, 
-  Draggable, 
-  DroppableProvided, 
-  DraggableProvided, 
-  DropResult
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+  resetServerContext
 } from "react-beautiful-dnd";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { v4 as uuidv4 } from 'uuid';
 
-// This helps with SSR issues in react-beautiful-dnd
+// Reset server context for SSR compatibility
+resetServerContext();
+
+// Helper function for droppable styling
 const getListStyle = (isDraggingOver: boolean) => ({
   background: isDraggingOver ? 'rgba(var(--secondary), 0.7)' : 'rgba(var(--secondary), 0.5)',
   padding: '8px',
@@ -158,7 +159,7 @@ const CRMDashboard = () => {
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="rounds" type="ROUND">
-          {(provided: DroppableProvided, snapshot) => (
+          {(provided, snapshot) => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
@@ -173,7 +174,7 @@ const CRMDashboard = () => {
                   
                   return (
                     <Draggable key={round.id} draggableId={round.id} index={index}>
-                      {(provided: DraggableProvided, snapshot) => (
+                      {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
@@ -188,7 +189,7 @@ const CRMDashboard = () => {
                           
                           {filteredVCs.length > 0 && (
                             <Droppable droppableId={round.id} type="VC">
-                              {(provided: DroppableProvided, snapshot) => (
+                              {(provided, snapshot) => (
                                 <motion.div
                                   ref={provided.innerRef}
                                   {...provided.droppableProps}
@@ -204,26 +205,26 @@ const CRMDashboard = () => {
                                     borderRadius: '4px'
                                   }}
                                 >
-                                  {filteredVCs.map((vcId, vcIndex) => {
-                                    // Generate a unique ID for each draggable that includes both round and VC
-                                    const uniqueId = `${round.id}-${vcId}`;
-                                    return (
-                                      <Draggable key={uniqueId} draggableId={uniqueId} index={vcIndex}>
-                                        {(provided: DraggableProvided) => (
-                                          <div
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            {...provided.dragHandleProps}
-                                          >
-                                            <VCRow
-                                              vc={state.vcs[vcId]}
-                                              roundId={round.id}
-                                            />
-                                          </div>
-                                        )}
-                                      </Draggable>
-                                    );
-                                  })}
+                                  {filteredVCs.map((vcId, vcIndex) => (
+                                    <Draggable 
+                                      key={vcId} 
+                                      draggableId={`${round.id}-${vcId}`} 
+                                      index={vcIndex}
+                                    >
+                                      {(provided, snapshot) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                        >
+                                          <VCRow
+                                            vc={state.vcs[vcId]}
+                                            roundId={round.id}
+                                          />
+                                        </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
                                   {provided.placeholder}
                                 </motion.div>
                               )}
@@ -278,7 +279,7 @@ const CRMDashboard = () => {
 
         {sortedUnsortedVCs.length > 0 ? (
           <Droppable droppableId="unsorted" type="VC">
-            {(provided: DroppableProvided, snapshot) => (
+            {(provided, snapshot) => (
               <div 
                 className="space-y-1" 
                 ref={provided.innerRef}
@@ -289,23 +290,23 @@ const CRMDashboard = () => {
                   borderRadius: '4px'
                 }}
               >
-                {sortedUnsortedVCs.map((vcId, index) => {
-                  // Generate a unique ID for unsorted VCs
-                  const uniqueId = `unsorted-${vcId}`;
-                  return (
-                    <Draggable key={uniqueId} draggableId={uniqueId} index={index}>
-                      {(provided: DraggableProvided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <VCRow key={vcId} vc={state.vcs[vcId]} />
-                        </div>
-                      )}
-                    </Draggable>
-                  );
-                })}
+                {sortedUnsortedVCs.map((vcId, index) => (
+                  <Draggable 
+                    key={vcId} 
+                    draggableId={`unsorted-${vcId}`} 
+                    index={index}
+                  >
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <VCRow key={vcId} vc={state.vcs[vcId]} />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
                 {provided.placeholder}
               </div>
             )}
