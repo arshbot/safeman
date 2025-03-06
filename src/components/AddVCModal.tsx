@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -45,13 +44,12 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
       status,
     };
     
-    if (roundId) {
-      // Add directly to a round
-      const vcId = addVC(newVC);
-      addVCToRound(vcId as unknown as string, roundId);
-    } else {
-      // Add to unsorted
-      addVC(newVC);
+    // First add the VC to get its ID
+    const newVCWithId = addVC(newVC);
+    
+    // If roundId is provided, add the VC to that round
+    if (roundId && newVCWithId) {
+      addVCToRound(newVCWithId, roundId);
     }
     
     // Reset form

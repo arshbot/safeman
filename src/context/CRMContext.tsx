@@ -30,7 +30,7 @@ type Action =
   | { type: 'ADD_ROUND'; payload: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded'> }
   | { type: 'UPDATE_ROUND'; payload: Round }
   | { type: 'DELETE_ROUND'; payload: string }
-  | { type: 'ADD_VC'; payload: Omit<VC, 'id'> }
+  | { type: 'ADD_VC'; payload: { vc: Omit<VC, 'id'>; id: string } }
   | { type: 'UPDATE_VC'; payload: VC }
   | { type: 'DELETE_VC'; payload: string }
   | { type: 'DUPLICATE_VC'; payload: { vcId: string; roundId: string } }
@@ -87,9 +87,10 @@ const crmReducer = (state: CRMState, action: Action): CRMState => {
     }
 
     case 'ADD_VC': {
+      const { vc, id } = action.payload;
       const newVC: VC = {
-        id: uuidv4(),
-        ...action.payload,
+        id,
+        ...vc,
       };
       
       toast.success(`VC ${newVC.name} added`);
@@ -255,7 +256,7 @@ interface CRMContextType {
   addRound: (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded'>) => void;
   updateRound: (round: Round) => void;
   deleteRound: (roundId: string) => void;
-  addVC: (vc: Omit<VC, 'id'>) => void;
+  addVC: (vc: Omit<VC, 'id'>) => string;
   updateVC: (vc: VC) => void;
   deleteVC: (vcId: string) => void;
   duplicateVC: (vcId: string, roundId: string) => void;
@@ -289,8 +290,10 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     dispatch({ type: 'DELETE_ROUND', payload: roundId });
   };
 
-  const addVC = (vc: Omit<VC, 'id'>) => {
-    dispatch({ type: 'ADD_VC', payload: vc });
+  const addVC = (vc: Omit<VC, 'id'>): string => {
+    const id = uuidv4();
+    dispatch({ type: 'ADD_VC', payload: { vc, id } });
+    return id;
   };
 
   const updateVC = (vc: VC) => {
