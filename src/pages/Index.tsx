@@ -17,7 +17,7 @@ import { motion } from "framer-motion";
 import { v4 as uuidv4 } from 'uuid';
 
 const CRMDashboard = () => {
-  const { state, getRoundSummary, reorderRounds, reorderVCs } = useCRM();
+  const { state, getRoundSummary, reorderRounds, reorderVCs, addVCToRound } = useCRM();
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(undefined);
 
@@ -26,9 +26,9 @@ const CRMDashboard = () => {
     setIsAddVCModalOpen(true);
   };
 
-  // Handle drag end for rounds
+  // Handle drag end for rounds and VCs
   const handleDragEnd = (result: any) => {
-    const { source, destination, type } = result;
+    const { source, destination, type, draggableId } = result;
     if (!destination) return;
     
     // Handle round reordering
@@ -62,6 +62,11 @@ const CRMDashboard = () => {
         newVcIds.splice(destination.index, 0, movedVcId);
         
         reorderVCs(sourceRoundId, newVcIds);
+      } else if (sourceRoundId === 'unsorted' && destRoundId !== 'unsorted') {
+        // Moving VC from unsorted to a round
+        const vcId = state.unsortedVCs[source.index];
+        addVCToRound(vcId, destRoundId);
+        toast.success(`VC moved to round successfully`);
       }
     }
   };
@@ -253,11 +258,30 @@ const CRMDashboard = () => {
         </div>
 
         {sortedUnsortedVCs.length > 0 ? (
-          <div className="space-y-1">
-            {sortedUnsortedVCs.map((vcId) => (
-              <VCRow key={vcId} vc={state.vcs[vcId]} />
-            ))}
-          </div>
+          <Droppable droppableId="unsorted" type="VC">
+            {(provided) => (
+              <div 
+                className="space-y-1" 
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+              >
+                {sortedUnsortedVCs.map((vcId, index) => (
+                  <Draggable key={`unsorted-${vcId}`} draggableId={`unsorted-${vcId}`} index={index}>
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <VCRow key={vcId} vc={state.vcs[vcId]} />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
         ) : (
           <p className="text-center text-muted-foreground p-4">
             No unsorted VCs. All your VCs are organized in rounds!
