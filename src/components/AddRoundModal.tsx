@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useCRM } from "@/context/CRMContext";
+import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/formatters";
 
 interface AddRoundModalProps {
   trigger?: React.ReactNode;
@@ -20,22 +21,34 @@ interface AddRoundModalProps {
 export function AddRoundModal({ trigger }: AddRoundModalProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [valuationCap, setValuationCap] = useState(1000000);
-  const [targetAmount, setTargetAmount] = useState(500000);
+  const [valuationCapFormatted, setValuationCapFormatted] = useState("1,000,000");
+  const [targetAmountFormatted, setTargetAmountFormatted] = useState("500,000");
   const { addRound } = useCRM();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     addRound({
       name,
-      valuationCap,
-      targetAmount,
+      valuationCap: parseFormattedNumber(valuationCapFormatted),
+      targetAmount: parseFormattedNumber(targetAmountFormatted),
     });
     // Reset form
     setName("");
-    setValuationCap(1000000);
-    setTargetAmount(500000);
+    setValuationCapFormatted("1,000,000");
+    setTargetAmountFormatted("500,000");
     setOpen(false);
+  };
+
+  const handleValuationCapChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = parseFormattedNumber(value);
+    setValuationCapFormatted(formatNumberWithCommas(numericValue));
+  };
+
+  const handleTargetAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = parseFormattedNumber(value);
+    setTargetAmountFormatted(formatNumberWithCommas(numericValue));
   };
 
   return (
@@ -63,10 +76,8 @@ export function AddRoundModal({ trigger }: AddRoundModalProps) {
               <Label htmlFor="valuationCap">Valuation Cap ($)</Label>
               <Input
                 id="valuationCap"
-                type="number"
-                value={valuationCap}
-                onChange={(e) => setValuationCap(Number(e.target.value))}
-                min="0"
+                value={valuationCapFormatted}
+                onChange={handleValuationCapChange}
                 required
               />
             </div>
@@ -74,10 +85,8 @@ export function AddRoundModal({ trigger }: AddRoundModalProps) {
               <Label htmlFor="targetAmount">Target Amount ($)</Label>
               <Input
                 id="targetAmount"
-                type="number"
-                value={targetAmount}
-                onChange={(e) => setTargetAmount(Number(e.target.value))}
-                min="0"
+                value={targetAmountFormatted}
+                onChange={handleTargetAmountChange}
                 required
               />
             </div>

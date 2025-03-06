@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { formatNumberWithCommas, parseFormattedNumber } from '@/utils/formatters';
 
 interface RoundHeaderProps {
   round: Round;
@@ -20,6 +21,8 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editedRound, setEditedRound] = useState<Round>(round);
+  const [valuationCapFormatted, setValuationCapFormatted] = useState(formatNumberWithCommas(round.valuationCap));
+  const [targetAmountFormatted, setTargetAmountFormatted] = useState(formatNumberWithCommas(round.targetAmount));
 
   const handleToggleExpand = () => {
     toggleRoundExpand(round.id);
@@ -28,6 +31,8 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setEditedRound(round);
+    setValuationCapFormatted(formatNumberWithCommas(round.valuationCap));
+    setTargetAmountFormatted(formatNumberWithCommas(round.targetAmount));
     setIsEditDialogOpen(true);
   };
 
@@ -39,6 +44,26 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
   const handleAddVCClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onAddVC(round.id);
+  };
+
+  const handleValuationCapChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = parseFormattedNumber(value);
+    setValuationCapFormatted(formatNumberWithCommas(numericValue));
+    setEditedRound({
+      ...editedRound,
+      valuationCap: numericValue
+    });
+  };
+
+  const handleTargetAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = parseFormattedNumber(value);
+    setTargetAmountFormatted(formatNumberWithCommas(numericValue));
+    setEditedRound({
+      ...editedRound,
+      targetAmount: numericValue
+    });
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -135,10 +160,8 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
                 <Label htmlFor="valuationCap">Valuation Cap ($)</Label>
                 <Input
                   id="valuationCap"
-                  type="number"
-                  value={editedRound.valuationCap}
-                  onChange={(e) => setEditedRound({ ...editedRound, valuationCap: Number(e.target.value) })}
-                  min="0"
+                  value={valuationCapFormatted}
+                  onChange={handleValuationCapChange}
                   required
                 />
               </div>
@@ -146,10 +169,8 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
                 <Label htmlFor="targetAmount">Target Amount ($)</Label>
                 <Input
                   id="targetAmount"
-                  type="number"
-                  value={editedRound.targetAmount}
-                  onChange={(e) => setEditedRound({ ...editedRound, targetAmount: Number(e.target.value) })}
-                  min="0"
+                  value={targetAmountFormatted}
+                  onChange={handleTargetAmountChange}
                   required
                 />
               </div>
