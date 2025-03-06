@@ -1,6 +1,12 @@
 
 export type Status = 'notContacted' | 'contacted' | 'closeToBuying' | 'sold';
 
+export interface MeetingNote {
+  id: string;
+  date: string; // ISO string format
+  content: string;
+}
+
 export interface VC {
   id: string;
   name: string;
@@ -8,6 +14,7 @@ export interface VC {
   website?: string;
   notes?: string;
   status: Status;
+  meetingNotes?: MeetingNote[];
 }
 
 export interface Round {

@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
-import { CRMState, Round, VC, Status } from '@/types';
+import { CRMState, Round, VC, Status, MeetingNote } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 
@@ -38,7 +37,10 @@ type Action =
   | { type: 'REMOVE_VC_FROM_ROUND'; payload: { vcId: string; roundId: string } }
   | { type: 'TOGGLE_ROUND_EXPAND'; payload: string }
   | { type: 'REORDER_ROUNDS'; payload: Round[] }
-  | { type: 'REORDER_VCS'; payload: { roundId: string; vcIds: string[] } };
+  | { type: 'REORDER_VCS'; payload: { roundId: string; vcIds: string[] } }
+  | { type: 'ADD_MEETING_NOTE'; payload: { vcId: string; note: MeetingNote } }
+  | { type: 'UPDATE_MEETING_NOTE'; payload: { vcId: string; note: MeetingNote } }
+  | { type: 'DELETE_MEETING_NOTE'; payload: { vcId: string; noteId: string } };
 
 // Reducer
 const crmReducer = (state: CRMState, action: Action): CRMState => {
@@ -258,6 +260,74 @@ const crmReducer = (state: CRMState, action: Action): CRMState => {
       };
     }
 
+    case 'ADD_MEETING_NOTE': {
+      const { vcId, note } = action.payload;
+      const vc = state.vcs[vcId];
+      
+      if (!vc) return state;
+      
+      const updatedVC = {
+        ...vc,
+        meetingNotes: [...(vc.meetingNotes || []), note],
+      };
+      
+      toast.success(`Added new meeting note for ${vc.name}`);
+      
+      return {
+        ...state,
+        vcs: {
+          ...state.vcs,
+          [vcId]: updatedVC,
+        },
+      };
+    }
+
+    case 'UPDATE_MEETING_NOTE': {
+      const { vcId, note } = action.payload;
+      const vc = state.vcs[vcId];
+      
+      if (!vc || !vc.meetingNotes) return state;
+      
+      const updatedNotes = vc.meetingNotes.map(n => 
+        n.id === note.id ? note : n
+      );
+      
+      toast.success(`Updated meeting note for ${vc.name}`);
+      
+      return {
+        ...state,
+        vcs: {
+          ...state.vcs,
+          [vcId]: {
+            ...vc,
+            meetingNotes: updatedNotes,
+          },
+        },
+      };
+    }
+
+    case 'DELETE_MEETING_NOTE': {
+      const { vcId, noteId } = action.payload;
+      const vc = state.vcs[vcId];
+      
+      if (!vc || !vc.meetingNotes) return state;
+      
+      const updatedNotes = vc.meetingNotes.filter(n => n.id !== noteId);
+      
+      toast.success(`Deleted meeting note for ${vc.name}`);
+      
+      return {
+        ...state,
+        vcs: {
+          ...state.vcs,
+          [vcId]: {
+            ...vc,
+            meetingNotes: updatedNotes,
+          },
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -279,6 +349,9 @@ interface CRMContextType {
   reorderRounds: (rounds: Round[]) => void;
   reorderVCs: (roundId: string, vcIds: string[]) => void;
   getRoundSummary: (roundId: string) => { totalVCs: number; sold: number; closeToBuying: number };
+  addMeetingNote: (vcId: string, content: string) => void;
+  updateMeetingNote: (vcId: string, note: MeetingNote) => void;
+  deleteMeetingNote: (vcId: string, noteId: string) => void;
 }
 
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
@@ -359,6 +432,24 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
   };
 
+  const addMeetingNote = (vcId: string, content: string) => {
+    const note: MeetingNote = {
+      id: uuidv4(),
+      date: new Date().toISOString(),
+      content,
+    };
+    
+    dispatch({ type: 'ADD_MEETING_NOTE', payload: { vcId, note } });
+  };
+  
+  const updateMeetingNote = (vcId: string, note: MeetingNote) => {
+    dispatch({ type: 'UPDATE_MEETING_NOTE', payload: { vcId, note } });
+  };
+  
+  const deleteMeetingNote = (vcId: string, noteId: string) => {
+    dispatch({ type: 'DELETE_MEETING_NOTE', payload: { vcId, noteId } });
+  };
+
   return (
     <CRMContext.Provider
       value={{
@@ -376,6 +467,9 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         reorderRounds,
         reorderVCs,
         getRoundSummary,
+        addMeetingNote,
+        updateMeetingNote,
+        deleteMeetingNote,
       }}
     >
       {children}

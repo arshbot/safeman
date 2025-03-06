@@ -1,7 +1,7 @@
 
 import { VC, Status } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Copy, ExternalLink } from 'lucide-react';
+import { Edit, Trash2, Copy, ExternalLink, FileText } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { useCRM } from '@/context/CRMContext';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { MeetingNotesModal } from './MeetingNotesModal';
 
 interface VCRowProps {
   vc: VC;
@@ -21,6 +22,7 @@ export function VCRow({ vc, roundId }: VCRowProps) {
   const { updateVC, deleteVC, removeVCFromRound, duplicateVC } = useCRM();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isMeetingNotesOpen, setIsMeetingNotesOpen] = useState(false);
   const [editedVC, setEditedVC] = useState<VC>(vc);
 
   const handleEditClick = () => {
@@ -59,6 +61,8 @@ export function VCRow({ vc, roundId }: VCRowProps) {
 
   const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'sold'];
 
+  const meetingNotesCount = vc.meetingNotes?.length || 0;
+
   return (
     <>
       <div className="flex items-center p-3 bg-white border border-gray-100 rounded mb-1 hover:bg-gray-50 transition-all animate-fade-in">
@@ -81,6 +85,20 @@ export function VCRow({ vc, roundId }: VCRowProps) {
         <div className="flex items-center space-x-2">
           <StatusBadge status={vc.status} />
           <div className="flex space-x-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 relative"
+              onClick={() => setIsMeetingNotesOpen(true)}
+              title="Meeting Notes"
+            >
+              <FileText className="h-4 w-4" />
+              {meetingNotesCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-[10px] text-white rounded-full w-4 h-4 flex items-center justify-center">
+                  {meetingNotesCount}
+                </span>
+              )}
+            </Button>
             {roundId && (
               <Button
                 variant="ghost"
@@ -218,6 +236,13 @@ export function VCRow({ vc, roundId }: VCRowProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Meeting Notes Modal */}
+      <MeetingNotesModal 
+        vc={vc} 
+        open={isMeetingNotesOpen} 
+        onOpenChange={setIsMeetingNotesOpen} 
+      />
     </>
   );
 }
