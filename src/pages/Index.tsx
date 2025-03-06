@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { CRMProvider, useCRM } from "@/context/CRMContext";
 import { Plus, Users, Layers } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AddRoundModal } from "@/components/AddRoundModal";
 import { AddVCModal } from "@/components/AddVCModal";
 import { RoundHeader } from "@/components/RoundHeader";
@@ -17,7 +17,7 @@ import { motion } from "framer-motion";
 import { v4 as uuidv4 } from 'uuid';
 
 const CRMDashboard = () => {
-  const { state, getRoundSummary, reorderRounds } = useCRM();
+  const { state, getRoundSummary, reorderRounds, reorderVCs } = useCRM();
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(undefined);
 
@@ -26,31 +26,79 @@ const CRMDashboard = () => {
     setIsAddVCModalOpen(true);
   };
 
+  // Handle drag end for rounds
   const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
+    const { source, destination, type } = result;
+    if (!destination) return;
     
-    const items = Array.from(state.rounds);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    // Handle round reordering
+    if (type === 'ROUND') {
+      const items = Array.from(state.rounds);
+      const [reorderedItem] = items.splice(source.index, 1);
+      items.splice(destination.index, 0, reorderedItem);
+      
+      // Update the order property for each round
+      const updatedRounds = items.map((round, index) => ({
+        ...round,
+        order: index,
+      }));
+      
+      reorderRounds(updatedRounds);
+      return;
+    }
     
-    // Update the order property for each round
-    const updatedRounds = items.map((round, index) => ({
-      ...round,
-      order: index,
-    }));
-    
-    reorderRounds(updatedRounds);
+    // Handle VC reordering within a round
+    if (type === 'VC') {
+      const sourceRoundId = source.droppableId;
+      const destRoundId = destination.droppableId;
+      
+      if (sourceRoundId === destRoundId) {
+        // Reordering within the same round
+        const round = state.rounds.find(r => r.id === sourceRoundId);
+        if (!round) return;
+        
+        const newVcIds = Array.from(round.vcs);
+        const [movedVcId] = newVcIds.splice(source.index, 1);
+        newVcIds.splice(destination.index, 0, movedVcId);
+        
+        reorderVCs(sourceRoundId, newVcIds);
+      }
+    }
   };
+
+  // Sort VCs by status: sold -> closeToBuying -> others
+  const sortVCsByStatus = (vcIds: string[]): string[] => {
+    return [...vcIds].sort((aId, bId) => {
+      const vcA = state.vcs[aId];
+      const vcB = state.vcs[bId];
+      
+      if (!vcA || !vcB) return 0;
+      
+      // Sold VCs come first
+      if (vcA.status === 'sold' && vcB.status !== 'sold') return -1;
+      if (vcA.status !== 'sold' && vcB.status === 'sold') return 1;
+      
+      // Close to buying VCs come second
+      if (vcA.status === 'closeToBuying' && vcB.status !== 'closeToBuying') return -1;
+      if (vcA.status !== 'closeToBuying' && vcB.status === 'closeToBuying') return 1;
+      
+      // All other statuses maintain their order
+      return 0;
+    });
+  };
+  
+  // Sort unsorted VCs by status
+  const sortedUnsortedVCs = sortVCsByStatus(state.unsortedVCs);
 
   // Filter VCs for each round based on expansion state
   const getFilteredVCs = (roundId: string, vcs: string[], isExpanded: boolean): string[] => {
-    if (isExpanded) return vcs;
+    if (isExpanded) return sortVCsByStatus(vcs);
     
     // When collapsed, only show VCs with sold or closeToBuying status
-    return vcs.filter(vcId => {
+    return sortVCsByStatus(vcs.filter(vcId => {
       const vc = state.vcs[vcId];
       return vc && (vc.status === 'sold' || vc.status === 'closeToBuying');
-    });
+    }));
   };
 
   return (
@@ -94,7 +142,7 @@ const CRMDashboard = () => {
       </motion.div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="rounds">
+        <Droppable droppableId="rounds" type="ROUND">
           {(provided) => (
             <div
               {...provided.droppableProps}
@@ -123,23 +171,39 @@ const CRMDashboard = () => {
                           />
                           
                           {filteredVCs.length > 0 && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ 
-                                opacity: 1, 
-                                height: 'auto',
-                                transition: { duration: 0.3 }
-                              }}
-                              className="pl-6 mt-2"
-                            >
-                              {filteredVCs.map((vcId) => (
-                                <VCRow
-                                  key={`${round.id}-${vcId}`}
-                                  vc={state.vcs[vcId]}
-                                  roundId={round.id}
-                                />
-                              ))}
-                            </motion.div>
+                            <Droppable droppableId={round.id} type="VC">
+                              {(provided) => (
+                                <motion.div
+                                  ref={provided.innerRef}
+                                  {...provided.droppableProps}
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ 
+                                    opacity: 1, 
+                                    height: 'auto',
+                                    transition: { duration: 0.3 }
+                                  }}
+                                  className="pl-6 mt-2"
+                                >
+                                  {filteredVCs.map((vcId, vcIndex) => (
+                                    <Draggable key={`${round.id}-${vcId}`} draggableId={`${round.id}-${vcId}`} index={vcIndex}>
+                                      {(provided) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                        >
+                                          <VCRow
+                                            vc={state.vcs[vcId]}
+                                            roundId={round.id}
+                                          />
+                                        </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provided.placeholder}
+                                </motion.div>
+                              )}
+                            </Droppable>
                           )}
                           
                           {round.isExpanded && filteredVCs.length === 0 && (
@@ -188,9 +252,9 @@ const CRMDashboard = () => {
           </Button>
         </div>
 
-        {state.unsortedVCs.length > 0 ? (
+        {sortedUnsortedVCs.length > 0 ? (
           <div className="space-y-1">
-            {state.unsortedVCs.map((vcId) => (
+            {sortedUnsortedVCs.map((vcId) => (
               <VCRow key={vcId} vc={state.vcs[vcId]} />
             ))}
           </div>

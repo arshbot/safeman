@@ -37,7 +37,8 @@ type Action =
   | { type: 'ADD_VC_TO_ROUND'; payload: { vcId: string; roundId: string } }
   | { type: 'REMOVE_VC_FROM_ROUND'; payload: { vcId: string; roundId: string } }
   | { type: 'TOGGLE_ROUND_EXPAND'; payload: string }
-  | { type: 'REORDER_ROUNDS'; payload: Round[] };
+  | { type: 'REORDER_ROUNDS'; payload: Round[] }
+  | { type: 'REORDER_VCS'; payload: { roundId: string; vcIds: string[] } };
 
 // Reducer
 const crmReducer = (state: CRMState, action: Action): CRMState => {
@@ -245,6 +246,18 @@ const crmReducer = (state: CRMState, action: Action): CRMState => {
       };
     }
 
+    case 'REORDER_VCS': {
+      const { roundId, vcIds } = action.payload;
+      return {
+        ...state,
+        rounds: state.rounds.map(round => 
+          round.id === roundId
+            ? { ...round, vcs: vcIds }
+            : round
+        ),
+      };
+    }
+
     default:
       return state;
   }
@@ -264,6 +277,7 @@ interface CRMContextType {
   removeVCFromRound: (vcId: string, roundId: string) => void;
   toggleRoundExpand: (roundId: string) => void;
   reorderRounds: (rounds: Round[]) => void;
+  reorderVCs: (roundId: string, vcIds: string[]) => void;
   getRoundSummary: (roundId: string) => { totalVCs: number; sold: number; closeToBuying: number };
 }
 
@@ -324,6 +338,10 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     dispatch({ type: 'REORDER_ROUNDS', payload: rounds });
   };
 
+  const reorderVCs = (roundId: string, vcIds: string[]) => {
+    dispatch({ type: 'REORDER_VCS', payload: { roundId, vcIds } });
+  };
+
   const getRoundSummary = (roundId: string) => {
     const round = state.rounds.find((r) => r.id === roundId);
     if (!round) {
@@ -356,6 +374,7 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         removeVCFromRound,
         toggleRoundExpand,
         reorderRounds,
+        reorderVCs,
         getRoundSummary,
       }}
     >
