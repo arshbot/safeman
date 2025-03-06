@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { CRMProvider, useCRM } from "@/context/CRMContext";
 import { Plus, Users, Layers } from "lucide-react";
@@ -8,12 +9,23 @@ import { RoundHeader } from "@/components/RoundHeader";
 import { VCRow } from "@/components/VCRow";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VC } from "@/types";
-import { DragDropContext, Droppable, Draggable, DroppableProvided, DraggableProvided, DropResult } from "react-beautiful-dnd";
+import { 
+  DragDropContext, 
+  Droppable, 
+  Draggable, 
+  DroppableProvided, 
+  DraggableProvided, 
+  DropResult,
+  resetServerContext
+} from "react-beautiful-dnd";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 // Import uuid library for this component
 import { v4 as uuidv4 } from 'uuid';
+
+// Reset server context to prevent hydration issues
+resetServerContext();
 
 const CRMDashboard = () => {
   const { state, getRoundSummary, reorderRounds, reorderVCs, addVCToRound } = useCRM();
@@ -188,22 +200,25 @@ const CRMDashboard = () => {
                                   }}
                                   className="pl-6 mt-2"
                                 >
-                                  {filteredVCs.map((vcId, vcIndex) => (
-                                    <Draggable key={vcId} draggableId={`${round.id}-${vcId}`} index={vcIndex}>
-                                      {(provided: DraggableProvided) => (
-                                        <div
-                                          ref={provided.innerRef}
-                                          {...provided.draggableProps}
-                                          {...provided.dragHandleProps}
-                                        >
-                                          <VCRow
-                                            vc={state.vcs[vcId]}
-                                            roundId={round.id}
-                                          />
-                                        </div>
-                                      )}
-                                    </Draggable>
-                                  ))}
+                                  {filteredVCs.map((vcId, vcIndex) => {
+                                    const uniqueDraggableId = `${round.id}-${vcId}`;
+                                    return (
+                                      <Draggable key={uniqueDraggableId} draggableId={uniqueDraggableId} index={vcIndex}>
+                                        {(provided: DraggableProvided) => (
+                                          <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                          >
+                                            <VCRow
+                                              vc={state.vcs[vcId]}
+                                              roundId={round.id}
+                                            />
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    );
+                                  })}
                                   {provided.placeholder}
                                 </motion.div>
                               )}
@@ -264,19 +279,22 @@ const CRMDashboard = () => {
                 ref={provided.innerRef}
                 {...provided.droppableProps}
               >
-                {sortedUnsortedVCs.map((vcId, index) => (
-                  <Draggable key={`unsorted-${vcId}`} draggableId={`unsorted-${vcId}`} index={index}>
-                    {(provided: DraggableProvided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        <VCRow key={vcId} vc={state.vcs[vcId]} />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
+                {sortedUnsortedVCs.map((vcId, index) => {
+                  const uniqueDraggableId = `unsorted-${vcId}`;
+                  return (
+                    <Draggable key={uniqueDraggableId} draggableId={uniqueDraggableId} index={index}>
+                      {(provided: DraggableProvided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <VCRow key={vcId} vc={state.vcs[vcId]} />
+                        </div>
+                      )}
+                    </Draggable>
+                  );
+                })}
                 {provided.placeholder}
               </div>
             )}
