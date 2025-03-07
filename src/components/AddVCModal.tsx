@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCRM } from "@/context/CRMContext";
 import { Status } from "@/types";
 import { StatusBadge } from "./StatusBadge";
@@ -35,6 +35,18 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
 
   const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'sold'];
 
+  // Reset form when modal opens or closes
+  useEffect(() => {
+    if (!open) {
+      // Reset form state on close
+      setName("");
+      setEmail("");
+      setWebsite("");
+      setNotes("");
+      setStatus("notContacted");
+    }
+  }, [open]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -46,23 +58,19 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
       status,
     };
     
-    // First add the VC to get its ID
-    const newVCId = addVC(newVC);
-    
-    // If roundId is provided, add the VC to that round
-    if (roundId && newVCId) {
-      addVCToRound(newVCId, roundId);
-    }
-    
-    // Reset form
-    setName("");
-    setEmail("");
-    setWebsite("");
-    setNotes("");
-    setStatus("notContacted");
-    
-    // Important: close the modal before triggering any state updates that might affect DnD context
+    // First close the modal to avoid DnD context issues
     onOpenChange(false);
+    
+    // Small delay to ensure modal is completely closed before state updates
+    setTimeout(() => {
+      // Add the VC to get its ID
+      const newVCId = addVC(newVC);
+      
+      // If roundId is provided, add the VC to that round
+      if (roundId && newVCId) {
+        addVCToRound(newVCId, roundId);
+      }
+    }, 50);
   };
 
   return (
