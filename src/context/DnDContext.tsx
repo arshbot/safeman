@@ -1,6 +1,7 @@
 
 import React, { createContext, useReducer, useContext } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
+import { useCRM } from './CRMContext';
 
 // Simple reducer to track drag state
 const dndReducer = (state: any, action: any) => {
@@ -18,11 +19,13 @@ const DnDContext = createContext<any>(null);
 // Provider component
 export const DnDProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(dndReducer, { lastDragResult: null });
-
-  // Handle drag end - this is where you'd implement your drag logic
+  
+  // Handle drag end - this is where we implement the drag logic
   const onDragEnd = (result: any) => {
     dispatch({ type: 'DRAG_END', payload: result });
-    // Your drag end logic would go here - we're just passing through for now
+    
+    // We'll handle the drag logic in the CRM Dashboard component
+    // This provider just manages the DragDropContext
   };
 
   return (

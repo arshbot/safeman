@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { CRMProvider, useCRM } from "@/context/CRMContext";
 import { Plus, Users, Layers } from "lucide-react";
@@ -39,7 +38,7 @@ const CRMDashboard = () => {
 
   // Handle drag end for rounds and VCs
   const handleDragEnd = (result: DropResult) => {
-    const { source, destination, type } = result;
+    const { source, destination, type, draggableId } = result;
     if (!destination) return;
     
     // Handle round reordering
@@ -58,11 +57,28 @@ const CRMDashboard = () => {
       return;
     }
     
-    // Handle VC reordering within a round
+    // Handle VC reordering within a round or moving VCs between containers
     if (type === 'VC') {
       const sourceRoundId = source.droppableId;
       const destRoundId = destination.droppableId;
       
+      // If the VC is dragged over a round header (droppable with "round-" prefix)
+      if (destRoundId.startsWith('round-')) {
+        const actualRoundId = destRoundId.replace('round-', '');
+        
+        // If dragging from unsorted to a round header
+        if (sourceRoundId === 'unsorted') {
+          // Extract the VC ID from the draggableId (format is "unsorted-{vcId}")
+          const vcId = draggableId.replace('unsorted-', '');
+          addVCToRound(vcId, actualRoundId);
+          toast.success(`VC moved to round successfully`);
+          return;
+        }
+        
+        return;
+      }
+      
+      // Regular reordering within the same container
       if (sourceRoundId === destRoundId) {
         // Reordering within the same round
         const round = state.rounds.find(r => r.id === sourceRoundId);
@@ -181,11 +197,23 @@ const CRMDashboard = () => {
                           {...provided.dragHandleProps}
                           className="bg-secondary/50 p-4 rounded-lg"
                         >
-                          <RoundHeader
-                            round={round}
-                            summary={summary}
-                            onAddVC={handleAddVCToRound}
-                          />
+                          {/* Add droppable area for the round header to accept VCs */}
+                          <Droppable droppableId={`round-${round.id}`} type="VC">
+                            {(dropProvided, dropSnapshot) => (
+                              <div
+                                ref={dropProvided.innerRef}
+                                {...dropProvided.droppableProps}
+                                className={`${dropSnapshot.isDraggingOver ? 'bg-primary/10' : ''} rounded-md transition-colors`}
+                              >
+                                <RoundHeader
+                                  round={round}
+                                  summary={summary}
+                                  onAddVC={handleAddVCToRound}
+                                />
+                                {dropProvided.placeholder}
+                              </div>
+                            )}
+                          </Droppable>
                           
                           {filteredVCs.length > 0 && (
                             <Droppable droppableId={round.id} type="VC">
@@ -245,78 +273,78 @@ const CRMDashboard = () => {
             </div>
           )}
         </Droppable>
-      </DragDropContext>
 
-      {state.rounds.length === 0 && (
-        <div className="text-center py-12 bg-secondary/30 rounded-lg border border-dashed border-muted">
-          <Layers className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-semibold">No rounds yet</h3>
-          <p className="mt-1 text-muted-foreground">
-            Create a round to start organizing your VCs
-          </p>
-          <AddRoundModal
-            trigger={
-              <Button className="mt-4">
-                <Plus className="mr-2 h-4 w-4" />
-                Create First Round
-              </Button>
-            }
-          />
-        </div>
-      )}
-
-      <div className="mt-8 bg-secondary/50 p-4 rounded-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Unsorted VCs</h2>
-          <Button variant="outline" size="sm" onClick={() => {
-            setSelectedRoundId(undefined);
-            setIsAddVCModalOpen(true);
-          }}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add VC
-          </Button>
-        </div>
-
-        {sortedUnsortedVCs.length > 0 ? (
-          <Droppable droppableId="unsorted" type="VC">
-            {(provided, snapshot) => (
-              <div 
-                className="space-y-1" 
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                style={{
-                  background: snapshot.isDraggingOver ? 'rgba(0,0,0,0.02)' : 'transparent',
-                  padding: '4px',
-                  borderRadius: '4px'
-                }}
-              >
-                {sortedUnsortedVCs.map((vcId, index) => (
-                  <Draggable 
-                    key={vcId} 
-                    draggableId={`unsorted-${vcId}`} 
-                    index={index}
-                  >
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        <VCRow key={vcId} vc={state.vcs[vcId]} />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        ) : (
-          <p className="text-center text-muted-foreground p-4">
-            No unsorted VCs. All your VCs are organized in rounds!
-          </p>
+        {state.rounds.length === 0 && (
+          <div className="text-center py-12 bg-secondary/30 rounded-lg border border-dashed border-muted">
+            <Layers className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-semibold">No rounds yet</h3>
+            <p className="mt-1 text-muted-foreground">
+              Create a round to start organizing your VCs
+            </p>
+            <AddRoundModal
+              trigger={
+                <Button className="mt-4">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create First Round
+                </Button>
+              }
+            />
+          </div>
         )}
-      </div>
+
+        <div className="mt-8 bg-secondary/50 p-4 rounded-lg">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Unsorted VCs</h2>
+            <Button variant="outline" size="sm" onClick={() => {
+              setSelectedRoundId(undefined);
+              setIsAddVCModalOpen(true);
+            }}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add VC
+            </Button>
+          </div>
+
+          {sortedUnsortedVCs.length > 0 ? (
+            <Droppable droppableId="unsorted" type="VC">
+              {(provided, snapshot) => (
+                <div 
+                  className="space-y-1" 
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  style={{
+                    background: snapshot.isDraggingOver ? 'rgba(0,0,0,0.02)' : 'transparent',
+                    padding: '4px',
+                    borderRadius: '4px'
+                  }}
+                >
+                  {sortedUnsortedVCs.map((vcId, index) => (
+                    <Draggable 
+                      key={vcId} 
+                      draggableId={`unsorted-${vcId}`} 
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <VCRow key={vcId} vc={state.vcs[vcId]} />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          ) : (
+            <p className="text-center text-muted-foreground p-4">
+              No unsorted VCs. All your VCs are organized in rounds!
+            </p>
+          )}
+        </div>
+      </DragDropContext>
     </div>
   );
 };
