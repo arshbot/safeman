@@ -308,13 +308,14 @@ const CRMDashboard = () => {
             <Droppable droppableId="unsorted" type="VC">
               {(provided, snapshot) => (
                 <div 
-                  className="space-y-1" 
+                  className={`space-y-1 ${snapshot.isDraggingOver ? 'bg-primary/10' : ''}`}
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                   style={{
-                    background: snapshot.isDraggingOver ? 'rgba(0,0,0,0.02)' : 'transparent',
                     padding: '4px',
-                    borderRadius: '4px'
+                    borderRadius: '4px',
+                    minHeight: '50px', // Ensure there's always a drop area even if empty
+                    transition: 'background-color 0.2s ease'
                   }}
                 >
                   {sortedUnsortedVCs.map((vcId, index) => (

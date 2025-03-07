@@ -19,13 +19,37 @@ const DnDContext = createContext<any>(null);
 // Provider component
 export const DnDProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(dndReducer, { lastDragResult: null });
+  const { addVCToRound, removeVCFromRound } = useCRM();
   
   // Handle drag end - this is where we implement the drag logic
   const onDragEnd = (result: any) => {
     dispatch({ type: 'DRAG_END', payload: result });
     
-    // We'll handle the drag logic in the CRM Dashboard component
-    // This provider just manages the DragDropContext
+    const { source, destination, type, draggableId } = result;
+    
+    // If there's no destination, the drag was cancelled
+    if (!destination) return;
+    
+    // Handle VC drag operations
+    if (type === 'VC') {
+      const sourceId = source.droppableId;
+      const destId = destination.droppableId;
+      
+      // VC being dragged to an unsorted section
+      if (destId === 'unsorted' && sourceId !== 'unsorted') {
+        // Extract the VC ID from the draggableId (format is "{roundId}-{vcId}")
+        const vcId = draggableId.split('-')[1];
+        removeVCFromRound(vcId, sourceId);
+        return;
+      }
+      
+      // VC being dragged to a round header
+      if (destId.startsWith('round-') && sourceId === 'unsorted') {
+        const actualRoundId = destId.replace('round-', '');
+        const vcId = draggableId.replace('unsorted-', '');
+        addVCToRound(vcId, actualRoundId);
+      }
+    }
   };
 
   return (
