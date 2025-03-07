@@ -1,7 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -45,11 +47,11 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
     };
     
     // First add the VC to get its ID
-    const newVCWithId = addVC(newVC);
+    const newVCId = addVC(newVC);
     
     // If roundId is provided, add the VC to that round
-    if (roundId && newVCWithId) {
-      addVCToRound(newVCWithId, roundId);
+    if (roundId && newVCId) {
+      addVCToRound(newVCId, roundId);
     }
     
     // Reset form
@@ -58,6 +60,8 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
     setWebsite("");
     setNotes("");
     setStatus("notContacted");
+    
+    // Important: close the modal before triggering any state updates that might affect DnD context
     onOpenChange(false);
   };
 
@@ -67,6 +71,9 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
       <DialogContent className="sm:max-w-[500px] glassmorphism">
         <DialogHeader>
           <DialogTitle>Add New VC</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Fill in the details to add a new VC to your database.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
@@ -115,6 +122,7 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
                     <SelectItem key={status} value={status}>
                       <div className="flex items-center">
                         <StatusBadge status={status} className="mr-2" />
+                        {status}
                       </div>
                     </SelectItem>
                   ))}
