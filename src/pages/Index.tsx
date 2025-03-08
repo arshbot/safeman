@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useCRM } from "@/context/CRMContext";
 import { Plus, Users, Layers } from "lucide-react";
@@ -10,7 +11,8 @@ import {
   Droppable,
   Draggable,
   DropResult,
-  resetServerContext
+  resetServerContext,
+  DragDropContext
 } from "react-beautiful-dnd";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
