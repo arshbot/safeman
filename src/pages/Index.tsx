@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { CRMProvider, useCRM } from "@/context/CRMContext";
+import { useCRM } from "@/context/CRMContext";
 import { Plus, Users, Layers } from "lucide-react";
 import { useState } from "react";
 import { AddRoundModal } from "@/components/AddRoundModal";
@@ -7,7 +7,6 @@ import { AddVCModal } from "@/components/AddVCModal";
 import { RoundHeader } from "@/components/RoundHeader";
 import { VCRow } from "@/components/VCRow";
 import { 
-  DragDropContext,
   Droppable,
   Draggable,
   DropResult,
@@ -26,7 +25,7 @@ const getListStyle = (isDraggingOver: boolean) => ({
   borderRadius: '8px'
 });
 
-const CRMDashboard = () => {
+const Index = () => {
   const { state, getRoundSummary, reorderRounds, reorderVCs, addVCToRound } = useCRM();
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(undefined);
@@ -349,12 +348,5 @@ const CRMDashboard = () => {
     </div>
   );
 };
-
-// Wrap the dashboard with the CRM Provider
-const Index = () => (
-  <CRMProvider>
-    <CRMDashboard />
-  </CRMProvider>
-);
 
 export default Index;
