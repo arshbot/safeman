@@ -15,6 +15,8 @@ export function useDragEndHandler() {
   // Handle drag end for rounds and VCs
   const handleDragEnd = (result: DropResult) => {
     const { source, destination, type, draggableId } = result;
+    
+    // If there's no destination, the user dropped the item outside a droppable area
     if (!destination) return;
     
     // Handle round reordering
@@ -67,15 +69,22 @@ export function useDragEndHandler() {
         reorderVCs(sourceRoundId, newVcIds);
       } else if (sourceRoundId !== 'unsorted' && destRoundId === 'unsorted') {
         // Moving VC from a round to unsorted
-        // Extract the VC ID from the draggableId (format is "{roundId}-{vcId}")
-        const vcId = draggableId.split('-')[1];
+        // Extract the VC ID from the draggableId (format is "round-{roundId}-{vcId}")
+        const parts = draggableId.split('-');
+        const vcId = parts[2]; // Get the vcId from the third part
+        
+        // Now we can move the VC from the round to unsorted
         removeVCFromRound(vcId, sourceRoundId);
         toast.success(`VC moved to unsorted successfully`);
       } else if (sourceRoundId === 'unsorted' && destRoundId !== 'unsorted') {
         // Moving VC from unsorted to a round
-        const vcId = state.unsortedVCs[source.index];
+        const vcId = draggableId.replace('unsorted-', '');
         addVCToRound(vcId, destRoundId);
         toast.success(`VC moved to round successfully`);
+      } else if (sourceRoundId !== destRoundId) {
+        // Moving between different rounds (not involving unsorted)
+        // This would need additional logic if supported
+        console.log('Moving between different rounds directly is not implemented');
       }
     }
   };

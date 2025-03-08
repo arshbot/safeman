@@ -11,8 +11,10 @@ interface VCDraggableProps {
 }
 
 export function VCDraggable({ vcId, index, vc, roundId }: VCDraggableProps) {
+  // Generate a consistent draggableId that works both for round VCs and unsorted VCs
+  // The format is: either "round-{roundId}-{vcId}" or "unsorted-{vcId}"
   const draggableId = roundId 
-    ? `${roundId}-${vcId}` 
+    ? `round-${roundId}-${vcId}` 
     : `unsorted-${vcId}`;
     
   return (
