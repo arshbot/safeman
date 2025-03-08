@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useCRM } from "@/context/CRMContext";
 import { Plus, Users, Layers } from "lucide-react";
@@ -16,6 +15,7 @@ import {
 } from "react-beautiful-dnd";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useDnD } from "@/context/DnDContext";
 
 // Reset server context for SSR compatibility
 resetServerContext();
