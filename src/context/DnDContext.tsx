@@ -35,7 +35,7 @@ export const DnDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const sourceId = source.droppableId;
       const destId = destination.droppableId;
       
-      // VC being dragged to an unsorted section
+      // VC being dragged from a round to unsorted section
       if (destId === 'unsorted' && sourceId !== 'unsorted') {
         // Extract the VC ID from the draggableId (format is "{roundId}-{vcId}")
         const vcId = draggableId.split('-')[1];
