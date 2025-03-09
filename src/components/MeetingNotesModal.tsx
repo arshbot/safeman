@@ -23,8 +23,11 @@ export function MeetingNotesModal({ vc, open, onOpenChange }: MeetingNotesModalP
   const [editingNote, setEditingNote] = useState<MeetingNote | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
+  // Make sure meetingNotes exists before sorting
+  const meetingNotes = vc.meetingNotes || [];
+  
   // Sort notes by date, newest first
-  const sortedNotes = [...(vc.meetingNotes || [])].sort((a, b) => 
+  const sortedNotes = [...meetingNotes].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
@@ -50,6 +53,10 @@ export function MeetingNotesModal({ vc, open, onOpenChange }: MeetingNotesModalP
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'PPP p'); // e.g., "Apr 29, 2023, 3:24 PM"
   };
+
+  console.log("MeetingNotesModal rendering with VC:", vc);
+  console.log("Meeting notes:", vc.meetingNotes);
+  console.log("Sorted notes:", sortedNotes);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

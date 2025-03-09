@@ -22,6 +22,11 @@ export function VCRow({ vc, roundId }: VCRowProps) {
   const [isMeetingNotesOpen, setIsMeetingNotesOpen] = useState(false);
   const [editedVC, setEditedVC] = useState<VC>(vc);
 
+  // Make sure we refresh editedVC when the VC prop changes
+  useState(() => {
+    setEditedVC(vc);
+  });
+
   const handleEditClick = () => {
     setEditedVC(vc);
     setIsEditDialogOpen(true);
@@ -57,6 +62,9 @@ export function VCRow({ vc, roundId }: VCRowProps) {
   };
 
   const meetingNotesCount = vc.meetingNotes?.length || 0;
+  
+  console.log(`VCRow for ${vc.name}, meetingNotes:`, vc.meetingNotes);
+  console.log(`Meeting notes count: ${meetingNotesCount}`);
 
   return (
     <>

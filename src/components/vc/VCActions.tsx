@@ -22,6 +22,9 @@ export function VCActions({
   onDuplicateClick,
   onMeetingNotesClick,
 }: VCActionsProps) {
+  console.log(`VCActions rendering for ${vc.name}, meeting notes count: ${meetingNotesCount}`);
+  console.log(`Meeting notes: ${JSON.stringify(vc.meetingNotes)}`);
+  
   return (
     <div className="flex space-x-1">
       <Button

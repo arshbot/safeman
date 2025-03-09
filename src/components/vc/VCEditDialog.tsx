@@ -67,9 +67,20 @@ export function VCEditDialog({
     }
   };
 
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    // Ensure we keep meetingNotes when updating notes
+    setEditedVC({
+      ...editedVC,
+      notes: e.target.value || undefined
+    });
+  };
+
   // Form validation for required purchase amount with finalized status
   const isFormValid = editedVC.status !== 'finalized' || 
     (editedVC.status === 'finalized' && editedVC.purchaseAmount !== undefined);
+
+  // Debug
+  console.log("VCEditDialog - Current edited VC:", editedVC);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -150,7 +161,7 @@ export function VCEditDialog({
               <Textarea
                 id="notes"
                 value={editedVC.notes || ''}
-                onChange={(e) => setEditedVC({ ...editedVC, notes: e.target.value || undefined })}
+                onChange={handleNotesChange}
                 placeholder="Additional information..."
                 rows={3}
               />
