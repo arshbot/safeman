@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   LineChart,
@@ -146,18 +147,20 @@ export function EquityGraph() {
           <ResponsiveContainer width="100%" height={400}>
             <LineChart
               data={equityData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+              margin={{ top: 20, right: 30, left: 20, bottom: 30 }} {/* Increased bottom margin from 10 to 30 */}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="totalRaised" 
-                label={{ value: 'Total Raised ($ millions)', position: 'insideBottom', offset: -10 }}
+                label={{ value: 'Total Raised ($ millions)', position: 'insideBottom', offset: -15 }} {/* Increased offset from -10 to -15 */}
                 tickFormatter={(value) => `$${value}M`}
                 domain={[0.1, domainMax]} // Set minimum to small positive value for log scale
                 type="number"
                 scale="log" // Set scale to logarithmic
                 allowDataOverflow={true}
                 ticks={[0.1, 0.5, 1, 5, 10, 50, 100].filter(tick => tick <= domainMax)} // Custom ticks that make sense on log scale
+                height={50} {/* Increased height for the X axis */}
+                padding={{ left: 10, right: 10 }} {/* Added padding to the X axis */}
               />
               <YAxis 
                 label={{ value: 'Total Equity Granted', angle: -90, position: 'insideLeft' }}
