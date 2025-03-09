@@ -2,9 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddVCModal } from "@/components/AddVCModal";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DroppableVCList } from "./DroppableVCList";
 import { VC } from "@/types";
+import { Droppable } from "react-beautiful-dnd";
 
 interface UnsortedVCSectionProps {
   vcs: string[];
@@ -13,59 +14,12 @@ interface UnsortedVCSectionProps {
 
 export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
   
   console.log(`[DEBUG] Rendering UnsortedVCSection with ${vcs.length} VCs`);
   
-  // Setup event listeners to track when items are dragging over this section
-  useEffect(() => {
-    const handleDragEnterUnsorted = (e: Event) => {
-      const target = e.target as HTMLElement;
-      // Check if we're dragging over the unsorted droppable or any of its children
-      if (target.closest('[data-droppable-id="unsorted"]')) {
-        console.log("[DEBUG] Drag entered unsorted section");
-        setIsDraggingOver(true);
-      }
-    };
-    
-    const handleDragLeaveUnsorted = (e: Event) => {
-      const target = e.target as HTMLElement;
-      // Only set to false if we're leaving the entire unsorted area
-      if (!target.closest('[data-droppable-id="unsorted"]')) {
-        console.log("[DEBUG] Drag left unsorted section");
-        setIsDraggingOver(false);
-      }
-    };
-    
-    const handleDragEndUnsorted = () => {
-      console.log("[DEBUG] Drag ended, resetting unsorted section state");
-      setIsDraggingOver(false);
-    };
-    
-    document.addEventListener('dragenter', handleDragEnterUnsorted);
-    document.addEventListener('dragleave', handleDragLeaveUnsorted);
-    document.addEventListener('dragend', handleDragEndUnsorted);
-    
-    return () => {
-      document.removeEventListener('dragenter', handleDragEnterUnsorted);
-      document.removeEventListener('dragleave', handleDragLeaveUnsorted);
-      document.removeEventListener('dragend', handleDragEndUnsorted);
-    };
-  }, []);
-  
   return (
     <div 
-      className={`mt-8 bg-secondary/50 p-4 rounded-lg border-2 border-dashed 
-      ${isDraggingOver 
-        ? 'border-primary bg-primary/10' 
-        : isHovering 
-          ? 'border-primary/80 bg-secondary/80' 
-          : 'border-transparent hover:border-secondary'
-      } 
-      transition-colors`}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      className="mt-8 bg-secondary/50 p-4 rounded-lg border-2 border-dashed border-transparent hover:border-secondary transition-colors"
       data-section="unsorted-vcs"
     >
       <div className="flex justify-between items-center mb-4">
@@ -84,40 +38,55 @@ export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
         Drag VCs here to move them to the unsorted section
       </div>
 
-      {vcs.length > 0 ? (
-        <DroppableVCList 
-          droppableId="unsorted" 
-          vcs={vcs} 
-          getVC={getVC}
-          className={`
-            border border-dashed rounded-lg p-2 min-h-[120px]
-            ${isDraggingOver 
-              ? 'border-primary bg-primary/5 shadow-md' 
-              : 'border-secondary/50'
-            }
-          `}
-        />
-      ) : (
-        <div 
-          className={`
-            text-center text-muted-foreground p-4 
-            border border-dashed rounded-lg min-h-[120px] 
-            ${isDraggingOver 
-              ? 'border-primary bg-primary/5 shadow-md' 
-              : 'border-secondary/50'
-            }
-          `}
-          data-droppable-id="unsorted-empty"
-        >
-          <p>No unsorted VCs. All your VCs are organized in rounds!</p>
-          <p className="text-xs mt-2">Drop a VC here to move it from a round</p>
-          {isDraggingOver && (
-            <div className="mt-4 py-2 px-4 bg-primary/10 text-primary font-medium rounded-md inline-block">
-              Drop here to add to unsorted
-            </div>
-          )}
-        </div>
-      )}
+      {/* Use a direct Droppable for the unsorted section */}
+      <Droppable droppableId="unsorted" type="VC">
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className={`
+              border border-dashed rounded-lg p-3 min-h-[150px]
+              ${snapshot.isDraggingOver 
+                ? 'border-primary bg-primary/10 shadow-md' 
+                : 'border-secondary/50'
+              }
+              transition-colors duration-200
+            `}
+            data-droppable-id="unsorted"
+            data-is-dragging-over={snapshot.isDraggingOver}
+          >
+            {vcs.length > 0 ? (
+              <div className="pl-3">
+                {vcs.map((vcId, index) => {
+                  const vc = getVC(vcId);
+                  if (!vc) return null;
+                  
+                  return (
+                    <DroppableVCList 
+                      key="inner-unsorted-list"
+                      droppableId="unsorted" 
+                      vcs={vcs} 
+                      getVC={getVC}
+                      enableDropping={false}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
+                <p>No unsorted VCs. All your VCs are organized in rounds!</p>
+                <p className="text-xs mt-2">Drop a VC here to move it from a round</p>
+                {snapshot.isDraggingOver && (
+                  <div className="mt-4 py-2 px-4 bg-primary/10 text-primary font-medium rounded-md inline-block">
+                    Drop here to add to unsorted
+                  </div>
+                )}
+              </div>
+            )}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
       
       <AddVCModal
         open={isAddVCModalOpen}

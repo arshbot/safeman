@@ -10,6 +10,7 @@ interface DroppableVCListProps {
   getVC: (id: string) => VC | undefined;
   roundId?: string;
   className?: string;
+  enableDropping?: boolean;
 }
 
 export function DroppableVCList({ 
@@ -17,12 +18,38 @@ export function DroppableVCList({
   vcs, 
   getVC, 
   roundId,
-  className = "pl-6 mt-2"
+  className = "pl-6 mt-2",
+  enableDropping = true
 }: DroppableVCListProps) {
   console.log(`[DEBUG] Rendering droppable list: ${droppableId} with ${vcs.length} VCs and roundId: ${roundId || 'none'}`);
   
+  if (!enableDropping && droppableId === "unsorted") {
+    // For non-droppable lists (used within unsorted), just render the items
+    return (
+      <div className={className}>
+        {vcs.map((vcId, vcIndex) => {
+          const vc = getVC(vcId);
+          if (!vc) {
+            console.error(`[DEBUG] VC not found: ${vcId}`);
+            return null;
+          }
+          
+          return (
+            <VCDraggable 
+              key={vcId} 
+              vcId={vcId} 
+              index={vcIndex} 
+              vc={vc} 
+              roundId={roundId}
+            />
+          );
+        })}
+      </div>
+    );
+  }
+  
   return (
-    <Droppable droppableId={droppableId} type="VC" isDropDisabled={false}>
+    <Droppable droppableId={droppableId} type="VC" isDropDisabled={!enableDropping}>
       {(provided, snapshot) => {
         console.log(`[DEBUG] Droppable ${droppableId} - isDraggingOver: ${snapshot.isDraggingOver}`);
         
