@@ -22,9 +22,8 @@ interface EquityLineChartProps {
 export function EquityLineChart({ equityData }: EquityLineChartProps) {
   const xAxisTicks = createLogTicks(equityData);
   
-  // For y-axis, create logarithmic percentage ticks
-  // Start with a small non-zero value and go up to 100%
-  const yAxisTicks = [0.1, 0.5, 1, 2, 5, 10, 25, 50, 75, 100];
+  // For y-axis, create evenly distributed percentage ticks
+  const yAxisTicks = [0, 25, 50, 75, 100];
 
   // Format the x-axis tick labels
   const formatXAxis = (value: number) => {
@@ -72,12 +71,11 @@ export function EquityLineChart({ equityData }: EquityLineChartProps) {
           }}
         />
         
-        {/* Y-axis with logarithmic scale */}
+        {/* Y-axis */}
         <YAxis 
           tickFormatter={(value) => `${value}%`}
-          domain={[0.1, 100]}
+          domain={[0, 100]}
           ticks={yAxisTicks}
-          scale="log"
           tick={{ fontSize: 14, fill: '#333', fontWeight: 500 }}
           axisLine={{ stroke: '#666' }}
           tickLine={{ stroke: '#666' }}
