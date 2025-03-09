@@ -149,123 +149,145 @@ export function EquityGraph() {
   // Create custom X axis ticks for better visibility
   const customXAxisTicks = [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100].filter(tick => tick <= domainMax);
 
-  // Create axis labels that will be manually positioned
-  const axisLabelStyle = {
-    fontSize: 14,
-    fontWeight: 600,
-    fill: '#333',
-  };
-
   return (
     <Card className="mb-8">
       <CardHeader>
         <CardTitle className="text-xl text-left">Total Equity Granted vs. Total Raised</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 h-[550px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={equityData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 150 }} // Significantly increased bottom margin
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              
-              {/* X-axis with explicit labels at the bottom */}
-              <XAxis 
-                dataKey="totalRaised" 
-                type="number"
-                scale="log" 
-                domain={[0.1, domainMax]}
-                allowDataOverflow={true}
-                ticks={customXAxisTicks}
-                height={100} // Very large height to make room for labels
-                axisLine={{ stroke: '#666' }}
-                tickLine={{ stroke: '#666' }}
-                tick={false} // Hide default ticks to use our custom ones
-              />
-              
-              {/* Y-axis */}
-              <YAxis 
-                tickFormatter={(value) => `${value}%`}
-                domain={[0, 100]}
-                ticks={[0, 25, 50, 75, 100]}
-                tick={{ fontSize: 12, fill: '#333', fontWeight: 500 }}
-                axisLine={{ stroke: '#666' }}
-                tickLine={{ stroke: '#666' }}
-                width={60}
-              />
-              
-              <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                content={<CustomLegend />} 
-                verticalAlign="top" 
-                height={50}
-              />
-              
-              <Line 
-                type="monotone" 
-                dataKey="totalEquityGranted" 
-                name="Total Equity Granted"
-                stroke="#8884d8" 
-                activeDot={{ r: 8 }}
-                strokeWidth={2}
-                dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4 }}
-                label={({ x, y, value }) => {
-                  if (value > 0 && value % 10 < 5) {
-                    return (
-                      <text 
-                        x={x} 
-                        y={y - 15} 
-                        fill="#8884d8" 
-                        textAnchor="middle" 
-                        dominantBaseline="middle"
-                        fontWeight="500"
-                      >
-                        {value.toFixed(1)}%
-                      </text>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              
-              <Line 
-                type="monotone" 
-                dataKey="totalTargetRaised" 
-                name="Target Raised"
-                stroke="#666" 
-                strokeDasharray="5 5"
-                strokeWidth={1.5}
-                dot={{ stroke: '#666', strokeWidth: 1, r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="relative">
+          {/* Main chart container */}
+          <div className="h-[400px] mb-20">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={equityData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                
+                {/* X-axis without visible ticks - we'll add our own below */}
+                <XAxis 
+                  dataKey="totalRaised" 
+                  type="number"
+                  scale="log" 
+                  domain={[0.1, domainMax]}
+                  allowDataOverflow={true}
+                  tick={false}
+                  axisLine={{ stroke: '#666' }}
+                  tickLine={false}
+                />
+                
+                {/* Y-axis */}
+                <YAxis 
+                  tickFormatter={(value) => `${value}%`}
+                  domain={[0, 100]}
+                  ticks={[0, 25, 50, 75, 100]}
+                  tick={{ fontSize: 12, fill: '#333', fontWeight: 500 }}
+                  axisLine={{ stroke: '#666' }}
+                  tickLine={{ stroke: '#666' }}
+                  width={60}
+                  label={{ 
+                    value: 'Total Equity Granted (%)', 
+                    angle: -90, 
+                    position: 'insideLeft',
+                    style: { 
+                      textAnchor: 'middle',
+                      fontSize: 14,
+                      fontWeight: 'bold',
+                      fill: '#333',
+                      dx: -25
+                    }
+                  }}
+                />
+                
+                <Tooltip content={<CustomTooltip />} />
+                <Legend 
+                  content={<CustomLegend />} 
+                  verticalAlign="top" 
+                  height={50}
+                />
+                
+                <Line 
+                  type="monotone" 
+                  dataKey="totalEquityGranted" 
+                  name="Total Equity Granted"
+                  stroke="#8884d8" 
+                  activeDot={{ r: 8 }}
+                  strokeWidth={2}
+                  dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4 }}
+                  label={({ x, y, value }) => {
+                    if (value > 0 && value % 10 < 5) {
+                      return (
+                        <text 
+                          x={x} 
+                          y={y - 15} 
+                          fill="#8884d8" 
+                          textAnchor="middle" 
+                          dominantBaseline="middle"
+                          fontWeight="500"
+                        >
+                          {value.toFixed(1)}%
+                        </text>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                
+                <Line 
+                  type="monotone" 
+                  dataKey="totalTargetRaised" 
+                  name="Target Raised"
+                  stroke="#666" 
+                  strokeDasharray="5 5"
+                  strokeWidth={1.5}
+                  dot={{ stroke: '#666', strokeWidth: 1, r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
           
-          {/* Manual X-axis labels rendered outside the chart */}
-          <div className="relative mt-[-120px] h-[100px]">
-            <div className="flex justify-between items-center absolute w-[90%] left-[5%]">
-              {customXAxisTicks.map((tick, index) => (
-                <div key={index} className="text-center">
-                  <div className="font-medium text-[#333] text-sm">
-                    ${tick.toFixed(1)}M
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="absolute w-full text-center top-[50px]">
-              <span className="font-medium text-[#333] text-base">
-                Total Raised ($ millions)
-              </span>
-            </div>
-            <div className="absolute left-[-40px] top-[-260px] transform -rotate-90">
-              <span className="font-medium text-[#333] text-base whitespace-nowrap">
-                Total Equity Granted (%)
-              </span>
+          {/* X-axis labels rendered separately outside of the chart */}
+          <div className="absolute bottom-24 left-0 right-0 h-20">
+            <div className="relative w-full h-full">
+              {/* Fixed x-axis label */}
+              <div className="absolute bottom-0 left-0 right-0 text-center">
+                <span className="font-bold text-base text-gray-700">
+                  Total Raised ($ millions)
+                </span>
+              </div>
+              
+              {/* Tick marks and values */}
+              <div className="absolute top-0 left-[60px] right-[30px] flex">
+                {customXAxisTicks.map((tick, i) => {
+                  // Calculate position based on logarithmic scale
+                  const logMin = Math.log10(0.1);
+                  const logMax = Math.log10(domainMax);
+                  const logTick = Math.log10(tick);
+                  const position = ((logTick - logMin) / (logMax - logMin)) * 100;
+                  
+                  return (
+                    <div 
+                      key={i} 
+                      className="absolute" 
+                      style={{ 
+                        left: `${position}%`, 
+                        transform: 'translateX(-50%)' 
+                      }}
+                    >
+                      <div className="h-3 w-[1px] bg-gray-500 mx-auto mb-1"></div>
+                      <div className="text-xs font-semibold text-gray-700">
+                        ${tick === 0.1 ? '0.10' : tick.toString()}M
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
         
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-blue-50 p-4 rounded-lg mt-8">
           <div className="flex justify-between">
             <div>
               <h3 className="font-bold text-left">Founder Equity</h3>
