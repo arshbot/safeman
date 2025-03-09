@@ -119,15 +119,38 @@ export function EquityGraph() {
     return null;
   };
 
-  // Finding the maximum value for the domain
-  const maxRaised = Math.max(...equityData.map(point => point.totalRaised || 0.1));
-  // Add some padding to the max value
-  const domainMax = maxRaised * 1.5;
-  
-  // Custom tick formatter function for log scale
-  const formatXAxis = (tickItem: number) => {
-    if (tickItem === 0.1) return "$0.10M";
-    return `$${tickItem}M`;
+  // Create tick values manually for the logarithmic x-axis
+  // We'll use evenly spaced values on the logarithmic scale
+  const createLogTicks = () => {
+    const maxValue = Math.max(...equityData.map(d => d.totalRaised));
+    const ticks = [0.1]; // Start with the minimum
+    
+    // Add more ticks based on the data range
+    if (maxValue > 0.5) ticks.push(0.5);
+    if (maxValue > 1) ticks.push(1);
+    if (maxValue > 2) ticks.push(2);
+    if (maxValue > 5) ticks.push(5);
+    if (maxValue > 10) ticks.push(10);
+    if (maxValue > 20) ticks.push(20);
+    if (maxValue > 50) ticks.push(50);
+    if (maxValue > 100) ticks.push(100);
+    
+    // Add the max value if it's not already included
+    if (maxValue > ticks[ticks.length - 1]) {
+      // Round up to a nice number
+      const roundedMax = Math.ceil(maxValue / 10) * 10;
+      ticks.push(roundedMax);
+    }
+    
+    return ticks;
+  };
+
+  const xAxisTicks = createLogTicks();
+
+  // Format the x-axis tick labels
+  const formatXAxis = (value: number) => {
+    if (value === 0.1) return "$0.1M";
+    return `$${value}M`;
   };
 
   return (
@@ -137,7 +160,7 @@ export function EquityGraph() {
       </CardHeader>
       <CardContent>
         {/* Chart with fixed height */}
-        <div className="h-[450px]">
+        <div className="h-[500px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={equityData}
@@ -145,20 +168,21 @@ export function EquityGraph() {
             >
               <CartesianGrid strokeDasharray="3 3" />
               
-              {/* X-axis with log scale and proper formatting */}
+              {/* X-axis with explicit ticks for log scale */}
               <XAxis 
-                dataKey="totalRaised" 
+                dataKey="totalRaised"
                 type="number"
-                scale="log" 
-                domain={[0.1, domainMax]}
+                scale="log"
+                domain={[0.1, Math.max(...xAxisTicks)]}
+                ticks={xAxisTicks}
                 tickFormatter={formatXAxis}
                 tick={{ fontSize: 14, fill: '#333', fontWeight: 500 }}
-                tickCount={5}
                 allowDataOverflow={true}
+                height={60}
                 label={{ 
                   value: 'Total Raised ($ millions)', 
                   position: 'bottom',
-                  offset: 40,
+                  offset: 20,
                   style: { 
                     textAnchor: 'middle',
                     fontSize: 16,
@@ -210,7 +234,8 @@ export function EquityGraph() {
                 dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 8 }}
                 label={({ x, y, value }) => {
-                  if (value > 0 && value % 10 < 5) {
+                  // Only show labels for non-zero values
+                  if (value > 0) {
                     return (
                       <text 
                         x={x} 
@@ -245,20 +270,13 @@ export function EquityGraph() {
           <div className="flex justify-between">
             <div>
               <h3 className="font-bold text-left">Founder Equity</h3>
-              <p className="text-3xl font-semibold text-left">{(100 - (equityData.length > 0 ? equityData[equityData.length - 1].totalEquityGranted : 0)).toFixed(2)}%</p>
+              <p className="text-3xl font-semibold text-left">{founderEquity.toFixed(2)}%</p>
             </div>
             
             <div>
               <h3 className="font-bold text-left">Total Raised</h3>
               <p className="text-3xl font-semibold text-left">
-                ${formatNumberWithCommas(Object.values(state.rounds).reduce((sum, round) => {
-                  const roundVCs = round.vcs
-                    .map(vcId => state.vcs[vcId])
-                    .filter(vc => vc?.status === 'finalized' && vc.purchaseAmount);
-                  
-                  const roundTotal = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0);
-                  return sum + roundTotal;
-                }, 0) / 1000000)}M
+                ${formatNumberWithCommas(totalCommitted / 1000000)}M
               </p>
             </div>
             
