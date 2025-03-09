@@ -34,6 +34,26 @@ export const generateEquityData = (state: CRMState): EquityPoint[] => {
       .map(vcId => state.vcs[vcId])
       .filter(vc => vc?.status === 'finalized' && vc.purchaseAmount);
     
+    // Skip adding a data point if there are no finalized VCs in this round
+    if (roundVCs.length === 0) {
+      // Still add the round to the target raised line
+      cumulativeTargetRaised += round.targetAmount / 1000000; // Convert to millions
+      
+      // Add points for target line only
+      equityData.push({
+        raised: 0,
+        totalRaised: Math.max(cumulativeRaised, 0.1), // Ensure minimum value for log scale
+        equityGranted: 0,
+        totalEquityGranted: cumulativeEquity,
+        targetRaised: round.targetAmount / 1000000,
+        totalTargetRaised: Math.max(cumulativeTargetRaised, 0.1), // Ensure minimum value for log scale
+        label: round.name,
+        order: round.order
+      });
+      
+      return; // Skip the rest for this round
+    }
+    
     const roundRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / 1000000; // Convert to millions
     const targetRaised = round.targetAmount / 1000000; // Convert to millions
     
