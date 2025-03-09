@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCRM } from '@/context/CRMContext';
@@ -18,6 +19,8 @@ interface EquityPoint {
   totalRaised: number;
   equityGranted: number;
   totalEquityGranted: number;
+  targetRaised: number;
+  totalTargetRaised: number;
   label: string;
 }
 
@@ -43,6 +46,8 @@ export function EquityGraph() {
     totalRaised: 0,
     equityGranted: 0,
     totalEquityGranted: 0,
+    targetRaised: 0,
+    totalTargetRaised: 0,
     label: 'Start'
   });
   
@@ -51,6 +56,7 @@ export function EquityGraph() {
   
   let cumulativeRaised = 0;
   let cumulativeEquity = 0;
+  let cumulativeTargetRaised = 0;
   
   // For each round, calculate how much was raised and how much equity was granted
   sortedRounds.forEach(round => {
@@ -59,35 +65,40 @@ export function EquityGraph() {
       .filter(vc => vc?.status === 'finalized' && vc.purchaseAmount);
     
     const roundRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / 1000000; // Convert to millions
+    const targetRaised = round.targetAmount / 1000000; // Convert to millions
     
     // Simple equity calculation based on purchase amount and valuation cap
-    // This is a simplified model - in reality, equity calculations would be more complex
     const equityGranted = round.valuationCap > 0 
       ? (roundRaised * 1000000) / round.valuationCap * 100 
       : 0;
     
     cumulativeRaised += roundRaised;
     cumulativeEquity += equityGranted;
+    cumulativeTargetRaised += targetRaised;
     
-    // Only add points for rounds that have raised money
-    if (roundRaised > 0) {
-      equityData.push({
-        raised: roundRaised,
-        totalRaised: cumulativeRaised,
-        equityGranted: equityGranted,
-        totalEquityGranted: cumulativeEquity,
-        label: round.name
-      });
-    }
+    // Add points for all rounds (even if they haven't raised money yet)
+    equityData.push({
+      raised: roundRaised,
+      totalRaised: cumulativeRaised,
+      equityGranted: equityGranted,
+      totalEquityGranted: cumulativeEquity,
+      targetRaised: targetRaised,
+      totalTargetRaised: cumulativeTargetRaised,
+      label: round.name
+    });
   });
   
   // Add a future point if we have at least one round
   if (sortedRounds.length > 0) {
+    const projectedRaiseAmount = 3; // Arbitrary future projection in millions
+    
     equityData.push({
       raised: 0,
-      totalRaised: cumulativeRaised + 3, // Arbitrary future projection
+      totalRaised: cumulativeRaised + projectedRaiseAmount,
       equityGranted: 0,
       totalEquityGranted: cumulativeEquity,
+      targetRaised: 0,
+      totalTargetRaised: cumulativeTargetRaised,
       label: 'Future'
     });
   }
@@ -103,6 +114,8 @@ export function EquityGraph() {
           <p className="font-medium">{data.label}</p>
           <p>Raised: ${data.raised.toFixed(2)}M</p>
           <p>Total Raised: ${data.totalRaised.toFixed(2)}M</p>
+          <p>Target for Round: ${data.targetRaised.toFixed(2)}M</p>
+          <p>Total Target: ${data.totalTargetRaised.toFixed(2)}M</p>
           <p>Equity Granted: {data.equityGranted.toFixed(2)}%</p>
           <p>Total Equity Granted: {data.totalEquityGranted.toFixed(2)}%</p>
           <p>Founder Equity: {(100 - data.totalEquityGranted).toFixed(2)}%</p>
@@ -137,9 +150,11 @@ export function EquityGraph() {
                 ticks={[0, 25, 50, 75, 100]}
               />
               <Tooltip content={<CustomTooltip />} />
+              <Legend />
               <Line 
                 type="monotone" 
                 dataKey="totalEquityGranted" 
+                name="Total Equity Granted"
                 stroke="#8884d8" 
                 activeDot={{ r: 8 }}
                 strokeWidth={2}
@@ -155,6 +170,15 @@ export function EquityGraph() {
                   }
                   return null;
                 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="totalTargetRaised" 
+                name="Target Raised"
+                stroke="#666" 
+                strokeDasharray="5 5"
+                strokeWidth={1.5}
+                dot={{ stroke: '#666', strokeWidth: 1, r: 3 }}
               />
             </LineChart>
           </ResponsiveContainer>
