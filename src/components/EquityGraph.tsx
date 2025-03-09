@@ -148,6 +148,9 @@ export function EquityGraph() {
   // Add some padding to the max value
   const domainMax = maxRaised * 1.2;
 
+  // Create custom X axis ticks for better visibility
+  const customXAxisTicks = [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100].filter(tick => tick <= domainMax);
+
   return (
     <Card className="mb-8">
       <CardHeader>
@@ -158,26 +161,34 @@ export function EquityGraph() {
           <ResponsiveContainer width="100%" height={400}>
             <LineChart
               data={equityData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 40 }} // Increased bottom margin for more space
+              margin={{ top: 20, right: 30, left: 20, bottom: 50 }} // Increased bottom margin for axis labels
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="totalRaised" 
-                label={{ value: 'Total Raised ($ millions)', position: 'insideBottom', offset: -20 }} // Increased offset
+                label={{ 
+                  value: 'Total Raised ($ millions)', 
+                  position: 'insideBottom', 
+                  offset: -10,
+                  fill: '#666',
+                  fontSize: 14 
+                }}
                 tickFormatter={(value) => `$${value}M`}
-                domain={[0.1, domainMax]} // Set minimum to small positive value for log scale
+                domain={[0.1, domainMax]} 
                 type="number"
-                scale="log" // Set scale to logarithmic
+                scale="log" 
                 allowDataOverflow={true}
-                ticks={[0.1, 0.5, 1, 5, 10, 50, 100].filter(tick => tick <= domainMax)} // Custom ticks that make sense on log scale
-                height={60} // Increased height for the X axis
-                padding={{ left: 10, right: 10 }} // Added padding to the X axis
+                ticks={customXAxisTicks}
+                height={70} // Increased height for better visibility
+                tick={{ fontSize: 12, fill: '#666' }}
+                padding={{ left: 10, right: 10 }}
               />
               <YAxis 
-                label={{ value: 'Total Equity Granted', angle: -90, position: 'insideLeft' }}
+                label={{ value: 'Total Equity Granted (%)', angle: -90, position: 'insideLeft', offset: 10, fill: '#666', fontSize: 14 }}
                 tickFormatter={(value) => `${value}%`}
                 domain={[0, 100]}
                 ticks={[0, 25, 50, 75, 100]}
+                tick={{ fontSize: 12, fill: '#666' }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend 
