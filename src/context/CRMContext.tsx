@@ -50,11 +50,31 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const addVCToRound = (vcId: string, roundId: string) => {
+    console.log(`[DEBUG] CRMContext.addVCToRound called with vcId: ${vcId}, roundId: ${roundId}`);
+    console.log(`[DEBUG] Current unsortedVCs before:`, state.unsortedVCs);
+    console.log(`[DEBUG] Current round VCs before:`, state.rounds.find(r => r.id === roundId)?.vcs);
+    
     dispatch({ type: 'ADD_VC_TO_ROUND', payload: { vcId, roundId } });
+    
+    // Add a slight delay to log state after update
+    setTimeout(() => {
+      console.log(`[DEBUG] Current unsortedVCs after:`, state.unsortedVCs);
+      console.log(`[DEBUG] Current round VCs after:`, state.rounds.find(r => r.id === roundId)?.vcs);
+    }, 100);
   };
 
   const removeVCFromRound = (vcId: string, roundId: string) => {
+    console.log(`[DEBUG] CRMContext.removeVCFromRound called with vcId: ${vcId}, roundId: ${roundId}`);
+    console.log(`[DEBUG] Current unsortedVCs before:`, state.unsortedVCs);
+    console.log(`[DEBUG] Current round VCs before:`, state.rounds.find(r => r.id === roundId)?.vcs);
+    
     dispatch({ type: 'REMOVE_VC_FROM_ROUND', payload: { vcId, roundId } });
+    
+    // Add a slight delay to log state after update
+    setTimeout(() => {
+      console.log(`[DEBUG] Current unsortedVCs after:`, state.unsortedVCs);
+      console.log(`[DEBUG] Current round VCs after:`, state.rounds.find(r => r.id === roundId)?.vcs);
+    }, 100);
   };
 
   const toggleRoundExpand = (roundId: string) => {
