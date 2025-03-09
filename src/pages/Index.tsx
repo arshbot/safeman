@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { DragDropContext, resetServerContext } from "react-beautiful-dnd";
+import { resetServerContext } from "react-beautiful-dnd";
 import { useCRM } from "@/context/CRMContext";
 import { PageHeader } from "@/components/PageHeader";
 import { RoundsList } from "@/components/RoundsList";
@@ -8,6 +8,7 @@ import { EmptyRoundsPrompt } from "@/components/EmptyRoundsPrompt";
 import { UnsortedVCSection } from "@/components/UnsortedVCSection";
 import { useVCSorting } from "@/hooks/useVCSorting";
 import { useDragEndHandler } from "@/hooks/useDragEndHandler";
+import { DnDProvider } from "@/context/DnDContext";
 
 // Reset server context for SSR compatibility
 resetServerContext();
@@ -29,7 +30,7 @@ const Index = () => {
     <div className="container mx-auto p-6 max-w-6xl">
       <PageHeader onAddVC={() => setSelectedRoundId(undefined)} />
 
-      <DragDropContext onDragEnd={handleDragEnd}>
+      <DnDProvider onDragEnd={handleDragEnd}>
         {state.rounds.length > 0 ? (
           <RoundsList
             rounds={state.rounds}
@@ -46,7 +47,7 @@ const Index = () => {
           vcs={sortedUnsortedVCs}
           getVC={(id) => state.vcs[id]}
         />
-      </DragDropContext>
+      </DnDProvider>
     </div>
   );
 };

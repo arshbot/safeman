@@ -16,10 +16,11 @@ export function VCDraggable({ vcId, index, vc, roundId }: VCDraggableProps) {
   const draggableId = roundId 
     ? `round-${roundId}-${vcId}` 
     : `unsorted-${vcId}`;
+  
+  console.log(`Rendering draggable: ${draggableId}, in container: ${roundId || 'unsorted'}`);
     
   return (
     <Draggable 
-      key={vcId} 
       draggableId={draggableId} 
       index={index}
     >

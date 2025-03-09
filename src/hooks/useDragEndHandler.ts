@@ -60,6 +60,8 @@ export function useDragEndHandler() {
         return;
       }
       
+      console.log(`Dragging VC: ${vcId} from ${sourceId} to ${destId}`);
+      
       // If the VC is dragged over a round header (droppable with "round-" prefix)
       if (destId.startsWith('round-')) {
         const actualRoundId = destId.replace('round-', '');
@@ -72,7 +74,7 @@ export function useDragEndHandler() {
         }
         
         // If dragging from a round to a round header
-        if (sourceId !== 'unsorted' && sourceId !== actualRoundId) {
+        if (sourceId !== 'unsorted' && sourceId !== destId) {
           removeVCFromRound(vcId, sourceId);
           addVCToRound(vcId, actualRoundId);
           toast.success(`VC moved between rounds successfully`);
@@ -100,6 +102,7 @@ export function useDragEndHandler() {
       
       // Moving VC from a round to unsorted
       if (sourceId !== 'unsorted' && destId === 'unsorted') {
+        console.log(`Removing VC ${vcId} from round ${sourceId}`);
         removeVCFromRound(vcId, sourceId);
         toast.success(`VC moved to unsorted successfully`);
         return;

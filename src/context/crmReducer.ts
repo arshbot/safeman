@@ -169,20 +169,49 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
       const vc = state.vcs[vcId];
       const round = state.rounds.find(r => r.id === roundId);
       
-      if (!vc || !round) return state;
+      if (!vc || !round) {
+        console.error(`Could not find VC ${vcId} or round ${roundId}`);
+        return state;
+      }
+      
+      console.log(`Removing ${vc.name} from ${round.name} and adding to unsorted`);
+      
+      // Check if the VC is actually in this round
+      if (!round.vcs.includes(vcId)) {
+        console.error(`VC ${vcId} not found in round ${roundId}`);
+        return state;
+      }
+      
+      // Check if the VC is already in unsorted
+      if (state.unsortedVCs.includes(vcId)) {
+        console.error(`VC ${vcId} already in unsorted`);
+        // Only remove from the round
+        return {
+          ...state,
+          rounds: state.rounds.map((r) => {
+            if (r.id === roundId) {
+              return {
+                ...r,
+                vcs: r.vcs.filter((id) => id !== vcId),
+              };
+            }
+            return r;
+          }),
+        };
+      }
       
       toast.success(`Removed ${vc.name} from ${round.name}`);
       
       return {
         ...state,
-        rounds: state.rounds.map((round) => {
-          if (round.id === roundId) {
+        rounds: state.rounds.map((r) => {
+          if (r.id === roundId) {
             return {
-              ...round,
-              vcs: round.vcs.filter((id) => id !== vcId),
+              ...r,
+              vcs: r.vcs.filter((id) => id !== vcId),
             };
           }
-          return round;
+          return r;
         }),
         unsortedVCs: [...state.unsortedVCs, vcId],
       };

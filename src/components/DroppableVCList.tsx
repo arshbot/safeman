@@ -21,6 +21,8 @@ export function DroppableVCList({
 }: DroppableVCListProps) {
   if (vcs.length === 0) return null;
   
+  console.log(`Rendering droppable list: ${droppableId} with ${vcs.length} VCs`);
+  
   return (
     <Droppable droppableId={droppableId} type="VC">
       {(provided, snapshot) => (
@@ -44,7 +46,10 @@ export function DroppableVCList({
         >
           {vcs.map((vcId, vcIndex) => {
             const vc = getVC(vcId);
-            if (!vc) return null;
+            if (!vc) {
+              console.error(`VC not found: ${vcId}`);
+              return null;
+            }
             
             return (
               <VCDraggable 
