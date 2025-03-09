@@ -19,8 +19,6 @@ export function DroppableVCList({
   roundId,
   className = "pl-6 mt-2"
 }: DroppableVCListProps) {
-  if (vcs.length === 0) return null;
-  
   console.log(`Rendering droppable list: ${droppableId} with ${vcs.length} VCs`);
   
   return (
@@ -43,6 +41,7 @@ export function DroppableVCList({
             transition: 'background-color 0.2s ease',
             padding: snapshot.isDraggingOver ? '8px 4px' : '4px 0'
           }}
+          data-droppable-id={droppableId}
         >
           {vcs.map((vcId, vcIndex) => {
             const vc = getVC(vcId);

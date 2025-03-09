@@ -20,11 +20,24 @@ export function useDragEndHandler() {
     } else if (draggableId.startsWith('round-')) {
       // Format: "round-{roundId}-{vcId}"
       const parts = draggableId.split('-');
-      // Get the vcId which is the third part onwards (in case vcId has hyphens)
+      // We need to remove the first two parts (round- and roundId) and join the rest
+      // This handles vcIds that might contain hyphens
       return parts.slice(2).join('-');
     }
     console.error('Unknown draggableId format:', draggableId);
     return '';
+  };
+
+  // Extract roundId from draggableId
+  const extractSourceRoundId = (draggableId: string): string | null => {
+    if (draggableId.startsWith('round-')) {
+      // Format: "round-{roundId}-{vcId}"
+      const parts = draggableId.split('-');
+      if (parts.length >= 2) {
+        return parts[1];
+      }
+    }
+    return null;
   };
 
   // Handle drag end for rounds and VCs
@@ -34,15 +47,20 @@ export function useDragEndHandler() {
     console.log(`Drag end: ${draggableId} from ${source.droppableId} to ${destination?.droppableId || 'nowhere'}`);
     
     // If there's no destination, the user dropped the item outside a droppable area
-    if (!destination) return;
+    if (!destination) {
+      console.log('No destination, ignoring drop');
+      return;
+    }
     
     // If dropped in the same position, do nothing
     if (source.droppableId === destination.droppableId && source.index === destination.index) {
+      console.log('Same position, ignoring drop');
       return;
     }
     
     // Handle round reordering
     if (type === 'ROUND') {
+      console.log('Handling round reordering');
       const items = Array.from(state.rounds);
       const [reorderedItem] = items.splice(source.index, 1);
       items.splice(destination.index, 0, reorderedItem);
@@ -64,7 +82,10 @@ export function useDragEndHandler() {
       
       // Extract VC ID from draggableId
       const vcId = extractVcId(draggableId);
-      if (!vcId) return;
+      if (!vcId) {
+        console.error('Failed to extract vcId from draggableId', draggableId);
+        return;
+      }
       
       console.log(`Dragging VC: ${vcId} from ${sourceId} to ${destId}`);
       
@@ -74,6 +95,7 @@ export function useDragEndHandler() {
         
         // If dragging from unsorted to a round header
         if (sourceId === 'unsorted') {
+          console.log(`Moving from unsorted to round ${actualRoundId}`);
           addVCToRound(vcId, actualRoundId);
           toast.success(`VC moved to round successfully`);
           return;
@@ -81,8 +103,16 @@ export function useDragEndHandler() {
         
         // If dragging from a round to another round header
         if (sourceId !== destId) {
-          const roundVCsBeingMoved = state.vcs[vcId];
-          if (roundVCsBeingMoved) {
+          console.log(`Moving between rounds from ${sourceId} to ${actualRoundId}`);
+          // Extract the source round ID if dragging from a round
+          const sourceRoundId = extractSourceRoundId(draggableId);
+          
+          if (sourceRoundId) {
+            removeVCFromRound(vcId, sourceRoundId);
+            addVCToRound(vcId, actualRoundId);
+            toast.success(`VC moved between rounds successfully`);
+          } else {
+            // Fallback to using the droppable ID if we can't extract from draggableId
             removeVCFromRound(vcId, sourceId);
             addVCToRound(vcId, actualRoundId);
             toast.success(`VC moved between rounds successfully`);
@@ -97,6 +127,7 @@ export function useDragEndHandler() {
       if (sourceId === destId) {
         // Only reorder within rounds, not unsorted (which is sorted by status)
         if (sourceId !== 'unsorted') {
+          console.log(`Reordering within round ${sourceId}`);
           const round = state.rounds.find(r => r.id === sourceId);
           if (!round) return;
           
@@ -111,7 +142,7 @@ export function useDragEndHandler() {
       
       // Moving VC from a round to unsorted
       if (sourceId !== 'unsorted' && destId === 'unsorted') {
-        console.log(`Removing VC ${vcId} from round ${sourceId}`);
+        console.log(`Removing VC ${vcId} from round ${sourceId} and moving to unsorted`);
         removeVCFromRound(vcId, sourceId);
         toast.success(`VC moved to unsorted successfully`);
         return;
@@ -119,6 +150,7 @@ export function useDragEndHandler() {
       
       // Moving VC from unsorted to a round
       if (sourceId === 'unsorted' && destId !== 'unsorted' && !destId.startsWith('round-')) {
+        console.log(`Adding VC ${vcId} to round ${destId} from unsorted`);
         addVCToRound(vcId, destId);
         toast.success(`VC moved to round successfully`);
         return;
@@ -126,6 +158,7 @@ export function useDragEndHandler() {
       
       // Moving between different rounds directly
       if (sourceId !== destId && sourceId !== 'unsorted' && destId !== 'unsorted') {
+        console.log(`Moving VC ${vcId} from round ${sourceId} to round ${destId}`);
         removeVCFromRound(vcId, sourceId);
         addVCToRound(vcId, destId);
         toast.success(`VC moved between rounds successfully`);

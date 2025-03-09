@@ -202,6 +202,7 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
       
       toast.success(`Removed ${vc.name} from ${round.name}`);
       
+      // Both remove from round and add to unsorted
       return {
         ...state,
         rounds: state.rounds.map((r) => {

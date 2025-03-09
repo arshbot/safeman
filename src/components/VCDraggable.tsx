@@ -30,6 +30,8 @@ export function VCDraggable({ vcId, index, vc, roundId }: VCDraggableProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} transition-opacity`}
+          data-vc-id={vcId}
+          data-round-id={roundId || 'unsorted'}
         >
           <VCRow 
             vc={vc} 
