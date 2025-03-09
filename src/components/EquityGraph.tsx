@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   LineChart,
@@ -44,11 +43,11 @@ export function EquityGraph() {
   // Start point
   equityData.push({
     raised: 0,
-    totalRaised: 0,
+    totalRaised: 0.1, // Small non-zero value for logarithmic scale
     equityGranted: 0,
     totalEquityGranted: 0,
     targetRaised: 0,
-    totalTargetRaised: 0,
+    totalTargetRaised: 0.1, // Small non-zero value for logarithmic scale
     label: 'Start',
     order: -1 // Set order to -1 to ensure it's first
   });
@@ -132,6 +131,11 @@ export function EquityGraph() {
     return null;
   };
 
+  // Find the maximum value for the domain
+  const maxRaised = Math.max(...equityData.map(point => point.totalRaised || 0.1));
+  // Add some padding to the max value
+  const domainMax = maxRaised * 1.2;
+
   return (
     <Card className="mb-8">
       <CardHeader>
@@ -149,8 +153,11 @@ export function EquityGraph() {
                 dataKey="totalRaised" 
                 label={{ value: 'Total Raised ($ millions)', position: 'insideBottom', offset: -10 }}
                 tickFormatter={(value) => `$${value}M`}
-                domain={[0, 'dataMax']}
+                domain={[0.1, domainMax]} // Set minimum to small positive value for log scale
                 type="number"
+                scale="log" // Set scale to logarithmic
+                allowDataOverflow={true}
+                ticks={[0.1, 0.5, 1, 5, 10, 50, 100].filter(tick => tick <= domainMax)} // Custom ticks that make sense on log scale
               />
               <YAxis 
                 label={{ value: 'Total Equity Granted', angle: -90, position: 'insideLeft' }}
