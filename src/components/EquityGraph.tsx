@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   LineChart,
@@ -93,8 +94,6 @@ export function EquityGraph() {
     });
   });
   
-  // The "Future" data point code has been removed
-  
   // Sort the equity data points by their order, lowest first (early rounds first)
   equityData.sort((a, b) => a.order - b.order);
   
@@ -118,6 +117,26 @@ export function EquityGraph() {
       );
     }
     return null;
+  };
+
+  // Custom X axis with visible labels
+  const CustomXAxis = (props: any) => {
+    const { x, y, width, height, stroke, payload } = props;
+    const value = payload.value;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={35}
+          textAnchor="middle"
+          fill="#666"
+          fontSize={12}
+          fontWeight={500}
+        >
+          ${value.toFixed(1)}M
+        </text>
+      </g>
+    );
   };
 
   // Custom legend renderer to add more spacing between items
@@ -150,59 +169,78 @@ export function EquityGraph() {
   // Create custom X axis ticks for better visibility
   const customXAxisTicks = [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100].filter(tick => tick <= domainMax);
 
+  // Custom X Axis Label component with fixed positioning
+  const CustomXAxisLabel = () => {
+    return (
+      <text 
+        x="50%" 
+        y="95%" 
+        textAnchor="middle" 
+        fontSize={14} 
+        fontWeight={500} 
+        fill="#666"
+        className="font-medium"
+      >
+        Total Raised ($ millions)
+      </text>
+    );
+  };
+
+  // Custom Y Axis Label with better positioning
+  const CustomYAxisLabel = () => {
+    return (
+      <text 
+        x="-240" 
+        y="15" 
+        textAnchor="start" 
+        transform="rotate(-90)" 
+        fontSize={14} 
+        fontWeight={500}
+        fill="#666"
+        className="font-medium"
+      >
+        Total Equity Granted (%)
+      </text>
+    );
+  };
+
   return (
     <Card className="mb-8">
       <CardHeader>
         <CardTitle className="text-xl text-left">Total Equity Granted vs. Total Raised</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-6">
-          <ResponsiveContainer width="100%" height={400}>
+        <div className="mb-6 h-[500px]"> {/* Increased height for better visualization */}
+          <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={equityData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }} // Increased bottom margin even more
+              margin={{ top: 20, right: 30, left: 60, bottom: 120 }} // Significantly increased bottom margin
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="totalRaised" 
-                label={{ 
-                  value: 'Total Raised ($ millions)', 
-                  position: 'insideBottom', 
-                  offset: -20,
-                  fill: '#666',
-                  fontSize: 14,
-                  fontWeight: 500,
-                }}
-                tickFormatter={(value) => `$${value.toFixed(1)}M`}
-                domain={[0.1, domainMax]} 
                 type="number"
                 scale="log" 
+                domain={[0.1, domainMax]}
                 allowDataOverflow={true}
                 ticks={customXAxisTicks}
-                height={80} // Increased height for better visibility
-                tick={{
-                  fontSize: 12,
-                  fill: '#666',
-                  fontWeight: 500,
-                  dy: 10, // Move ticks down a bit
-                }}
-                padding={{ left: 10, right: 10 }}
+                height={100} // Increased height for x-axis
+                tickFormatter={(value) => `$${value.toFixed(1)}M`}
+                tick={(props) => <CustomXAxis {...props} />}
+                axisLine={{ stroke: '#666' }}
+                tickLine={{ stroke: '#666' }}
               />
               <YAxis 
-                label={{ 
-                  value: 'Total Equity Granted (%)', 
-                  angle: -90, 
-                  position: 'insideLeft', 
-                  offset: 10, 
-                  fill: '#666', 
-                  fontSize: 14,
-                  fontWeight: 500,
-                }}
                 tickFormatter={(value) => `${value}%`}
                 domain={[0, 100]}
                 ticks={[0, 25, 50, 75, 100]}
                 tick={{ fontSize: 12, fill: '#666', fontWeight: 500 }}
+                axisLine={{ stroke: '#666' }}
+                tickLine={{ stroke: '#666' }}
+                width={60} // Ensure Y-axis has enough width
               />
+              <CustomXAxisLabel />
+              <CustomYAxisLabel />
               <Tooltip content={<CustomTooltip />} />
               <Legend 
                 content={<CustomLegend />} 
