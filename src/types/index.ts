@@ -51,6 +51,8 @@ export interface EquityPoint {
   totalEquityGranted: number;
   targetRaised: number;
   totalTargetRaised: number;
+  targetEquityGranted: number;
+  totalTargetEquityGranted: number;
   label: string;
   order: number;
 }

@@ -134,8 +134,8 @@ export function EquityLineChart({ equityData }: EquityLineChartProps) {
         
         <Line 
           type="monotone" 
-          dataKey="totalTargetRaised" 
-          name="Target Raised"
+          dataKey="totalTargetEquityGranted" 
+          name="Target Equity Granted"
           stroke="#666" 
           strokeDasharray="5 5"
           strokeWidth={1.5}

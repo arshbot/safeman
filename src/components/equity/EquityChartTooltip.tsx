@@ -25,6 +25,8 @@ export function EquityChartTooltip({ active, payload }: EquityChartTooltipProps)
       <p>Total Target: {formatCurrency(data.totalTargetRaised)}</p>
       <p>Equity Granted: {formatPercentage(data.equityGranted)}</p>
       <p>Total Equity Granted: {formatPercentage(data.totalEquityGranted)}</p>
+      <p>Target Equity Granted: {formatPercentage(data.targetEquityGranted)}</p>
+      <p>Total Target Equity: {formatPercentage(data.totalTargetEquityGranted)}</p>
       <p>Founder Equity: {formatPercentage(100 - data.totalEquityGranted)}</p>
     </div>
   );
