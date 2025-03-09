@@ -23,21 +23,22 @@ export function useDragEndHandler() {
       return vcId;
     } else if (draggableId.startsWith('round-')) {
       // Format: "round-{roundId}-{vcId}"
-      const parts = draggableId.split('-');
-      
-      // We need at least 3 parts: "round", "{roundId}", and the start of "{vcId}"
-      if (parts.length < 3) {
+      const lastHyphenIndex = draggableId.indexOf('-', 'round-'.length);
+      if (lastHyphenIndex === -1) {
         console.error('[DEBUG] Invalid draggableId format:', draggableId);
         return '';
       }
       
-      // The roundId is the second part (index 1)
-      const roundId = parts[1];
+      // Find the second hyphen position (after "round-{roundId}-")
+      const secondHyphenIndex = draggableId.indexOf('-', lastHyphenIndex + 1);
+      if (secondHyphenIndex === -1) {
+        console.error('[DEBUG] Invalid draggableId format:', draggableId);
+        return '';
+      }
       
-      // Everything after "round-{roundId}-" is the vcId
-      const vcId = draggableId.substring(`round-${roundId}-`.length);
-      
-      console.log(`[DEBUG] Extracted VC ID from round format: ${vcId}, from roundId: ${roundId}`);
+      // Extract everything after the second hyphen
+      const vcId = draggableId.substring(secondHyphenIndex + 1);
+      console.log(`[DEBUG] Extracted VC ID from round format: ${vcId}`);
       return vcId;
     }
     
@@ -51,11 +52,14 @@ export function useDragEndHandler() {
     
     if (draggableId.startsWith('round-')) {
       // Format: "round-{roundId}-{vcId}"
-      const parts = draggableId.split('-');
-      if (parts.length < 3) return null;
+      const lastHyphenIndex = draggableId.indexOf('-', 'round-'.length);
+      if (lastHyphenIndex === -1) return null;
       
-      // The roundId is the second part (index 1)
-      const roundId = parts[1];
+      const secondHyphenIndex = draggableId.indexOf('-', lastHyphenIndex + 1);
+      if (secondHyphenIndex === -1) return null;
+      
+      // Extract roundId between first and second hyphen
+      const roundId = draggableId.substring(lastHyphenIndex + 1, secondHyphenIndex);
       console.log(`[DEBUG] Extracted source round ID: ${roundId}`);
       return roundId;
     }
