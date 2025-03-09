@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   LineChart,
@@ -22,7 +21,7 @@ interface EquityPoint {
   targetRaised: number;
   totalTargetRaised: number;
   label: string;
-  order: number; // Add order property to sort points
+  order: number;
 }
 
 export function EquityGraph() {
@@ -161,7 +160,7 @@ export function EquityGraph() {
           <ResponsiveContainer width="100%" height={400}>
             <LineChart
               data={equityData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 50 }} // Increased bottom margin for axis labels
+              margin={{ top: 20, right: 30, left: 20, bottom: 60 }} // Increased bottom margin even more
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
@@ -169,26 +168,40 @@ export function EquityGraph() {
                 label={{ 
                   value: 'Total Raised ($ millions)', 
                   position: 'insideBottom', 
-                  offset: -10,
+                  offset: -20,
                   fill: '#666',
-                  fontSize: 14 
+                  fontSize: 14,
+                  fontWeight: 500,
                 }}
-                tickFormatter={(value) => `$${value}M`}
+                tickFormatter={(value) => `$${value.toFixed(1)}M`}
                 domain={[0.1, domainMax]} 
                 type="number"
                 scale="log" 
                 allowDataOverflow={true}
                 ticks={customXAxisTicks}
-                height={70} // Increased height for better visibility
-                tick={{ fontSize: 12, fill: '#666' }}
+                height={80} // Increased height for better visibility
+                tick={{
+                  fontSize: 12,
+                  fill: '#666',
+                  fontWeight: 500,
+                  dy: 10, // Move ticks down a bit
+                }}
                 padding={{ left: 10, right: 10 }}
               />
               <YAxis 
-                label={{ value: 'Total Equity Granted (%)', angle: -90, position: 'insideLeft', offset: 10, fill: '#666', fontSize: 14 }}
+                label={{ 
+                  value: 'Total Equity Granted (%)', 
+                  angle: -90, 
+                  position: 'insideLeft', 
+                  offset: 10, 
+                  fill: '#666', 
+                  fontSize: 14,
+                  fontWeight: 500,
+                }}
                 tickFormatter={(value) => `${value}%`}
                 domain={[0, 100]}
                 ticks={[0, 25, 50, 75, 100]}
-                tick={{ fontSize: 12, fill: '#666' }}
+                tick={{ fontSize: 12, fill: '#666', fontWeight: 500 }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend 
@@ -206,10 +219,17 @@ export function EquityGraph() {
                 strokeWidth={2}
                 dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4 }}
                 label={({ x, y, value }) => {
-                  // Show labels for specific points to avoid clutter
-                  if (value > 0) {
+                  // Show labels for key data points
+                  if (value > 0 && value % 10 < 5) { // Show labels for more points to match the reference image
                     return (
-                      <text x={x} y={y - 10} fill="#8884d8" textAnchor="middle" dominantBaseline="middle">
+                      <text 
+                        x={x} 
+                        y={y - 15} 
+                        fill="#8884d8" 
+                        textAnchor="middle" 
+                        dominantBaseline="middle"
+                        fontWeight="500"
+                      >
                         {value.toFixed(1)}%
                       </text>
                     );
@@ -234,13 +254,20 @@ export function EquityGraph() {
           <div className="flex justify-between">
             <div>
               <h3 className="font-bold text-left">Founder Equity</h3>
-              <p className="text-3xl font-semibold text-left">{founderEquity.toFixed(2)}%</p>
+              <p className="text-3xl font-semibold text-left">{(100 - (equityData.length > 0 ? equityData[equityData.length - 1].totalEquityGranted : 0)).toFixed(2)}%</p>
             </div>
             
             <div>
               <h3 className="font-bold text-left">Total Raised</h3>
               <p className="text-3xl font-semibold text-left">
-                ${formatNumberWithCommas(totalCommitted / 1000000)}M
+                ${formatNumberWithCommas(Object.values(state.rounds).reduce((sum, round) => {
+                  const roundVCs = round.vcs
+                    .map(vcId => state.vcs[vcId])
+                    .filter(vc => vc?.status === 'finalized' && vc.purchaseAmount);
+                  
+                  const roundTotal = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0);
+                  return sum + roundTotal;
+                }, 0) / 1000000)}M
               </p>
             </div>
             
