@@ -15,17 +15,19 @@ const dndReducer = (state: any, action: any) => {
 // Create context
 const DnDContext = createContext<any>(null);
 
-// Provider component
+// Provider component with optional onDragEnd prop
 export const DnDProvider: React.FC<{ 
   children: React.ReactNode,
-  onDragEnd: (result: DropResult) => void
+  onDragEnd?: (result: DropResult) => void
 }> = ({ children, onDragEnd }) => {
   const [state, dispatch] = useReducer(dndReducer, { lastDragResult: null });
   
-  // Handle drag end - passes the result to the provided handler
+  // Handle drag end - passes the result to the provided handler if it exists
   const handleDragEnd = (result: DropResult) => {
     dispatch({ type: 'DRAG_END', payload: result });
-    onDragEnd(result);
+    if (onDragEnd) {
+      onDragEnd(result);
+    }
   };
 
   return (
