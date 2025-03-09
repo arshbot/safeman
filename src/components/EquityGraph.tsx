@@ -53,8 +53,8 @@ export function EquityGraph() {
     order: -1 // Set order to -1 to ensure it's first
   });
   
-  // Sort rounds by their order
-  const sortedRounds = [...state.rounds].sort((a, b) => a.order - b.order);
+  // Sort rounds by their order, but in reverse (highest order first)
+  const sortedRounds = [...state.rounds].sort((a, b) => b.order - a.order);
   
   let cumulativeRaised = 0;
   let cumulativeEquity = 0;
@@ -103,9 +103,12 @@ export function EquityGraph() {
       targetRaised: 0,
       totalTargetRaised: cumulativeTargetRaised,
       label: 'Future',
-      order: sortedRounds.length // Set order to be after all existing rounds
+      order: 0 // Set order to be the earliest point in the timeline
     });
   }
+  
+  // Sort the equity data points by their order, lowest first (early rounds first)
+  equityData.sort((a, b) => a.order - b.order);
   
   const founderEquity = 100 - (equityData.length > 0 ? equityData[equityData.length - 1].totalEquityGranted : 0);
 
