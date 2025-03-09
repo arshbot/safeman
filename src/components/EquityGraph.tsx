@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCRM } from '@/context/CRMContext';
-import { formatNumberWithCommas } from '@/utils/formatters';
+import { formatNumberWithCommas, formatCurrency, formatPercentage } from '@/utils/formatters';
 
 interface EquityPoint {
   raised: number;
@@ -106,50 +106,51 @@ export function EquityGraph() {
       return (
         <div className="bg-white p-3 border rounded shadow-md">
           <p className="font-medium">{data.label}</p>
-          <p>Raised: ${data.raised.toFixed(2)}M</p>
-          <p>Total Raised: ${data.totalRaised.toFixed(2)}M</p>
-          <p>Target for Round: ${data.targetRaised.toFixed(2)}M</p>
-          <p>Total Target: ${data.totalTargetRaised.toFixed(2)}M</p>
-          <p>Equity Granted: {data.equityGranted.toFixed(2)}%</p>
-          <p>Total Equity Granted: {data.totalEquityGranted.toFixed(2)}%</p>
-          <p>Founder Equity: {(100 - data.totalEquityGranted).toFixed(2)}%</p>
+          <p>Raised: {formatCurrency(data.raised)}</p>
+          <p>Total Raised: {formatCurrency(data.totalRaised)}</p>
+          <p>Target for Round: {formatCurrency(data.targetRaised)}</p>
+          <p>Total Target: {formatCurrency(data.totalTargetRaised)}</p>
+          <p>Equity Granted: {formatPercentage(data.equityGranted)}</p>
+          <p>Total Equity Granted: {formatPercentage(data.totalEquityGranted)}</p>
+          <p>Founder Equity: {formatPercentage(100 - data.totalEquityGranted)}</p>
         </div>
       );
     }
     return null;
   };
 
-  // Create tick values manually for the logarithmic x-axis
-  // We'll use evenly spaced values on the logarithmic scale
+  // Create logarithmic tick values with better spread for the x-axis
   const createLogTicks = () => {
-    const maxValue = Math.max(...equityData.map(d => d.totalRaised));
-    const ticks = [0.1]; // Start with the minimum
+    const maxValue = Math.max(...equityData.map(d => d.totalRaised), 10); // Ensure at least 10M for scale
     
-    // Add more ticks based on the data range
-    if (maxValue > 0.5) ticks.push(0.5);
-    if (maxValue > 1) ticks.push(1);
-    if (maxValue > 2) ticks.push(2);
-    if (maxValue > 5) ticks.push(5);
-    if (maxValue > 10) ticks.push(10);
-    if (maxValue > 20) ticks.push(20);
-    if (maxValue > 50) ticks.push(50);
-    if (maxValue > 100) ticks.push(100);
+    // Start with our minimum value for log scale
+    const ticks = [0.1];
     
-    // Add the max value if it's not already included
-    if (maxValue > ticks[ticks.length - 1]) {
-      // Round up to a nice number
-      const roundedMax = Math.ceil(maxValue / 10) * 10;
-      ticks.push(roundedMax);
-    }
+    // Add additional values between 0.1 and 1
+    if (maxValue >= 0.5) ticks.push(0.5);
+    if (maxValue >= 1) ticks.push(1);
+    
+    // Add values from 2 to max, making sure we have a nice spread
+    if (maxValue >= 2) ticks.push(2);
+    if (maxValue >= 5) ticks.push(5);
+    if (maxValue >= 10) ticks.push(10);
+    if (maxValue >= 20) ticks.push(20);
+    if (maxValue >= 50) ticks.push(50);
+    if (maxValue >= 100) ticks.push(100);
     
     return ticks;
   };
 
   const xAxisTicks = createLogTicks();
+  
+  // For y-axis, create evenly distributed percentage ticks
+  const yAxisTicks = [0, 25, 50, 75, 100];
 
   // Format the x-axis tick labels
   const formatXAxis = (value: number) => {
-    if (value === 0.1) return "$0.1M";
+    if (value < 1) {
+      return `$${value * 1000}K`;
+    }
     return `$${value}M`;
   };
 
@@ -160,11 +161,11 @@ export function EquityGraph() {
       </CardHeader>
       <CardContent>
         {/* Chart with fixed height */}
-        <div className="h-[500px]">
+        <div className="h-[550px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={equityData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               
@@ -173,16 +174,22 @@ export function EquityGraph() {
                 dataKey="totalRaised"
                 type="number"
                 scale="log"
-                domain={[0.1, Math.max(...xAxisTicks)]}
+                domain={['auto', Math.max(...xAxisTicks)]}
                 ticks={xAxisTicks}
-                tickFormatter={formatXAxis}
-                tick={{ fontSize: 14, fill: '#333', fontWeight: 500 }}
-                allowDataOverflow={true}
-                height={60}
+                tickFormatter={(value) => {
+                  if (value === 0.1) return "$0.1M";
+                  return formatXAxis(value);
+                }}
+                tick={{ 
+                  fontSize: 14, 
+                  fill: '#333', 
+                  fontWeight: 500
+                }}
+                height={80}
                 label={{ 
                   value: 'Total Raised ($ millions)', 
                   position: 'bottom',
-                  offset: 20,
+                  offset: 40,
                   style: { 
                     textAnchor: 'middle',
                     fontSize: 16,
@@ -196,7 +203,7 @@ export function EquityGraph() {
               <YAxis 
                 tickFormatter={(value) => `${value}%`}
                 domain={[0, 100]}
-                ticks={[0, 25, 50, 75, 100]}
+                ticks={yAxisTicks}
                 tick={{ fontSize: 14, fill: '#333', fontWeight: 500 }}
                 axisLine={{ stroke: '#666' }}
                 tickLine={{ stroke: '#666' }}
@@ -210,7 +217,7 @@ export function EquityGraph() {
                     fontSize: 16,
                     fontWeight: 'bold',
                     fill: '#333',
-                    dx: -20
+                    dx: -30
                   }
                 }}
               />
@@ -234,8 +241,8 @@ export function EquityGraph() {
                 dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 8 }}
                 label={({ x, y, value }) => {
-                  // Only show labels for non-zero values
-                  if (value > 0) {
+                  // Only show labels for values greater than 1%
+                  if (value > 1) {
                     return (
                       <text 
                         x={x} 
@@ -245,7 +252,7 @@ export function EquityGraph() {
                         dominantBaseline="middle"
                         fontWeight="500"
                       >
-                        {value.toFixed(1)}%
+                        {formatPercentage(value)}
                       </text>
                     );
                   }
@@ -270,13 +277,13 @@ export function EquityGraph() {
           <div className="flex justify-between">
             <div>
               <h3 className="font-bold text-left">Founder Equity</h3>
-              <p className="text-3xl font-semibold text-left">{founderEquity.toFixed(2)}%</p>
+              <p className="text-3xl font-semibold text-left">{formatPercentage(founderEquity)}</p>
             </div>
             
             <div>
               <h3 className="font-bold text-left">Total Raised</h3>
               <p className="text-3xl font-semibold text-left">
-                ${formatNumberWithCommas(totalCommitted / 1000000)}M
+                {formatCurrency(totalCommitted / 1000000)}
               </p>
             </div>
             
