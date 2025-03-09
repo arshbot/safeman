@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { useCRM } from "@/context/CRMContext";
@@ -30,7 +29,6 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
-  const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<Status>("notContacted");
   const [purchaseAmount, setPurchaseAmount] = useState<number | undefined>(undefined);
   const [purchaseAmountFormatted, setPurchaseAmountFormatted] = useState("");
@@ -45,7 +43,6 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
       setName("");
       setEmail("");
       setWebsite("");
-      setNotes("");
       setStatus("notContacted");
       setPurchaseAmount(undefined);
       setPurchaseAmountFormatted("");
@@ -74,7 +71,6 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
       name,
       email: email || undefined,
       website: website || undefined,
-      notes: notes || undefined,
       status,
       purchaseAmount: status === 'finalized' ? purchaseAmount : undefined,
     };
@@ -178,17 +174,6 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
                 />
               </div>
             )}
-            
-            <div className="grid gap-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Additional information..."
-                rows={3}
-              />
-            </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={!isFormValid}>

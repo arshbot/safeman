@@ -52,7 +52,12 @@ export function VCRow({ vc, roundId }: VCRowProps) {
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateVC(editedVC);
+    // Ensure meetingNotes are preserved when updating
+    const updatedVC = {
+      ...editedVC,
+      meetingNotes: vc.meetingNotes // Preserve the original meeting notes
+    };
+    updateVC(updatedVC);
     setIsEditDialogOpen(false);
   };
 

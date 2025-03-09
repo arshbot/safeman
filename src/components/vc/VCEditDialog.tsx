@@ -2,7 +2,6 @@ import { VC, Status } from '@/types';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -67,19 +66,9 @@ export function VCEditDialog({
     }
   };
 
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    // Ensure we keep meetingNotes when updating notes
-    setEditedVC({
-      ...editedVC,
-      notes: e.target.value || undefined
-    });
-  };
-
-  // Form validation for required purchase amount with finalized status
   const isFormValid = editedVC.status !== 'finalized' || 
     (editedVC.status === 'finalized' && editedVC.purchaseAmount !== undefined);
 
-  // Debug
   console.log("VCEditDialog - Current edited VC:", editedVC);
 
   return (
@@ -140,7 +129,6 @@ export function VCEditDialog({
               </Select>
             </div>
             
-            {/* Purchase Amount field that shows only when status is finalized */}
             {editedVC.status === 'finalized' && (
               <div className="grid gap-2">
                 <Label htmlFor="purchaseAmount">
@@ -155,17 +143,6 @@ export function VCEditDialog({
                 />
               </div>
             )}
-            
-            <div className="grid gap-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
-              <Textarea
-                id="notes"
-                value={editedVC.notes || ''}
-                onChange={handleNotesChange}
-                placeholder="Additional information..."
-                rows={3}
-              />
-            </div>
           </div>
           <DialogFooter>
             {roundId && (
