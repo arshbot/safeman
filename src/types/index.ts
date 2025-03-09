@@ -43,3 +43,14 @@ export interface CRMState {
   vcs: Record<string, VC>;
   unsortedVCs: string[]; // Array of VC IDs
 }
+
+export interface EquityPoint {
+  raised: number;
+  totalRaised: number;
+  equityGranted: number;
+  totalEquityGranted: number;
+  targetRaised: number;
+  totalTargetRaised: number;
+  label: string;
+  order: number;
+}
