@@ -132,6 +132,28 @@ export function EquityGraph() {
     return null;
   };
 
+  // Custom legend renderer to add more spacing between items
+  const CustomLegend = (props: any) => {
+    const { payload } = props;
+    
+    return (
+      <div className="flex items-center justify-center gap-8 mt-2 mb-4">
+        {payload.map((entry: any, index: number) => (
+          <div key={`item-${index}`} className="flex items-center gap-2">
+            <div 
+              className="w-4 h-4"
+              style={{ 
+                backgroundColor: entry.color,
+                ...(entry.dataKey === 'totalTargetRaised' ? { borderStyle: 'dashed', borderWidth: '1px', backgroundColor: 'transparent' } : {})
+              }}
+            />
+            <span>{entry.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   // Find the maximum value for the domain
   const maxRaised = Math.max(...equityData.map(point => point.totalRaised || 0.1));
   // Add some padding to the max value
@@ -147,19 +169,19 @@ export function EquityGraph() {
           <ResponsiveContainer width="100%" height={400}>
             <LineChart
               data={equityData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 30 }} // Increased bottom margin from 10 to 30
+              margin={{ top: 20, right: 30, left: 20, bottom: 40 }} // Increased bottom margin for more space
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="totalRaised" 
-                label={{ value: 'Total Raised ($ millions)', position: 'insideBottom', offset: -15 }} // Increased offset from -10 to -15
+                label={{ value: 'Total Raised ($ millions)', position: 'insideBottom', offset: -20 }} // Increased offset
                 tickFormatter={(value) => `$${value}M`}
                 domain={[0.1, domainMax]} // Set minimum to small positive value for log scale
                 type="number"
                 scale="log" // Set scale to logarithmic
                 allowDataOverflow={true}
                 ticks={[0.1, 0.5, 1, 5, 10, 50, 100].filter(tick => tick <= domainMax)} // Custom ticks that make sense on log scale
-                height={50} // Increased height for the X axis
+                height={60} // Increased height for the X axis
                 padding={{ left: 10, right: 10 }} // Added padding to the X axis
               />
               <YAxis 
@@ -169,7 +191,12 @@ export function EquityGraph() {
                 ticks={[0, 25, 50, 75, 100]}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend 
+                content={<CustomLegend />} 
+                verticalAlign="top" 
+                height={50}
+                wrapperStyle={{ paddingTop: '10px' }}
+              />
               <Line 
                 type="monotone" 
                 dataKey="totalEquityGranted" 
