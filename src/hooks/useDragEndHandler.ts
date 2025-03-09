@@ -23,31 +23,36 @@ export function useDragEndHandler() {
       return vcId;
     } else if (draggableId.startsWith('round-')) {
       // Format is "round-{roundId}-{vcId}"
-      const lastDashIndex = draggableId.lastIndexOf('-');
-      if (lastDashIndex === -1 || lastDashIndex <= 6) { // 'round-'.length = 6
-        console.error('[DEBUG] Invalid draggableId format:', draggableId);
-        return '';
-      }
-
-      // Get everything after the last dash for UUID-format VC IDs
-      const vcIdParts = draggableId.substring(lastDashIndex + 1).split('-');
       
-      // If we have multiple parts after splitting by '-', it means the vcId itself contains hyphens
-      // In this case, we need to find where the roundId ends and vcId begins
-      if (vcIdParts.length > 1) {
-        // This is likely a UUID-format ID, find the full vcId in state.vcs
-        for (const id of Object.keys(state.vcs)) {
-          if (draggableId.endsWith(id)) {
-            console.log(`[DEBUG] Found matching VC ID: ${id}`);
-            return id;
-          }
+      // Direct search for all known VC IDs in the draggableId
+      const vcIds = Object.keys(state.vcs);
+      for (const vcId of vcIds) {
+        if (draggableId.includes(vcId)) {
+          console.log(`[DEBUG] Found exact matching VC ID: ${vcId}`);
+          return vcId;
         }
       }
       
-      // If we couldn't match the full ID, return the substring after the last hyphen
-      const vcId = draggableId.substring(lastDashIndex + 1);
-      console.log(`[DEBUG] Extracted VC ID from round format (last part): ${vcId}`);
-      return vcId;
+      // If we couldn't find an exact match, try to extract the last part as a fallback
+      const parts = draggableId.split('-');
+      if (parts.length >= 3) {
+        // Take the last part of the ID as a potential UUID segment
+        const lastPart = parts[parts.length - 1];
+        
+        // Look for a VC that ends with this segment
+        for (const vcId of vcIds) {
+          if (vcId.endsWith(lastPart)) {
+            console.log(`[DEBUG] Found matching VC ID by last segment: ${vcId}`);
+            return vcId;
+          }
+        }
+        
+        console.log(`[DEBUG] Using last segment as VC ID (fallback): ${lastPart}`);
+        return lastPart;
+      }
+      
+      console.error('[DEBUG] Invalid draggableId format:', draggableId);
+      return '';
     }
     
     console.error('[DEBUG] Unknown draggableId format:', draggableId);
@@ -59,28 +64,30 @@ export function useDragEndHandler() {
     console.log(`[DEBUG] Extracting source round ID from draggableId: ${draggableId}`);
     
     if (draggableId.startsWith('round-')) {
-      // Get the part between 'round-' and the last '-'
-      const start = 'round-'.length;
-      const lastDashIndex = draggableId.lastIndexOf('-');
+      // Format is "round-{roundId}-{vcId}"
+      const prefix = 'round-';
       
-      if (lastDashIndex <= start) return null;
+      // Get all rounds from state to match against
+      const roundIds = state.rounds.map(r => r.id);
       
-      // Find the last vcId in our state to determine where it begins
-      const vcIds = Object.keys(state.vcs);
-      for (const vcId of vcIds) {
-        if (draggableId.endsWith(vcId)) {
-          // The roundId is everything between 'round-' and the start of vcId
-          const roundEndIndex = draggableId.length - vcId.length - 1; // -1 for the dash
-          const roundId = draggableId.substring(start, roundEndIndex);
-          console.log(`[DEBUG] Extracted source round ID: ${roundId}`);
+      // Check if any roundId is present in the draggableId
+      for (const roundId of roundIds) {
+        if (draggableId.includes(`${prefix}${roundId}-`)) {
+          console.log(`[DEBUG] Found exact matching round ID: ${roundId}`);
           return roundId;
         }
       }
       
-      // If no match found, use the part before the last dash
-      const roundId = draggableId.substring(start, lastDashIndex);
-      console.log(`[DEBUG] Extracted source round ID (fallback): ${roundId}`);
-      return roundId;
+      // If we couldn't find an exact match, try to extract the second part
+      const parts = draggableId.split('-');
+      if (parts.length >= 3) {
+        const secondPart = parts[1];
+        console.log(`[DEBUG] Using second part as round ID (fallback): ${secondPart}`);
+        return secondPart;
+      }
+      
+      console.error('[DEBUG] Failed to extract roundId from:', draggableId);
+      return null;
     }
     
     console.log('[DEBUG] No round ID found in draggableId');
