@@ -42,6 +42,7 @@ export function DroppableVCList({
             padding: snapshot.isDraggingOver ? '8px 4px' : '4px 0'
           }}
           data-droppable-id={droppableId}
+          data-is-dragging-over={snapshot.isDraggingOver}
         >
           {vcs.map((vcId, vcIndex) => {
             const vc = getVC(vcId);
@@ -61,6 +62,11 @@ export function DroppableVCList({
             );
           })}
           {provided.placeholder}
+          {snapshot.isDraggingOver && (
+            <div className="text-xs text-muted-foreground text-center py-1">
+              Drop here
+            </div>
+          )}
         </motion.div>
       )}
     </Droppable>

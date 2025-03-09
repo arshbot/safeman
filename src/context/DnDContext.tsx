@@ -38,7 +38,16 @@ export const DnDProvider: React.FC<{
   // Handle drag end - passes the result to the provided handler if it exists
   const handleDragEnd = (result: DropResult) => {
     console.log('DnDContext handleDragEnd called with result:', result);
+    
     dispatch({ type: 'DRAG_END', payload: result });
+
+    // Additional logging for debugging
+    console.log(`Source droppableId: ${result.source.droppableId}, index: ${result.source.index}`);
+    if (result.destination) {
+      console.log(`Destination droppableId: ${result.destination.droppableId}, index: ${result.destination.index}`);
+    } else {
+      console.log('No destination - item was dropped outside a droppable area');
+    }
     
     if (onDragEnd) {
       console.log('Calling provided onDragEnd handler');

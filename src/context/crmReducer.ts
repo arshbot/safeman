@@ -1,4 +1,3 @@
-
 import { CRMState, Round, VC, Status, MeetingNote } from '@/types';
 import { CRMAction } from './types';
 import { v4 as uuidv4 } from 'uuid';
@@ -169,6 +168,8 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
       const vc = state.vcs[vcId];
       const round = state.rounds.find(r => r.id === roundId);
       
+      console.log(`CRM Reducer: Removing VC ${vcId} from round ${roundId}`);
+      
       if (!vc || !round) {
         console.error(`Could not find VC ${vcId} or round ${roundId}`);
         return state;
@@ -203,18 +204,25 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
       toast.success(`Removed ${vc.name} from ${round.name}`);
       
       // Both remove from round and add to unsorted
+      const updatedRounds = state.rounds.map((r) => {
+        if (r.id === roundId) {
+          return {
+            ...r,
+            vcs: r.vcs.filter((id) => id !== vcId),
+          };
+        }
+        return r;
+      });
+      
+      console.log(`Updated rounds after removal: `, updatedRounds);
+      console.log(`Adding VC ${vcId} to unsorted VCs`);
+      
       return {
         ...state,
-        rounds: state.rounds.map((r) => {
-          if (r.id === roundId) {
-            return {
-              ...r,
-              vcs: r.vcs.filter((id) => id !== vcId),
-            };
-          }
-          return r;
-        }),
-        unsortedVCs: [...state.unsortedVCs, vcId],
+        rounds: updatedRounds,
+        unsortedVCs: state.unsortedVCs.includes(vcId) 
+          ? state.unsortedVCs 
+          : [...state.unsortedVCs, vcId],
       };
     }
 

@@ -17,28 +17,37 @@ export function VCDraggable({ vcId, index, vc, roundId }: VCDraggableProps) {
     ? `round-${roundId}-${vcId}` 
     : `unsorted-${vcId}`;
   
-  console.log(`Rendering draggable: ${draggableId}, in container: ${roundId || 'unsorted'}`);
+  console.log(`Rendering draggable: ${draggableId}, in container: ${roundId || 'unsorted'}, index: ${index}`);
     
   return (
     <Draggable 
       draggableId={draggableId} 
       index={index}
     >
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} transition-opacity`}
-          data-vc-id={vcId}
-          data-round-id={roundId || 'unsorted'}
-        >
-          <VCRow 
-            vc={vc} 
-            roundId={roundId}
-          />
-        </div>
-      )}
+      {(provided, snapshot) => {
+        console.log(`Draggable state for ${draggableId}: isDragging=${snapshot.isDragging}`);
+        
+        return (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            className={`
+              ${snapshot.isDragging ? 'opacity-70 shadow-lg' : 'opacity-100'} 
+              transition-all duration-150 mb-1
+            `}
+            data-vc-id={vcId}
+            data-round-id={roundId || 'unsorted'}
+            data-draggable-id={draggableId}
+            data-is-dragging={snapshot.isDragging}
+          >
+            <VCRow 
+              vc={vc} 
+              roundId={roundId}
+            />
+          </div>
+        );
+      }}
     </Draggable>
   );
 }

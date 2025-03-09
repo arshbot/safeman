@@ -45,6 +45,7 @@ export function useDragEndHandler() {
     const { source, destination, type, draggableId } = result;
     
     console.log(`Drag end: ${draggableId} from ${source.droppableId} to ${destination?.droppableId || 'nowhere'}`);
+    console.log('Full drag result:', result);
     
     // If there's no destination, the user dropped the item outside a droppable area
     if (!destination) {
@@ -108,11 +109,13 @@ export function useDragEndHandler() {
           const sourceRoundId = extractSourceRoundId(draggableId);
           
           if (sourceRoundId) {
+            console.log(`Extracted source round ID from draggableId: ${sourceRoundId}`);
             removeVCFromRound(vcId, sourceRoundId);
             addVCToRound(vcId, actualRoundId);
             toast.success(`VC moved between rounds successfully`);
           } else {
             // Fallback to using the droppable ID if we can't extract from draggableId
+            console.log(`Using droppable ID as source round ID: ${sourceId}`);
             removeVCFromRound(vcId, sourceId);
             addVCToRound(vcId, actualRoundId);
             toast.success(`VC moved between rounds successfully`);
@@ -143,7 +146,14 @@ export function useDragEndHandler() {
       // Moving VC from a round to unsorted
       if (sourceId !== 'unsorted' && destId === 'unsorted') {
         console.log(`Removing VC ${vcId} from round ${sourceId} and moving to unsorted`);
-        removeVCFromRound(vcId, sourceId);
+        const sourceRoundId = extractSourceRoundId(draggableId);
+        if (sourceRoundId) {
+          console.log(`Using extracted source round ID: ${sourceRoundId}`);
+          removeVCFromRound(vcId, sourceRoundId);
+        } else {
+          console.log(`Using droppable ID as source round ID: ${sourceId}`);
+          removeVCFromRound(vcId, sourceId);
+        }
         toast.success(`VC moved to unsorted successfully`);
         return;
       }
