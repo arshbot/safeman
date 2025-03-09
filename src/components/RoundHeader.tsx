@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { formatNumberWithCommas, parseFormattedNumber } from '@/utils/formatters';
+import { AddVCModal } from './AddVCModal';
 
 interface RoundHeaderProps {
   round: Round;
@@ -20,6 +21,7 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
   const { toggleRoundExpand, updateRound, deleteRound } = useCRM();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const [editedRound, setEditedRound] = useState<Round>(round);
   const [valuationCapFormatted, setValuationCapFormatted] = useState(formatNumberWithCommas(round.valuationCap));
   const [targetAmountFormatted, setTargetAmountFormatted] = useState(formatNumberWithCommas(round.targetAmount));
@@ -43,6 +45,7 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
 
   const handleAddVCClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setIsAddVCModalOpen(true);
     onAddVC(round.id);
   };
 
@@ -138,6 +141,14 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
           </Button>
         </div>
       </div>
+
+      {/* Add VC Modal */}
+      <AddVCModal
+        open={isAddVCModalOpen}
+        onOpenChange={setIsAddVCModalOpen}
+        roundId={round.id}
+        trigger={null}
+      />
 
       {/* Edit Round Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

@@ -81,6 +81,7 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
           <DialogTitle>Add New VC</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
             Fill in the details to add a new VC to your database.
+            {roundId ? ` This VC will be added to the round directly.` : ''}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
