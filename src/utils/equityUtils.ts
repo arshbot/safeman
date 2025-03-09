@@ -21,18 +21,6 @@ export const calculateTotalCommitted = (state: CRMState): number => {
 export const generateEquityData = (state: CRMState): EquityPoint[] => {
   const equityData: EquityPoint[] = [];
   
-  // Start point
-  equityData.push({
-    raised: 0,
-    totalRaised: 0.1, // Small non-zero value for logarithmic scale
-    equityGranted: 0,
-    totalEquityGranted: 0,
-    targetRaised: 0,
-    totalTargetRaised: 0.1, // Small non-zero value for logarithmic scale
-    label: 'Start',
-    order: -1 // Set order to -1 to ensure it's first
-  });
-  
   // Sort rounds by their order, but in reverse (highest order first)
   const sortedRounds = [...state.rounds].sort((a, b) => b.order - a.order);
   
