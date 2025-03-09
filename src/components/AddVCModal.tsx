@@ -52,7 +52,7 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
     
     const newVC = {
       name,
-      email,
+      email: email || undefined,
       website: website || undefined,
       notes: notes || undefined,
       status,
@@ -97,14 +97,13 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email (Optional)</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="contact@example.com"
-                required
               />
             </div>
             <div className="grid gap-2">

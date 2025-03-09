@@ -10,7 +10,7 @@ export interface MeetingNote {
 export interface VC {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   website?: string;
   notes?: string;
   status: Status;

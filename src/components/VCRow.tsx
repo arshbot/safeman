@@ -80,7 +80,7 @@ export function VCRow({ vc, roundId }: VCRowProps) {
               </a>
             )}
           </div>
-          <div className="text-sm text-gray-600">{vc.email}</div>
+          {vc.email && <div className="text-sm text-gray-600">{vc.email}</div>}
         </div>
         <div className="flex items-center space-x-2">
           <StatusBadge status={vc.status} />
@@ -150,13 +150,12 @@ export function VCRow({ vc, roundId }: VCRowProps) {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email (Optional)</Label>
                 <Input
                   id="email"
                   type="email"
-                  value={editedVC.email}
-                  onChange={(e) => setEditedVC({ ...editedVC, email: e.target.value })}
-                  required
+                  value={editedVC.email || ''}
+                  onChange={(e) => setEditedVC({ ...editedVC, email: e.target.value || undefined })}
                 />
               </div>
               <div className="grid gap-2">
@@ -165,7 +164,7 @@ export function VCRow({ vc, roundId }: VCRowProps) {
                   id="website"
                   type="url"
                   value={editedVC.website || ''}
-                  onChange={(e) => setEditedVC({ ...editedVC, website: e.target.value })}
+                  onChange={(e) => setEditedVC({ ...editedVC, website: e.target.value || undefined })}
                   placeholder="https://example.com"
                 />
               </div>
@@ -183,6 +182,7 @@ export function VCRow({ vc, roundId }: VCRowProps) {
                       <SelectItem key={status} value={status}>
                         <div className="flex items-center">
                           <StatusBadge status={status} className="mr-2" />
+                          {status}
                         </div>
                       </SelectItem>
                     ))}
@@ -194,7 +194,7 @@ export function VCRow({ vc, roundId }: VCRowProps) {
                 <Textarea
                   id="notes"
                   value={editedVC.notes || ''}
-                  onChange={(e) => setEditedVC({ ...editedVC, notes: e.target.value })}
+                  onChange={(e) => setEditedVC({ ...editedVC, notes: e.target.value || undefined })}
                   placeholder="Additional information..."
                   rows={3}
                 />
