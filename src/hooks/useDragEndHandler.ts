@@ -22,23 +22,31 @@ export function useDragEndHandler() {
       console.log(`[DEBUG] Extracted VC ID from unsorted format: ${vcId}`);
       return vcId;
     } else if (draggableId.startsWith('round-')) {
-      // Format: "round-{roundId}-{vcId}"
-      const lastHyphenIndex = draggableId.indexOf('-', 'round-'.length);
-      if (lastHyphenIndex === -1) {
+      // Format is "round-{roundId}-{vcId}"
+      const lastDashIndex = draggableId.lastIndexOf('-');
+      if (lastDashIndex === -1 || lastDashIndex <= 6) { // 'round-'.length = 6
         console.error('[DEBUG] Invalid draggableId format:', draggableId);
         return '';
       }
+
+      // Get everything after the last dash for UUID-format VC IDs
+      const vcIdParts = draggableId.substring(lastDashIndex + 1).split('-');
       
-      // Find the second hyphen position (after "round-{roundId}-")
-      const secondHyphenIndex = draggableId.indexOf('-', lastHyphenIndex + 1);
-      if (secondHyphenIndex === -1) {
-        console.error('[DEBUG] Invalid draggableId format:', draggableId);
-        return '';
+      // If we have multiple parts after splitting by '-', it means the vcId itself contains hyphens
+      // In this case, we need to find where the roundId ends and vcId begins
+      if (vcIdParts.length > 1) {
+        // This is likely a UUID-format ID, find the full vcId in state.vcs
+        for (const id of Object.keys(state.vcs)) {
+          if (draggableId.endsWith(id)) {
+            console.log(`[DEBUG] Found matching VC ID: ${id}`);
+            return id;
+          }
+        }
       }
       
-      // Extract everything after the second hyphen
-      const vcId = draggableId.substring(secondHyphenIndex + 1);
-      console.log(`[DEBUG] Extracted VC ID from round format: ${vcId}`);
+      // If we couldn't match the full ID, return the substring after the last hyphen
+      const vcId = draggableId.substring(lastDashIndex + 1);
+      console.log(`[DEBUG] Extracted VC ID from round format (last part): ${vcId}`);
       return vcId;
     }
     
@@ -51,16 +59,27 @@ export function useDragEndHandler() {
     console.log(`[DEBUG] Extracting source round ID from draggableId: ${draggableId}`);
     
     if (draggableId.startsWith('round-')) {
-      // Format: "round-{roundId}-{vcId}"
-      const lastHyphenIndex = draggableId.indexOf('-', 'round-'.length);
-      if (lastHyphenIndex === -1) return null;
+      // Get the part between 'round-' and the last '-'
+      const start = 'round-'.length;
+      const lastDashIndex = draggableId.lastIndexOf('-');
       
-      const secondHyphenIndex = draggableId.indexOf('-', lastHyphenIndex + 1);
-      if (secondHyphenIndex === -1) return null;
+      if (lastDashIndex <= start) return null;
       
-      // Extract roundId between first and second hyphen
-      const roundId = draggableId.substring(lastHyphenIndex + 1, secondHyphenIndex);
-      console.log(`[DEBUG] Extracted source round ID: ${roundId}`);
+      // Find the last vcId in our state to determine where it begins
+      const vcIds = Object.keys(state.vcs);
+      for (const vcId of vcIds) {
+        if (draggableId.endsWith(vcId)) {
+          // The roundId is everything between 'round-' and the start of vcId
+          const roundEndIndex = draggableId.length - vcId.length - 1; // -1 for the dash
+          const roundId = draggableId.substring(start, roundEndIndex);
+          console.log(`[DEBUG] Extracted source round ID: ${roundId}`);
+          return roundId;
+        }
+      }
+      
+      // If no match found, use the part before the last dash
+      const roundId = draggableId.substring(start, lastDashIndex);
+      console.log(`[DEBUG] Extracted source round ID (fallback): ${roundId}`);
       return roundId;
     }
     
