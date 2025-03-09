@@ -53,11 +53,11 @@ export const generateEquityData = (state: CRMState): EquityPoint[] => {
         raised: 0,
         totalRaised: Math.max(cumulativeRaised, 0.1), // Ensure minimum value for log scale
         equityGranted: 0,
-        totalEquityGranted: cumulativeEquity,
+        totalEquityGranted: Math.max(cumulativeEquity, 0.1), // Ensure minimum value for log scale
         targetRaised: targetRaised,
         totalTargetRaised: Math.max(cumulativeTargetRaised, 0.1), // Ensure minimum value for log scale
         targetEquityGranted: targetEquityGranted,
-        totalTargetEquityGranted: cumulativeTargetEquity,
+        totalTargetEquityGranted: Math.max(cumulativeTargetEquity, 0.1), // Ensure minimum value for log scale
         label: round.name,
         order: round.order
       });
@@ -82,11 +82,11 @@ export const generateEquityData = (state: CRMState): EquityPoint[] => {
       raised: roundRaised,
       totalRaised: Math.max(cumulativeRaised, 0.1), // Ensure minimum value for log scale
       equityGranted: equityGranted,
-      totalEquityGranted: cumulativeEquity,
+      totalEquityGranted: Math.max(cumulativeEquity, 0.1), // Ensure minimum value for log scale
       targetRaised: targetRaised,
       totalTargetRaised: Math.max(cumulativeTargetRaised, 0.1), // Ensure minimum value for log scale
       targetEquityGranted: targetEquityGranted,
-      totalTargetEquityGranted: cumulativeTargetEquity,
+      totalTargetEquityGranted: Math.max(cumulativeTargetEquity, 0.1), // Ensure minimum value for log scale
       label: round.name,
       order: round.order
     });
