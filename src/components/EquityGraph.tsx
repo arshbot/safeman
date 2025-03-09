@@ -146,8 +146,11 @@ export function EquityGraph() {
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="label" 
-                label={{ value: 'Funding Stage', position: 'insideBottom', offset: -10 }}
+                dataKey="totalRaised" 
+                label={{ value: 'Total Raised ($ millions)', position: 'insideBottom', offset: -10 }}
+                tickFormatter={(value) => `$${value}M`}
+                domain={[0, 'dataMax']}
+                type="number"
               />
               <YAxis 
                 label={{ value: 'Total Equity Granted', angle: -90, position: 'insideLeft' }}
