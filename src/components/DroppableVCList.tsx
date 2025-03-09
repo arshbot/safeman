@@ -22,7 +22,7 @@ export function DroppableVCList({
   console.log(`Rendering droppable list: ${droppableId} with ${vcs.length} VCs and roundId: ${roundId || 'none'}`);
   
   return (
-    <Droppable droppableId={droppableId} type="VC">
+    <Droppable droppableId={droppableId} type="VC" isDropDisabled={false}>
       {(provided, snapshot) => {
         console.log(`Droppable ${droppableId} - isDraggingOver: ${snapshot.isDraggingOver}`);
         

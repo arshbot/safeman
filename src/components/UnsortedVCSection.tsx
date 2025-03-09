@@ -13,11 +13,19 @@ interface UnsortedVCSectionProps {
 
 export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   
   console.log(`Rendering UnsortedVCSection with ${vcs.length} VCs`);
   
   return (
-    <div className="mt-8 bg-secondary/50 p-4 rounded-lg border-2 border-dashed border-transparent hover:border-secondary transition-colors">
+    <div 
+      className={`mt-8 bg-secondary/50 p-4 rounded-lg border-2 border-dashed 
+      ${isHovering ? 'border-primary/80 bg-secondary/80' : 'border-transparent hover:border-secondary'} 
+      transition-colors`}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      data-section="unsorted-vcs"
+    >
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Unsorted VCs</h2>
         <Button 
@@ -39,10 +47,10 @@ export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
           droppableId="unsorted" 
           vcs={vcs} 
           getVC={getVC}
-          className="border border-dashed border-secondary/50 rounded-lg p-2"
+          className="border border-dashed border-secondary/50 rounded-lg p-2 min-h-[80px]"
         />
       ) : (
-        <div className="text-center text-muted-foreground p-4 border border-dashed border-secondary/50 rounded-lg">
+        <div className="text-center text-muted-foreground p-4 border border-dashed border-secondary/50 rounded-lg min-h-[80px]">
           <p>No unsorted VCs. All your VCs are organized in rounds!</p>
           <p className="text-xs mt-2">Drop a VC here to move it from a round</p>
         </div>

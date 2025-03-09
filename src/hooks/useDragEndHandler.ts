@@ -23,14 +23,17 @@ export function useDragEndHandler() {
       return vcId;
     } else if (draggableId.startsWith('round-')) {
       // Format: "round-{roundId}-{vcId}"
-      const parts = draggableId.split('-');
-      // We need to remove the first two parts (round- and roundId) and join the rest
-      // This handles vcIds that might contain hyphens
-      if (parts.length >= 3) {
-        const vcId = parts.slice(2).join('-');
-        console.log(`Extracted VC ID from round format: ${vcId}`);
-        return vcId;
-      }
+      // First, split by the first two hyphens to get the roundId
+      const firstHyphen = draggableId.indexOf('-');
+      if (firstHyphen === -1) return '';
+      
+      const secondHyphen = draggableId.indexOf('-', firstHyphen + 1);
+      if (secondHyphen === -1) return '';
+      
+      // Everything after the second hyphen is the vcId
+      const vcId = draggableId.substring(secondHyphen + 1);
+      console.log(`Extracted VC ID from round format: ${vcId}`);
+      return vcId;
     }
     
     console.error('Unknown draggableId format:', draggableId);
@@ -43,12 +46,16 @@ export function useDragEndHandler() {
     
     if (draggableId.startsWith('round-')) {
       // Format: "round-{roundId}-{vcId}"
-      const parts = draggableId.split('-');
-      if (parts.length >= 3) {
-        const roundId = parts[1];
-        console.log(`Extracted source round ID: ${roundId}`);
-        return roundId;
-      }
+      // Get content between first and second hyphen
+      const firstHyphen = draggableId.indexOf('-');
+      if (firstHyphen === -1) return null;
+      
+      const secondHyphen = draggableId.indexOf('-', firstHyphen + 1);
+      if (secondHyphen === -1) return null;
+      
+      const roundId = draggableId.substring(firstHyphen + 1, secondHyphen);
+      console.log(`Extracted source round ID: ${roundId}`);
+      return roundId;
     }
     
     console.log('No round ID found in draggableId');
@@ -112,17 +119,7 @@ export function useDragEndHandler() {
         // If the source is a round, remove it from there
         if (sourceId !== 'unsorted') {
           console.log(`Removing VC ${vcId} from round ${sourceId}`);
-          
-          // Try to extract the source round ID from the draggable ID
-          const sourceRoundId = extractSourceRoundId(draggableId);
-          if (sourceRoundId) {
-            console.log(`Using extracted source round ID: ${sourceRoundId}`);
-            removeVCFromRound(vcId, sourceRoundId);
-          } else {
-            console.log(`Using droppable ID as source round ID: ${sourceId}`);
-            removeVCFromRound(vcId, sourceId);
-          }
-          
+          removeVCFromRound(vcId, sourceId);
           toast.success(`VC moved to unsorted successfully`);
         }
         return;
@@ -143,21 +140,9 @@ export function useDragEndHandler() {
         // If dragging from a round to another round header
         if (sourceId !== destId) {
           console.log(`Moving between rounds from ${sourceId} to ${actualRoundId}`);
-          // Extract the source round ID if dragging from a round
-          const sourceRoundId = extractSourceRoundId(draggableId);
-          
-          if (sourceRoundId) {
-            console.log(`Extracted source round ID from draggableId: ${sourceRoundId}`);
-            removeVCFromRound(vcId, sourceRoundId);
-            addVCToRound(vcId, actualRoundId);
-            toast.success(`VC moved between rounds successfully`);
-          } else {
-            // Fallback to using the droppable ID if we can't extract from draggableId
-            console.log(`Using droppable ID as source round ID: ${sourceId}`);
-            removeVCFromRound(vcId, sourceId);
-            addVCToRound(vcId, actualRoundId);
-            toast.success(`VC moved between rounds successfully`);
-          }
+          removeVCFromRound(vcId, sourceId);
+          addVCToRound(vcId, actualRoundId);
+          toast.success(`VC moved between rounds successfully`);
           return;
         }
         
@@ -184,17 +169,7 @@ export function useDragEndHandler() {
       // Moving VC from a round to another round directly (not via header)
       if (sourceId !== destId && sourceId !== 'unsorted' && destId !== 'unsorted' && !destId.startsWith('round-')) {
         console.log(`Moving VC ${vcId} from round ${sourceId} to round ${destId}`);
-        
-        // Extract the source round ID if dragging from a round
-        const sourceRoundId = extractSourceRoundId(draggableId);
-        if (sourceRoundId) {
-          console.log(`Using extracted source round ID: ${sourceRoundId}`);
-          removeVCFromRound(vcId, sourceRoundId);
-        } else {
-          console.log(`Using droppable ID as source round ID: ${sourceId}`);
-          removeVCFromRound(vcId, sourceId);
-        }
-        
+        removeVCFromRound(vcId, sourceId);
         addVCToRound(vcId, destId);
         toast.success(`VC moved between rounds successfully`);
         return;
