@@ -119,26 +119,6 @@ export function EquityGraph() {
     return null;
   };
 
-  // Custom X axis with visible labels
-  const CustomXAxis = (props: any) => {
-    const { x, y, width, height, stroke, payload } = props;
-    const value = payload.value;
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <text
-          x={0}
-          y={35}
-          textAnchor="middle"
-          fill="#666"
-          fontSize={12}
-          fontWeight={500}
-        >
-          ${value.toFixed(1)}M
-        </text>
-      </g>
-    );
-  };
-
   // Custom legend renderer to add more spacing between items
   const CustomLegend = (props: any) => {
     const { payload } = props;
@@ -169,39 +149,11 @@ export function EquityGraph() {
   // Create custom X axis ticks for better visibility
   const customXAxisTicks = [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100].filter(tick => tick <= domainMax);
 
-  // Custom X Axis Label component with fixed positioning
-  const CustomXAxisLabel = () => {
-    return (
-      <text 
-        x="50%" 
-        y="95%" 
-        textAnchor="middle" 
-        fontSize={14} 
-        fontWeight={500} 
-        fill="#666"
-        className="font-medium"
-      >
-        Total Raised ($ millions)
-      </text>
-    );
-  };
-
-  // Custom Y Axis Label with better positioning
-  const CustomYAxisLabel = () => {
-    return (
-      <text 
-        x="-240" 
-        y="15" 
-        textAnchor="start" 
-        transform="rotate(-90)" 
-        fontSize={14} 
-        fontWeight={500}
-        fill="#666"
-        className="font-medium"
-      >
-        Total Equity Granted (%)
-      </text>
-    );
+  // Create axis labels that will be manually positioned
+  const axisLabelStyle = {
+    fontSize: 14,
+    fontWeight: 600,
+    fill: '#333',
   };
 
   return (
@@ -210,13 +162,15 @@ export function EquityGraph() {
         <CardTitle className="text-xl text-left">Total Equity Granted vs. Total Raised</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 h-[500px]"> {/* Increased height for better visualization */}
+        <div className="mb-6 h-[550px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={equityData}
-              margin={{ top: 20, right: 30, left: 60, bottom: 120 }} // Significantly increased bottom margin
+              margin={{ top: 20, right: 30, left: 20, bottom: 150 }} // Significantly increased bottom margin
             >
               <CartesianGrid strokeDasharray="3 3" />
+              
+              {/* X-axis with explicit labels at the bottom */}
               <XAxis 
                 dataKey="totalRaised" 
                 type="number"
@@ -224,30 +178,30 @@ export function EquityGraph() {
                 domain={[0.1, domainMax]}
                 allowDataOverflow={true}
                 ticks={customXAxisTicks}
-                height={100} // Increased height for x-axis
-                tickFormatter={(value) => `$${value.toFixed(1)}M`}
-                tick={(props) => <CustomXAxis {...props} />}
+                height={100} // Very large height to make room for labels
                 axisLine={{ stroke: '#666' }}
                 tickLine={{ stroke: '#666' }}
+                tick={false} // Hide default ticks to use our custom ones
               />
+              
+              {/* Y-axis */}
               <YAxis 
                 tickFormatter={(value) => `${value}%`}
                 domain={[0, 100]}
                 ticks={[0, 25, 50, 75, 100]}
-                tick={{ fontSize: 12, fill: '#666', fontWeight: 500 }}
+                tick={{ fontSize: 12, fill: '#333', fontWeight: 500 }}
                 axisLine={{ stroke: '#666' }}
                 tickLine={{ stroke: '#666' }}
-                width={60} // Ensure Y-axis has enough width
+                width={60}
               />
-              <CustomXAxisLabel />
-              <CustomYAxisLabel />
+              
               <Tooltip content={<CustomTooltip />} />
               <Legend 
                 content={<CustomLegend />} 
                 verticalAlign="top" 
                 height={50}
-                wrapperStyle={{ paddingTop: '10px' }}
               />
+              
               <Line 
                 type="monotone" 
                 dataKey="totalEquityGranted" 
@@ -257,8 +211,7 @@ export function EquityGraph() {
                 strokeWidth={2}
                 dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4 }}
                 label={({ x, y, value }) => {
-                  // Show labels for key data points
-                  if (value > 0 && value % 10 < 5) { // Show labels for more points to match the reference image
+                  if (value > 0 && value % 10 < 5) {
                     return (
                       <text 
                         x={x} 
@@ -275,6 +228,7 @@ export function EquityGraph() {
                   return null;
                 }}
               />
+              
               <Line 
                 type="monotone" 
                 dataKey="totalTargetRaised" 
@@ -286,6 +240,29 @@ export function EquityGraph() {
               />
             </LineChart>
           </ResponsiveContainer>
+          
+          {/* Manual X-axis labels rendered outside the chart */}
+          <div className="relative mt-[-120px] h-[100px]">
+            <div className="flex justify-between items-center absolute w-[90%] left-[5%]">
+              {customXAxisTicks.map((tick, index) => (
+                <div key={index} className="text-center">
+                  <div className="font-medium text-[#333] text-sm">
+                    ${tick.toFixed(1)}M
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="absolute w-full text-center top-[50px]">
+              <span className="font-medium text-[#333] text-base">
+                Total Raised ($ millions)
+              </span>
+            </div>
+            <div className="absolute left-[-40px] top-[-260px] transform -rotate-90">
+              <span className="font-medium text-[#333] text-base whitespace-nowrap">
+                Total Equity Granted (%)
+              </span>
+            </div>
+          </div>
         </div>
         
         <div className="bg-blue-50 p-4 rounded-lg">
