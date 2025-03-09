@@ -28,6 +28,7 @@ export function VCDraggable({ vcId, index, vc, roundId }: VCDraggableProps) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} transition-opacity`}
         >
           <VCRow 
             vc={vc} 

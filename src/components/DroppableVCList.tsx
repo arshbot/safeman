@@ -35,10 +35,11 @@ export function DroppableVCList({
           }}
           className={className}
           style={{
-            background: snapshot.isDraggingOver ? 'rgba(0,0,0,0.02)' : 'transparent',
+            background: snapshot.isDraggingOver ? 'rgba(0,0,0,0.05)' : 'transparent',
             borderRadius: '4px',
             minHeight: '50px',
-            transition: 'background-color 0.2s ease'
+            transition: 'background-color 0.2s ease',
+            padding: snapshot.isDraggingOver ? '8px 4px' : '4px 0'
           }}
         >
           {vcs.map((vcId, vcIndex) => {
