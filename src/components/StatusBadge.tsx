@@ -27,7 +27,11 @@ const statusConfig: Record<Status, { label: string; className: string }> = {
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const config = statusConfig[status];
+  // Check if the status exists in the config, provide a fallback if not
+  const config = statusConfig[status] || { 
+    label: status, 
+    className: 'bg-gray-300 text-gray-700'
+  };
 
   return (
     <span

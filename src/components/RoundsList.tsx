@@ -30,10 +30,10 @@ export function RoundsList({
   const getFilteredVCs = (roundId: string, vcs: string[], isExpanded: boolean): string[] => {
     if (isExpanded) return sortVCsByStatus(vcs);
     
-    // When collapsed, only show VCs with sold or closeToBuying status
+    // When collapsed, only show VCs with finalized or closeToBuying status
     return sortVCsByStatus(vcs.filter(vcId => {
       const vc = getVC(vcId);
-      return vc && (vc.status === 'sold' || vc.status === 'closeToBuying');
+      return vc && (vc.status === 'finalized' || vc.status === 'closeToBuying');
     }));
   };
 
