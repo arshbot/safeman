@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 import { useCRM } from "@/context/CRMContext";
 import { Status } from "@/types";
 import { StatusBadge } from "./StatusBadge";
+import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/formatters";
 
 interface AddVCModalProps {
   trigger?: React.ReactNode;
@@ -31,9 +32,11 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
   const [website, setWebsite] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<Status>("notContacted");
+  const [purchaseAmount, setPurchaseAmount] = useState<number | undefined>(undefined);
+  const [purchaseAmountFormatted, setPurchaseAmountFormatted] = useState("");
   const { addVC, addVCToRound } = useCRM();
 
-  const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'sold'];
+  const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'finalized'];
 
   // Reset form when modal opens or closes
   useEffect(() => {
@@ -44,8 +47,25 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
       setWebsite("");
       setNotes("");
       setStatus("notContacted");
+      setPurchaseAmount(undefined);
+      setPurchaseAmountFormatted("");
     }
   }, [open]);
+
+  const handleStatusChange = (value: Status) => {
+    setStatus(value);
+    if (value === 'finalized' && !purchaseAmount) {
+      setPurchaseAmount(0);
+      setPurchaseAmountFormatted("0");
+    }
+  };
+
+  const handlePurchaseAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = parseFormattedNumber(value);
+    setPurchaseAmount(numericValue);
+    setPurchaseAmountFormatted(formatNumberWithCommas(numericValue));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +76,7 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
       website: website || undefined,
       notes: notes || undefined,
       status,
+      purchaseAmount: status === 'finalized' ? purchaseAmount : undefined,
     };
     
     // First close the modal to avoid DnD context issues
@@ -72,6 +93,10 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
       }
     }, 50);
   };
+
+  // Form validation for required purchase amount with finalized status
+  const isFormValid = status !== 'finalized' || 
+    (status === 'finalized' && purchaseAmount !== undefined);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -120,7 +145,7 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
               <Label htmlFor="status">Status</Label>
               <Select
                 value={status}
-                onValueChange={(value: Status) => setStatus(value)}
+                onValueChange={handleStatusChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -137,6 +162,23 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
                 </SelectContent>
               </Select>
             </div>
+            
+            {/* Purchase Amount field that shows only when status is finalized */}
+            {status === 'finalized' && (
+              <div className="grid gap-2">
+                <Label htmlFor="purchaseAmount">
+                  Purchase Amount ($) <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="purchaseAmount"
+                  value={purchaseAmountFormatted}
+                  onChange={handlePurchaseAmountChange}
+                  required
+                  placeholder="e.g. 100,000"
+                />
+              </div>
+            )}
+            
             <div className="grid gap-2">
               <Label htmlFor="notes">Notes (Optional)</Label>
               <Textarea
@@ -149,7 +191,7 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">
+            <Button type="submit" disabled={!isFormValid}>
               {roundId ? "Add to Round" : "Add VC"}
             </Button>
           </DialogFooter>

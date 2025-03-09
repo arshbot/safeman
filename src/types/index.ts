@@ -1,5 +1,5 @@
 
-export type Status = 'notContacted' | 'contacted' | 'closeToBuying' | 'sold';
+export type Status = 'notContacted' | 'contacted' | 'closeToBuying' | 'finalized';
 
 export interface MeetingNote {
   id: string;
@@ -15,6 +15,7 @@ export interface VC {
   notes?: string;
   status: Status;
   meetingNotes?: MeetingNote[];
+  purchaseAmount?: number; // Amount the VC has committed to invest
 }
 
 export interface Round {
@@ -29,8 +30,10 @@ export interface Round {
 
 export interface RoundSummary {
   totalVCs: number;
-  sold: number;
+  finalized: number;
   closeToBuying: number;
+  totalCommitted: number; // Total amount committed by finalized VCs
+  isOversubscribed: boolean; // Flag to indicate if round is oversubscribed
 }
 
 export interface CRMState {

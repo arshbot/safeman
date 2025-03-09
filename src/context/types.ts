@@ -34,7 +34,13 @@ export interface CRMContextType {
   toggleRoundExpand: (roundId: string) => void;
   reorderRounds: (rounds: Round[]) => void;
   reorderVCs: (roundId: string, vcIds: string[]) => void;
-  getRoundSummary: (roundId: string) => { totalVCs: number; sold: number; closeToBuying: number };
+  getRoundSummary: (roundId: string) => { 
+    totalVCs: number; 
+    finalized: number; 
+    closeToBuying: number;
+    totalCommitted: number;
+    isOversubscribed: boolean;
+  };
   addMeetingNote: (vcId: string, content: string) => void;
   updateMeetingNote: (vcId: string, note: MeetingNote) => void;
   deleteMeetingNote: (vcId: string, noteId: string) => void;

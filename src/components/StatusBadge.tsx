@@ -20,8 +20,8 @@ const statusConfig: Record<Status, { label: string; className: string }> = {
     label: 'Close to Buying',
     className: 'bg-status-closeToBuying text-white',
   },
-  sold: {
-    label: 'Sold',
+  finalized: {
+    label: 'Finalized',
     className: 'bg-status-sold text-white',
   },
 };

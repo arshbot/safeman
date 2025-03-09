@@ -1,4 +1,3 @@
-
 import { VC, Status } from '@/types';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -7,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/StatusBadge';
+import { formatNumberWithCommas, parseFormattedNumber } from '@/utils/formatters';
+import { useState, useEffect } from 'react';
 
 interface VCEditDialogProps {
   isOpen: boolean;
@@ -27,7 +28,48 @@ export function VCEditDialog({
   handleRemoveFromRound,
   roundId,
 }: VCEditDialogProps) {
-  const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'sold'];
+  const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'finalized'];
+  const [purchaseAmountFormatted, setPurchaseAmountFormatted] = useState(
+    editedVC.purchaseAmount ? formatNumberWithCommas(editedVC.purchaseAmount) : ''
+  );
+
+  // Update formatted purchase amount when editedVC changes
+  useEffect(() => {
+    setPurchaseAmountFormatted(
+      editedVC.purchaseAmount ? formatNumberWithCommas(editedVC.purchaseAmount) : ''
+    );
+  }, [editedVC.purchaseAmount]);
+
+  const handlePurchaseAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = parseFormattedNumber(value);
+    setPurchaseAmountFormatted(formatNumberWithCommas(numericValue));
+    setEditedVC({
+      ...editedVC,
+      purchaseAmount: numericValue || undefined
+    });
+  };
+
+  const handleStatusChange = (value: Status) => {
+    // If changing to finalized, ensure purchaseAmount has a default value if not set
+    if (value === 'finalized' && !editedVC.purchaseAmount) {
+      setEditedVC({ 
+        ...editedVC, 
+        status: value,
+        purchaseAmount: 0 
+      });
+      setPurchaseAmountFormatted('0');
+    } else if (value !== 'finalized') {
+      // If changing away from finalized, we keep the purchase amount for reference
+      setEditedVC({ ...editedVC, status: value });
+    } else {
+      setEditedVC({ ...editedVC, status: value });
+    }
+  };
+
+  // Form validation for required purchase amount with finalized status
+  const isFormValid = editedVC.status !== 'finalized' || 
+    (editedVC.status === 'finalized' && editedVC.purchaseAmount !== undefined);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -69,7 +111,7 @@ export function VCEditDialog({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={editedVC.status}
-                onValueChange={(value: Status) => setEditedVC({ ...editedVC, status: value })}
+                onValueChange={handleStatusChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -86,6 +128,23 @@ export function VCEditDialog({
                 </SelectContent>
               </Select>
             </div>
+            
+            {/* Purchase Amount field that shows only when status is finalized */}
+            {editedVC.status === 'finalized' && (
+              <div className="grid gap-2">
+                <Label htmlFor="purchaseAmount">
+                  Purchase Amount ($) <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="purchaseAmount"
+                  value={purchaseAmountFormatted}
+                  onChange={handlePurchaseAmountChange}
+                  required
+                  placeholder="e.g. 100,000"
+                />
+              </div>
+            )}
+            
             <div className="grid gap-2">
               <Label htmlFor="notes">Notes (Optional)</Label>
               <Textarea
@@ -108,7 +167,7 @@ export function VCEditDialog({
                 Remove from Round
               </Button>
             )}
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={!isFormValid}>Save Changes</Button>
           </DialogFooter>
         </form>
       </DialogContent>

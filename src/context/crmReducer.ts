@@ -1,4 +1,3 @@
-
 import { CRMState, Round, VC, Status, MeetingNote } from '@/types';
 import { CRMAction } from './types';
 import { v4 as uuidv4 } from 'uuid';

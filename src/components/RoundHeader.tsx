@@ -1,7 +1,6 @@
-
 import { Round, RoundSummary } from '@/types';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Edit, Trash2, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Edit, Trash2, Plus, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { formatNumberWithCommas, parseFormattedNumber } from '@/utils/formatters';
 import { AddVCModal } from './AddVCModal';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface RoundHeaderProps {
   round: Round;
@@ -90,7 +90,7 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
   };
 
   return (
-    <>
+    <TooltipProvider>
       <div 
         className="flex items-center p-4 bg-white border border-gray-200 rounded-lg shadow-sm mb-2 cursor-pointer hover:bg-gray-50 transition-all scale-on-hover"
         onClick={handleToggleExpand}
@@ -103,14 +103,35 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
               <ChevronRight className="h-5 w-5 text-gray-500" />
             )}
           </div>
-          <div>
-            <h3 className="font-semibold text-lg">{round.name}</h3>
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg flex items-center">
+              {round.name}
+              
+              {/* Warning indicator for oversubscribed rounds */}
+              {summary.isOversubscribed && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="ml-2">
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>This round is oversubscribed! Total committed: {formatCurrency(summary.totalCommitted)} exceeds target: {formatCurrency(round.targetAmount)}.</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </h3>
             <div className="flex text-sm text-gray-500 space-x-4">
               <span>Target: {formatCurrency(round.targetAmount)}</span>
               <span>Cap: {formatCurrency(round.valuationCap)}</span>
               <span>VCs: {summary.totalVCs}</span>
-              <span className="text-status-sold">Sold: {summary.sold}</span>
+              <span className="text-status-sold">Finalized: {summary.finalized}</span>
               <span className="text-status-closeToBuying">Close: {summary.closeToBuying}</span>
+              {summary.totalCommitted > 0 && (
+                <span className={`font-medium ${summary.isOversubscribed ? 'text-red-500' : 'text-emerald-600'}`}>
+                  Committed: {formatCurrency(summary.totalCommitted)}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -212,6 +233,6 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </TooltipProvider>
   );
 }

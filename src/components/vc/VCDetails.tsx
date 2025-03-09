@@ -1,6 +1,7 @@
 
 import { ExternalLink } from 'lucide-react';
 import { VC } from '@/types';
+import { formatNumberWithCommas } from '@/utils/formatters';
 
 interface VCDetailsProps {
   vc: VC;
@@ -22,7 +23,12 @@ export function VCDetails({ vc }: VCDetailsProps) {
           </a>
         )}
       </div>
-      {vc.email && <div className="text-sm text-gray-600">{vc.email}</div>}
+      <div className="text-sm text-gray-600">
+        {vc.email && <div>{vc.email}</div>}
+        {vc.status === 'finalized' && vc.purchaseAmount !== undefined && (
+          <div className="font-medium text-emerald-600">${formatNumberWithCommas(vc.purchaseAmount)}</div>
+        )}
+      </div>
     </div>
   );
 }
