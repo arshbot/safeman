@@ -94,29 +94,7 @@ export function EquityGraph() {
     });
   });
   
-  // Add a future point if we have at least one round - with more realistic equity projection
-  if (sortedRounds.length > 0) {
-    const projectedRaiseAmount = 5; // More realistic future projection in millions
-    
-    // Calculate the average valuation from previous rounds
-    const avgValuation = sortedRounds.reduce((sum, round) => {
-      return sum + (round.valuationCap > 0 ? round.valuationCap : 0);
-    }, 0) / sortedRounds.filter(round => round.valuationCap > 0).length || 15000000; // Default to $15M if no valuations
-    
-    // Calculate projected equity for the future round
-    const projectedEquity = (projectedRaiseAmount * 1000000) / avgValuation * 100;
-    
-    equityData.push({
-      raised: projectedRaiseAmount,
-      totalRaised: cumulativeRaised + projectedRaiseAmount,
-      equityGranted: projectedEquity,
-      totalEquityGranted: cumulativeEquity + projectedEquity,
-      targetRaised: projectedRaiseAmount,
-      totalTargetRaised: cumulativeTargetRaised + projectedRaiseAmount,
-      label: 'Future',
-      order: 0 // Set order to be the earliest point in the timeline
-    });
-  }
+  // The "Future" data point code has been removed
   
   // Sort the equity data points by their order, lowest first (early rounds first)
   equityData.sort((a, b) => a.order - b.order);
