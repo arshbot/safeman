@@ -12,26 +12,9 @@ export function useDragEndHandler() {
     removeVCFromRound
   } = useCRM();
 
-  // Extracts VC ID from draggableId
-  const extractVcId = (draggableId: string): string => {
-    if (draggableId.startsWith('unsorted-')) {
-      // Format: "unsorted-{vcId}"
-      return draggableId.replace('unsorted-', '');
-    } else if (draggableId.startsWith('round-')) {
-      // Format: "round-{roundId}-{vcId}"
-      const parts = draggableId.split('-');
-      // Get the vcId which is the third part onwards (in case vcId has hyphens)
-      return parts.slice(2).join('-');
-    }
-    console.error('Unknown draggableId format:', draggableId);
-    return '';
-  };
-
   // Handle drag end for rounds and VCs
   const handleDragEnd = (result: DropResult) => {
     const { source, destination, type, draggableId } = result;
-    
-    console.log(`Drag end: ${draggableId} from ${source.droppableId} to ${destination?.droppableId || 'nowhere'}`);
     
     // If there's no destination, the user dropped the item outside a droppable area
     if (!destination) return;
@@ -62,9 +45,20 @@ export function useDragEndHandler() {
       const sourceId = source.droppableId;
       const destId = destination.droppableId;
       
-      // Extract VC ID from draggableId
-      const vcId = extractVcId(draggableId);
-      if (!vcId) return;
+      // Extract VC ID from draggableId based on format
+      let vcId: string;
+      
+      if (draggableId.startsWith('unsorted-')) {
+        // Format: "unsorted-{vcId}"
+        vcId = draggableId.replace('unsorted-', '');
+      } else if (draggableId.startsWith('round-')) {
+        // Format: "round-{roundId}-{vcId}"
+        const parts = draggableId.split('-');
+        vcId = parts[2]; // Get the vcId from the third part
+      } else {
+        console.error('Unknown draggableId format:', draggableId);
+        return;
+      }
       
       console.log(`Dragging VC: ${vcId} from ${sourceId} to ${destId}`);
       
@@ -79,14 +73,11 @@ export function useDragEndHandler() {
           return;
         }
         
-        // If dragging from a round to another round header
-        if (sourceId !== destId) {
-          const roundVCsBeingMoved = state.vcs[vcId];
-          if (roundVCsBeingMoved) {
-            removeVCFromRound(vcId, sourceId);
-            addVCToRound(vcId, actualRoundId);
-            toast.success(`VC moved between rounds successfully`);
-          }
+        // If dragging from a round to a round header
+        if (sourceId !== 'unsorted' && sourceId !== destId) {
+          removeVCFromRound(vcId, sourceId);
+          addVCToRound(vcId, actualRoundId);
+          toast.success(`VC moved between rounds successfully`);
           return;
         }
         
@@ -118,7 +109,7 @@ export function useDragEndHandler() {
       }
       
       // Moving VC from unsorted to a round
-      if (sourceId === 'unsorted' && destId !== 'unsorted' && !destId.startsWith('round-')) {
+      if (sourceId === 'unsorted' && destId !== 'unsorted') {
         addVCToRound(vcId, destId);
         toast.success(`VC moved to round successfully`);
         return;
