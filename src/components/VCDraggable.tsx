@@ -27,14 +27,18 @@ export function VCDraggable({ vcId, index, vc, roundId }: VCDraggableProps) {
       {(provided, snapshot) => {
         console.log(`Draggable state for ${draggableId}: isDragging=${snapshot.isDragging}`);
         
+        if (snapshot.isDragging) {
+          console.log(`Currently dragging: ${draggableId}, vcId: ${vcId}, roundId: ${roundId || 'unsorted'}`);
+        }
+        
         return (
           <div
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             className={`
-              ${snapshot.isDragging ? 'opacity-70 shadow-lg' : 'opacity-100'} 
-              transition-all duration-150 mb-1
+              ${snapshot.isDragging ? 'opacity-80 shadow-xl scale-[1.02] z-50 bg-background' : 'opacity-100'} 
+              transition-all duration-150 mb-1 rounded-md border border-border hover:border-primary/50
             `}
             data-vc-id={vcId}
             data-round-id={roundId || 'unsorted'}

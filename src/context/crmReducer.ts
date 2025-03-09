@@ -168,7 +168,7 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
       const vc = state.vcs[vcId];
       const round = state.rounds.find(r => r.id === roundId);
       
-      console.log(`CRM Reducer: Removing VC ${vcId} from round ${roundId}`);
+      console.log(`CRM Reducer: Removing VC ${vcId} from round ${roundId} and adding to unsorted`);
       
       if (!vc || !round) {
         console.error(`Could not find VC ${vcId} or round ${roundId}`);
@@ -183,46 +183,38 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
         return state;
       }
       
-      // Check if the VC is already in unsorted
-      if (state.unsortedVCs.includes(vcId)) {
-        console.error(`VC ${vcId} already in unsorted`);
-        // Only remove from the round
-        return {
-          ...state,
-          rounds: state.rounds.map((r) => {
-            if (r.id === roundId) {
-              return {
-                ...r,
-                vcs: r.vcs.filter((id) => id !== vcId),
-              };
-            }
-            return r;
-          }),
-        };
-      }
-      
-      toast.success(`Removed ${vc.name} from ${round.name}`);
-      
-      // Both remove from round and add to unsorted
-      const updatedRounds = state.rounds.map((r) => {
+      // Remove from round
+      const updatedRounds = state.rounds.map(r => {
         if (r.id === roundId) {
           return {
             ...r,
-            vcs: r.vcs.filter((id) => id !== vcId),
+            vcs: r.vcs.filter(id => id !== vcId),
           };
         }
         return r;
       });
       
       console.log(`Updated rounds after removal: `, updatedRounds);
+      
+      // Add to unsorted (if not already there)
+      const isAlreadyInUnsorted = state.unsortedVCs.includes(vcId);
+      console.log(`Is VC ${vcId} already in unsorted? ${isAlreadyInUnsorted}`);
+      
+      if (isAlreadyInUnsorted) {
+        console.log(`VC ${vcId} is already in unsorted, only removing from round`);
+        return {
+          ...state,
+          rounds: updatedRounds
+        };
+      }
+      
       console.log(`Adding VC ${vcId} to unsorted VCs`);
+      toast.success(`Removed ${vc.name} from ${round.name}`);
       
       return {
         ...state,
         rounds: updatedRounds,
-        unsortedVCs: state.unsortedVCs.includes(vcId) 
-          ? state.unsortedVCs 
-          : [...state.unsortedVCs, vcId],
+        unsortedVCs: [...state.unsortedVCs, vcId]
       };
     }
 

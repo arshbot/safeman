@@ -14,6 +14,8 @@ interface UnsortedVCSectionProps {
 export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   
+  console.log(`Rendering UnsortedVCSection with ${vcs.length} VCs`);
+  
   return (
     <div className="mt-8 bg-secondary/50 p-4 rounded-lg border-2 border-dashed border-transparent hover:border-secondary transition-colors">
       <div className="flex justify-between items-center mb-4">
@@ -37,12 +39,13 @@ export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
           droppableId="unsorted" 
           vcs={vcs} 
           getVC={getVC}
-          className="space-y-1 border border-dashed border-secondary/50 rounded-lg p-2"
+          className="border border-dashed border-secondary/50 rounded-lg p-2"
         />
       ) : (
-        <p className="text-center text-muted-foreground p-4 border border-dashed border-secondary/50 rounded-lg">
-          No unsorted VCs. All your VCs are organized in rounds!
-        </p>
+        <div className="text-center text-muted-foreground p-4 border border-dashed border-secondary/50 rounded-lg">
+          <p>No unsorted VCs. All your VCs are organized in rounds!</p>
+          <p className="text-xs mt-2">Drop a VC here to move it from a round</p>
+        </div>
       )}
       
       <AddVCModal

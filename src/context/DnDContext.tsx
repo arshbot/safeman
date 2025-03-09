@@ -45,6 +45,13 @@ export const DnDProvider: React.FC<{
     console.log(`Source droppableId: ${result.source.droppableId}, index: ${result.source.index}`);
     if (result.destination) {
       console.log(`Destination droppableId: ${result.destination.droppableId}, index: ${result.destination.index}`);
+      
+      // Log if this is the unsorted droppable
+      if (result.destination.droppableId === 'unsorted') {
+        console.log('Destination is UNSORTED - this should trigger moving VC to unsorted');
+      } else if (result.destination.droppableId.startsWith('round-')) {
+        console.log(`Destination is a round header: ${result.destination.droppableId}`);
+      }
     } else {
       console.log('No destination - item was dropped outside a droppable area');
     }
