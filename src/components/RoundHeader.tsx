@@ -1,6 +1,7 @@
-import { Round, RoundSummary } from '@/types';
+
+import { Round, RoundSummary, RoundVisibility } from '@/types';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Edit, Trash2, Plus, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, Edit, Trash2, Plus, AlertCircle, EyeOff, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -18,7 +19,7 @@ interface RoundHeaderProps {
 }
 
 export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
-  const { toggleRoundExpand, updateRound, deleteRound } = useCRM();
+  const { cycleRoundVisibility, updateRound, deleteRound } = useCRM();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
@@ -26,8 +27,35 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
   const [valuationCapFormatted, setValuationCapFormatted] = useState(formatNumberWithCommas(round.valuationCap));
   const [targetAmountFormatted, setTargetAmountFormatted] = useState(formatNumberWithCommas(round.targetAmount));
 
-  const handleToggleExpand = () => {
-    toggleRoundExpand(round.id);
+  const handleToggleVisibility = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    cycleRoundVisibility(round.id);
+  };
+
+  const getVisibilityIcon = (visibility: RoundVisibility) => {
+    switch (visibility) {
+      case 'expanded':
+        return <ChevronDown className="h-5 w-5 text-gray-500" />;
+      case 'collapsedShowFinalized':
+        return <ChevronRight className="h-5 w-5 text-gray-500" />;
+      case 'collapsedHideAll':
+        return <EyeOff className="h-5 w-5 text-gray-500" />;
+      default:
+        return <ChevronDown className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  const getVisibilityTooltip = (visibility: RoundVisibility) => {
+    switch (visibility) {
+      case 'expanded':
+        return "Showing all VCs";
+      case 'collapsedShowFinalized':
+        return "Showing only finalized and close to buying VCs";
+      case 'collapsedHideAll':
+        return "Hiding all VCs";
+      default:
+        return "Click to change visibility";
+    }
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
@@ -93,16 +121,19 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
     <TooltipProvider>
       <div 
         className="flex items-center p-4 bg-white border border-gray-200 rounded-lg shadow-sm mb-2 cursor-pointer hover:bg-gray-50 transition-all scale-on-hover"
-        onClick={handleToggleExpand}
+        onClick={handleToggleVisibility}
       >
         <div className="flex-1 flex items-center">
-          <div className="mr-2">
-            {round.isExpanded ? (
-              <ChevronDown className="h-5 w-5 text-gray-500" />
-            ) : (
-              <ChevronRight className="h-5 w-5 text-gray-500" />
-            )}
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="mr-2">
+                {getVisibilityIcon(round.visibility)}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{getVisibilityTooltip(round.visibility)}</p>
+            </TooltipContent>
+          </Tooltip>
           <div className="flex-1">
             <h3 className="font-semibold text-lg flex items-center">
               {round.name}

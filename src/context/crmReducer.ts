@@ -1,7 +1,22 @@
-import { CRMState, Round, VC, Status, MeetingNote } from '@/types';
+
+import { CRMState, Round, VC, Status, MeetingNote, RoundVisibility } from '@/types';
 import { CRMAction } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
+
+// Helper function to cycle round visibility
+const cycleVisibility = (currentVisibility: RoundVisibility): RoundVisibility => {
+  switch (currentVisibility) {
+    case 'expanded':
+      return 'collapsedShowFinalized';
+    case 'collapsedShowFinalized':
+      return 'collapsedHideAll';
+    case 'collapsedHideAll':
+      return 'expanded';
+    default:
+      return 'expanded';
+  }
+};
 
 // Reducer
 export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
@@ -13,6 +28,7 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
         vcs: [],
         order: state.rounds.length,
         isExpanded: false,
+        visibility: 'expanded',
       };
       
       toast.success(`Round ${newRound.name} created`);
@@ -269,6 +285,22 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
             return {
               ...round,
               isExpanded: !round.isExpanded,
+            };
+          }
+          return round;
+        }),
+      };
+    }
+
+    case 'CYCLE_ROUND_VISIBILITY': {
+      return {
+        ...state,
+        rounds: state.rounds.map((round) => {
+          if (round.id === action.payload) {
+            const newVisibility = cycleVisibility(round.visibility);
+            return {
+              ...round,
+              visibility: newVisibility,
             };
           }
           return round;

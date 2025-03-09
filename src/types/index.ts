@@ -1,5 +1,6 @@
 
 export type Status = 'notContacted' | 'contacted' | 'closeToBuying' | 'finalized';
+export type RoundVisibility = 'expanded' | 'collapsedShowFinalized' | 'collapsedHideAll';
 
 export interface MeetingNote {
   id: string;
@@ -26,6 +27,7 @@ export interface Round {
   vcs: string[]; // Array of VC IDs
   order: number;
   isExpanded: boolean;
+  visibility: RoundVisibility;
 }
 
 export interface RoundSummary {

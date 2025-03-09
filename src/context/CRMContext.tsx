@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { CRMState, Round, VC, MeetingNote } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,7 +18,7 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     saveState(state);
   }, [state]);
 
-  const addRound = (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded'>) => {
+  const addRound = (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded' | 'visibility'>) => {
     dispatch({ type: 'ADD_ROUND', payload: round });
   };
 
@@ -81,6 +80,10 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     dispatch({ type: 'TOGGLE_ROUND_EXPAND', payload: roundId });
   };
 
+  const cycleRoundVisibility = (roundId: string) => {
+    dispatch({ type: 'CYCLE_ROUND_VISIBILITY', payload: roundId });
+  };
+
   const reorderRounds = (rounds: Round[]) => {
     dispatch({ type: 'REORDER_ROUNDS', payload: rounds });
   };
@@ -125,6 +128,7 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         addVCToRound,
         removeVCFromRound,
         toggleRoundExpand,
+        cycleRoundVisibility,
         reorderRounds,
         reorderVCs,
         getRoundSummary: getRoundSummaryFn,

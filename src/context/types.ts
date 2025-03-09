@@ -1,9 +1,9 @@
 
-import { CRMState, Round, VC, Status, MeetingNote } from '@/types';
+import { CRMState, Round, VC, Status, MeetingNote, RoundVisibility } from '@/types';
 
 // Actions
 export type CRMAction =
-  | { type: 'ADD_ROUND'; payload: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded'> }
+  | { type: 'ADD_ROUND'; payload: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded' | 'visibility'> }
   | { type: 'UPDATE_ROUND'; payload: Round }
   | { type: 'DELETE_ROUND'; payload: string }
   | { type: 'ADD_VC'; payload: { vc: Omit<VC, 'id'>; id: string } }
@@ -13,6 +13,7 @@ export type CRMAction =
   | { type: 'ADD_VC_TO_ROUND'; payload: { vcId: string; roundId: string } }
   | { type: 'REMOVE_VC_FROM_ROUND'; payload: { vcId: string; roundId: string } }
   | { type: 'TOGGLE_ROUND_EXPAND'; payload: string }
+  | { type: 'CYCLE_ROUND_VISIBILITY'; payload: string }
   | { type: 'REORDER_ROUNDS'; payload: Round[] }
   | { type: 'REORDER_VCS'; payload: { roundId: string; vcIds: string[] } }
   | { type: 'ADD_MEETING_NOTE'; payload: { vcId: string; note: MeetingNote } }
@@ -22,7 +23,7 @@ export type CRMAction =
 // Context type
 export interface CRMContextType {
   state: CRMState;
-  addRound: (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded'>) => void;
+  addRound: (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded' | 'visibility'>) => void;
   updateRound: (round: Round) => void;
   deleteRound: (roundId: string) => void;
   addVC: (vc: Omit<VC, 'id'>) => string;
@@ -32,6 +33,7 @@ export interface CRMContextType {
   addVCToRound: (vcId: string, roundId: string) => void;
   removeVCFromRound: (vcId: string, roundId: string) => void;
   toggleRoundExpand: (roundId: string) => void;
+  cycleRoundVisibility: (roundId: string) => void;
   reorderRounds: (rounds: Round[]) => void;
   reorderVCs: (roundId: string, vcIds: string[]) => void;
   getRoundSummary: (roundId: string) => { 

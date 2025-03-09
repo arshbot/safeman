@@ -26,15 +26,26 @@ export function RoundsList({
     borderRadius: '8px'
   });
 
-  // Filter VCs for each round based on expansion state
-  const getFilteredVCs = (roundId: string, vcs: string[], isExpanded: boolean): string[] => {
-    if (isExpanded) return sortVCsByStatus(vcs);
-    
-    // When collapsed, only show VCs with finalized or closeToBuying status
-    return sortVCsByStatus(vcs.filter(vcId => {
-      const vc = getVC(vcId);
-      return vc && (vc.status === 'finalized' || vc.status === 'closeToBuying');
-    }));
+  // Filter VCs for each round based on visibility state
+  const getFilteredVCs = (roundId: string, vcs: string[], visibility: string): string[] => {
+    switch (visibility) {
+      case 'expanded':
+        return sortVCsByStatus(vcs);
+      
+      case 'collapsedShowFinalized':
+        // When in middle state, only show VCs with finalized or closeToBuying status
+        return sortVCsByStatus(vcs.filter(vcId => {
+          const vc = getVC(vcId);
+          return vc && (vc.status === 'finalized' || vc.status === 'closeToBuying');
+        }));
+      
+      case 'collapsedHideAll':
+        // When fully collapsed, show no VCs
+        return [];
+      
+      default:
+        return sortVCsByStatus(vcs);
+    }
   };
 
   return (
@@ -50,7 +61,8 @@ export function RoundsList({
             .sort((a, b) => a.order - b.order)
             .map((round, index) => {
               const summary = getRoundSummary(round.id);
-              const filteredVCs = getFilteredVCs(round.id, round.vcs, round.isExpanded);
+              const filteredVCs = getFilteredVCs(round.id, round.vcs, round.visibility);
+              const showVCList = round.visibility !== 'collapsedHideAll';
               
               return (
                 <Draggable key={round.id} draggableId={round.id} index={index}>
@@ -79,7 +91,7 @@ export function RoundsList({
                         )}
                       </Droppable>
                       
-                      {filteredVCs.length > 0 && (
+                      {showVCList && filteredVCs.length > 0 && (
                         <DroppableVCList
                           droppableId={round.id}
                           vcs={filteredVCs}
@@ -88,7 +100,7 @@ export function RoundsList({
                         />
                       )}
                       
-                      {round.isExpanded && filteredVCs.length === 0 && (
+                      {round.visibility === 'expanded' && filteredVCs.length === 0 && (
                         <p className="text-center text-muted-foreground p-4">
                           No VCs in this round yet. Add some!
                         </p>
