@@ -1,4 +1,3 @@
-
 import { Round, RoundSummary, RoundVisibility } from '@/types';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, Edit, Trash2, Plus, AlertCircle, EyeOff, Eye } from 'lucide-react';
@@ -19,13 +18,34 @@ interface RoundHeaderProps {
 }
 
 export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
-  const { cycleRoundVisibility, updateRound, deleteRound } = useCRM();
+  const { cycleRoundVisibility, updateRound, deleteRound, state } = useCRM();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const [editedRound, setEditedRound] = useState<Round>(round);
   const [valuationCapFormatted, setValuationCapFormatted] = useState(formatNumberWithCommas(round.valuationCap));
   const [targetAmountFormatted, setTargetAmountFormatted] = useState(formatNumberWithCommas(round.targetAmount));
+
+  // Calculate equity granted for this round
+  const calculateEquityGranted = () => {
+    const roundVCs = round.vcs
+      .map(vcId => state.vcs[vcId])
+      .filter(vc => vc?.status === 'finalized' && vc.purchaseAmount);
+    
+    const roundRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0);
+    
+    // Calculate equity percentage based on valuation cap
+    const equityPercentage = round.valuationCap > 0 
+      ? (roundRaised / round.valuationCap) * 100 
+      : 0;
+    
+    return {
+      equityPercentage,
+      raisedAmount: roundRaised
+    };
+  };
+
+  const { equityPercentage, raisedAmount } = calculateEquityGranted();
 
   const handleToggleVisibility = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -161,6 +181,11 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
               {summary.totalCommitted > 0 && (
                 <span className={`font-medium ${summary.isOversubscribed ? 'text-red-500' : 'text-emerald-600'}`}>
                   Committed: {formatCurrency(summary.totalCommitted)}
+                </span>
+              )}
+              {raisedAmount > 0 && (
+                <span className="font-medium text-purple-600">
+                  Equity Granted: {equityPercentage.toFixed(2)}%
                 </span>
               )}
             </div>
