@@ -25,6 +25,47 @@ interface EquityPoint {
   order: number;
 }
 
+// Create a separate component for the x-axis labels
+const XAxisLabels = ({ domainMax }: { domainMax: number }) => {
+  // Define the tick values we want to show
+  const customXAxisTicks = [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100].filter(tick => tick <= domainMax);
+  
+  // Calculate positions based on logarithmic scale
+  const logMin = Math.log10(0.1);
+  const logMax = Math.log10(domainMax);
+  
+  return (
+    <div className="mt-4 relative h-16 border-t border-gray-300">
+      {customXAxisTicks.map((tick, i) => {
+        const logTick = Math.log10(tick);
+        const position = ((logTick - logMin) / (logMax - logMin)) * 100;
+        
+        return (
+          <div 
+            key={i} 
+            className="absolute" 
+            style={{ 
+              left: `${position}%`, 
+              top: '0px', 
+              transform: 'translateX(-50%)' 
+            }}
+          >
+            <div className="h-4 w-[2px] bg-gray-500 mx-auto"></div>
+            <div className="text-sm font-bold text-gray-800 mt-1">
+              ${tick === 0.1 ? '0.10' : tick}M
+            </div>
+          </div>
+        );
+      })}
+      <div className="absolute bottom-0 left-0 right-0 text-center">
+        <span className="font-bold text-gray-800 text-base">
+          Total Raised ($ millions)
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export function EquityGraph() {
   const { state } = useCRM();
   
@@ -119,35 +160,10 @@ export function EquityGraph() {
     return null;
   };
 
-  // Custom legend renderer to add more spacing between items
-  const CustomLegend = (props: any) => {
-    const { payload } = props;
-    
-    return (
-      <div className="flex items-center justify-center gap-8 mt-2 mb-4">
-        {payload.map((entry: any, index: number) => (
-          <div key={`item-${index}`} className="flex items-center gap-2">
-            <div 
-              className="w-4 h-4"
-              style={{ 
-                backgroundColor: entry.color,
-                ...(entry.dataKey === 'totalTargetRaised' ? { borderStyle: 'dashed', borderWidth: '1px', backgroundColor: 'transparent' } : {})
-              }}
-            />
-            <span>{entry.value}</span>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // Find the maximum value for the domain
+  // Finding the maximum value for the domain
   const maxRaised = Math.max(...equityData.map(point => point.totalRaised || 0.1));
   // Add some padding to the max value
   const domainMax = maxRaised * 1.2;
-
-  // Create custom X axis ticks for better visibility
-  const customXAxisTicks = [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100].filter(tick => tick <= domainMax);
 
   return (
     <Card className="mb-8">
@@ -155,9 +171,10 @@ export function EquityGraph() {
         <CardTitle className="text-xl text-left">Total Equity Granted vs. Total Raised</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative">
-          {/* Main chart container */}
-          <div className="h-[400px] mb-20">
+        {/* This wrapper div sets the context for relative positioning */}
+        <div>
+          {/* Create chart with fixed height */}
+          <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={equityData}
@@ -165,16 +182,14 @@ export function EquityGraph() {
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 
-                {/* X-axis without visible ticks - we'll add our own below */}
+                {/* X-axis with minimal styling - just the line */}
                 <XAxis 
                   dataKey="totalRaised" 
                   type="number"
                   scale="log" 
                   domain={[0.1, domainMax]}
                   allowDataOverflow={true}
-                  tick={false}
-                  axisLine={{ stroke: '#666' }}
-                  tickLine={false}
+                  hide={true}
                 />
                 
                 {/* Y-axis */}
@@ -201,10 +216,12 @@ export function EquityGraph() {
                 />
                 
                 <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  content={<CustomLegend />} 
-                  verticalAlign="top" 
+                
+                <Legend
+                  verticalAlign="top"
                   height={50}
+                  iconType="circle"
+                  iconSize={14}
                 />
                 
                 <Line 
@@ -212,9 +229,9 @@ export function EquityGraph() {
                   dataKey="totalEquityGranted" 
                   name="Total Equity Granted"
                   stroke="#8884d8" 
-                  activeDot={{ r: 8 }}
-                  strokeWidth={2}
+                  strokeWidth={3}
                   dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 8 }}
                   label={({ x, y, value }) => {
                     if (value > 0 && value % 10 < 5) {
                       return (
@@ -247,44 +264,8 @@ export function EquityGraph() {
             </ResponsiveContainer>
           </div>
           
-          {/* X-axis labels rendered separately outside of the chart */}
-          <div className="absolute bottom-24 left-0 right-0 h-20">
-            <div className="relative w-full h-full">
-              {/* Fixed x-axis label */}
-              <div className="absolute bottom-0 left-0 right-0 text-center">
-                <span className="font-bold text-base text-gray-700">
-                  Total Raised ($ millions)
-                </span>
-              </div>
-              
-              {/* Tick marks and values */}
-              <div className="absolute top-0 left-[60px] right-[30px] flex">
-                {customXAxisTicks.map((tick, i) => {
-                  // Calculate position based on logarithmic scale
-                  const logMin = Math.log10(0.1);
-                  const logMax = Math.log10(domainMax);
-                  const logTick = Math.log10(tick);
-                  const position = ((logTick - logMin) / (logMax - logMin)) * 100;
-                  
-                  return (
-                    <div 
-                      key={i} 
-                      className="absolute" 
-                      style={{ 
-                        left: `${position}%`, 
-                        transform: 'translateX(-50%)' 
-                      }}
-                    >
-                      <div className="h-3 w-[1px] bg-gray-500 mx-auto mb-1"></div>
-                      <div className="text-xs font-semibold text-gray-700">
-                        ${tick === 0.1 ? '0.10' : tick.toString()}M
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+          {/* Custom X-axis labels */}
+          <XAxisLabels domainMax={domainMax} />
         </div>
         
         <div className="bg-blue-50 p-4 rounded-lg mt-8">
