@@ -2,7 +2,7 @@
 import { VC } from '@/types';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useCRM } from '@/context/CRMContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { MeetingNotesModal } from './MeetingNotesModal';
 import { VCDetails } from './vc/VCDetails';
@@ -23,9 +23,9 @@ export function VCRow({ vc, roundId }: VCRowProps) {
   const [editedVC, setEditedVC] = useState<VC>(vc);
 
   // Make sure we refresh editedVC when the VC prop changes
-  useState(() => {
+  useEffect(() => {
     setEditedVC(vc);
-  });
+  }, [vc]);
 
   const handleEditClick = () => {
     setEditedVC(vc);
