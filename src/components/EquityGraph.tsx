@@ -22,6 +22,7 @@ interface EquityPoint {
   targetRaised: number;
   totalTargetRaised: number;
   label: string;
+  order: number; // Add order property to sort points
 }
 
 export function EquityGraph() {
@@ -48,7 +49,8 @@ export function EquityGraph() {
     totalEquityGranted: 0,
     targetRaised: 0,
     totalTargetRaised: 0,
-    label: 'Start'
+    label: 'Start',
+    order: -1 // Set order to -1 to ensure it's first
   });
   
   // Sort rounds by their order
@@ -84,7 +86,8 @@ export function EquityGraph() {
       totalEquityGranted: cumulativeEquity,
       targetRaised: targetRaised,
       totalTargetRaised: cumulativeTargetRaised,
-      label: round.name
+      label: round.name,
+      order: round.order
     });
   });
   
@@ -99,7 +102,8 @@ export function EquityGraph() {
       totalEquityGranted: cumulativeEquity,
       targetRaised: 0,
       totalTargetRaised: cumulativeTargetRaised,
-      label: 'Future'
+      label: 'Future',
+      order: sortedRounds.length // Set order to be after all existing rounds
     });
   }
   
@@ -139,9 +143,8 @@ export function EquityGraph() {
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="totalRaised" 
-                label={{ value: 'Total Raised ($M)', position: 'insideBottom', offset: -10 }}
-                tickFormatter={(value) => `$${value.toFixed(1)}`}
+                dataKey="label" 
+                label={{ value: 'Funding Stage', position: 'insideBottom', offset: -10 }}
               />
               <YAxis 
                 label={{ value: 'Total Equity Granted', angle: -90, position: 'insideLeft' }}
