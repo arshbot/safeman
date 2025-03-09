@@ -69,13 +69,10 @@ export function EquityGraph() {
     const roundRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / 1000000; // Convert to millions
     const targetRaised = round.targetAmount / 1000000; // Convert to millions
     
-    // Fixed equity calculation based on purchase amount and valuation cap
-    // If valuation cap is less than or equal to 0, default to a reasonable value to avoid division by zero
-    const effectiveValuation = round.valuationCap > 0 ? round.valuationCap : 10000000; // Default to $10M if no valuation cap
-    
-    // Calculate equity percentage more accurately - if round raised money, equity is based on amount raised
-    // Equity percentage = (amount raised / valuation cap) * 100
-    const equityGranted = (roundRaised * 1000000) / effectiveValuation * 100;
+    // Simple equity calculation based on purchase amount and valuation cap
+    const equityGranted = round.valuationCap > 0 
+      ? (roundRaised * 1000000) / round.valuationCap * 100 
+      : 0;
     
     cumulativeRaised += roundRaised;
     cumulativeEquity += equityGranted;
@@ -94,25 +91,17 @@ export function EquityGraph() {
     });
   });
   
-  // Add a future point if we have at least one round - with more realistic equity projection
+  // Add a future point if we have at least one round
   if (sortedRounds.length > 0) {
-    const projectedRaiseAmount = 5; // More realistic future projection in millions
-    
-    // Calculate the average valuation from previous rounds
-    const avgValuation = sortedRounds.reduce((sum, round) => {
-      return sum + (round.valuationCap > 0 ? round.valuationCap : 0);
-    }, 0) / sortedRounds.filter(round => round.valuationCap > 0).length || 15000000; // Default to $15M if no valuations
-    
-    // Calculate projected equity for the future round
-    const projectedEquity = (projectedRaiseAmount * 1000000) / avgValuation * 100;
+    const projectedRaiseAmount = 3; // Arbitrary future projection in millions
     
     equityData.push({
-      raised: projectedRaiseAmount,
+      raised: 0,
       totalRaised: cumulativeRaised + projectedRaiseAmount,
-      equityGranted: projectedEquity,
-      totalEquityGranted: cumulativeEquity + projectedEquity,
-      targetRaised: projectedRaiseAmount,
-      totalTargetRaised: cumulativeTargetRaised + projectedRaiseAmount,
+      equityGranted: 0,
+      totalEquityGranted: cumulativeEquity,
+      targetRaised: 0,
+      totalTargetRaised: cumulativeTargetRaised,
       label: 'Future',
       order: 0 // Set order to be the earliest point in the timeline
     });
