@@ -23,13 +23,21 @@ export function useDragEndHandler() {
       return vcId;
     } else if (draggableId.startsWith('round-')) {
       // Format: "round-{roundId}-{vcId}"
-      // Everything after the second hyphen is the vcId
       const parts = draggableId.split('-');
-      if (parts.length < 3) return '';
       
-      // Reconstruct the vcId in case it contains hyphens
-      const vcId = parts.slice(2).join('-');
-      console.log(`[DEBUG] Extracted VC ID from round format: ${vcId}`);
+      // We need at least 3 parts: "round", "{roundId}", and the start of "{vcId}"
+      if (parts.length < 3) {
+        console.error('[DEBUG] Invalid draggableId format:', draggableId);
+        return '';
+      }
+      
+      // The roundId is the second part (index 1)
+      const roundId = parts[1];
+      
+      // Everything after "round-{roundId}-" is the vcId
+      const vcId = draggableId.substring(`round-${roundId}-`.length);
+      
+      console.log(`[DEBUG] Extracted VC ID from round format: ${vcId}, from roundId: ${roundId}`);
       return vcId;
     }
     
@@ -46,12 +54,8 @@ export function useDragEndHandler() {
       const parts = draggableId.split('-');
       if (parts.length < 3) return null;
       
-      // The roundId is the second part, but in case it contains hyphens, we need to be careful
-      // We know that the format is "round-{roundId}-{vcId}"
-      // So we extract the middle portion
-      const vcId = extractVcId(draggableId);
-      const roundId = draggableId.replace(`round-`, '').replace(`-${vcId}`, '');
-      
+      // The roundId is the second part (index 1)
+      const roundId = parts[1];
       console.log(`[DEBUG] Extracted source round ID: ${roundId}`);
       return roundId;
     }
@@ -114,6 +118,8 @@ export function useDragEndHandler() {
         console.log(`[DEBUG] Dragging VC: ${vc.name} (${vcId}) from ${sourceId} to ${destId}`);
       } else {
         console.log(`[DEBUG] Dragging VC: ${vcId} from ${sourceId} to ${destId} (VC not found in state)`);
+        console.log('[DEBUG] Available VCs in state:', Object.keys(state.vcs));
+        return; // Exit early if VC not found
       }
       
       // If the VC is dragged to the "unsorted" droppable

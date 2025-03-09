@@ -17,7 +17,7 @@ export function VCDraggable({ vcId, index, vc, roundId }: VCDraggableProps) {
     ? `round-${roundId}-${vcId}` 
     : `unsorted-${vcId}`;
   
-  console.log(`Rendering draggable: ${draggableId}, in container: ${roundId || 'unsorted'}, index: ${index}`);
+  console.log(`Rendering draggable: ${draggableId}, in container: ${roundId || 'unsorted'}, index: ${index}, vcId: ${vcId}`);
     
   return (
     <Draggable 

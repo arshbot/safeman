@@ -15,7 +15,7 @@ interface UnsortedVCSectionProps {
 export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   
-  console.log(`[DEBUG] Rendering UnsortedVCSection with ${vcs.length} VCs`);
+  console.log(`[DEBUG] Rendering UnsortedVCSection with ${vcs.length} VCs`, vcs);
   
   return (
     <div 
@@ -56,22 +56,13 @@ export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
             data-is-dragging-over={snapshot.isDraggingOver}
           >
             {vcs.length > 0 ? (
-              <div className="pl-3">
-                {vcs.map((vcId, index) => {
-                  const vc = getVC(vcId);
-                  if (!vc) return null;
-                  
-                  return (
-                    <DroppableVCList 
-                      key="inner-unsorted-list"
-                      droppableId="unsorted" 
-                      vcs={vcs} 
-                      getVC={getVC}
-                      enableDropping={false}
-                    />
-                  );
-                })}
-              </div>
+              <DroppableVCList 
+                key="inner-unsorted-list"
+                droppableId="unsorted" 
+                vcs={vcs} 
+                getVC={getVC}
+                enableDropping={false}
+              />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
                 <p>No unsorted VCs. All your VCs are organized in rounds!</p>
