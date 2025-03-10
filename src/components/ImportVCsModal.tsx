@@ -9,6 +9,7 @@ import { useCRM } from "@/context/CRMContext";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { VC } from "@/types";
+import { parseExcelValue, formatNumberWithCommas } from "@/utils/formatters";
 
 interface ImportVCsModalProps {
   open: boolean;
@@ -151,27 +152,11 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
         
         if (valuationCapKey && row[valuationCapKey]) {
           const valuationRaw = row[valuationCapKey];
-          if (typeof valuationRaw === 'number') {
-            valuationCap = valuationRaw;
-          } else if (typeof valuationRaw === 'string') {
-            // Remove currency symbols, commas, etc. and parse
-            const cleanedValue = valuationRaw.replace(/[^\d.-]/g, '');
-            const parsed = parseFloat(cleanedValue);
-            if (!isNaN(parsed)) {
-              valuationCap = parsed;
-            }
-          }
+          valuationCap = parseExcelValue(valuationRaw);
         }
         
         // Parse the principal amount - handle different formats
-        let principal = 0;
-        if (typeof principalRaw === 'number') {
-          principal = principalRaw;
-        } else if (typeof principalRaw === 'string') {
-          // Remove currency symbols, commas, etc. and parse
-          const cleanedValue = principalRaw.replace(/[^\d.-]/g, '');
-          principal = parseFloat(cleanedValue);
-        }
+        const principal = parseExcelValue(principalRaw);
         
         if (!isNaN(principal) && principal > 0) {
           importedVCs.push({
@@ -200,7 +185,7 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       importedVCs.forEach(({ vc, valuationCap }) => {
         if (valuationCap) {
           // Use the valuation as a key, rounded to nearest million for better grouping
-          const valuationKey = Math.round(valuationCap / 1000000) * 1000000;
+          const valuationKey = String(Math.round(valuationCap / 1000000) * 1000000);
           if (!vcsByValuation[valuationKey]) {
             vcsByValuation[valuationKey] = [];
           }
@@ -215,7 +200,7 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       let totalVCs = 0;
       let importedAmount = 0;
       
-      // First create rounds
+      // First create rounds for each valuation
       Object.entries(vcsByValuation).forEach(([valuationStr, vcs]) => {
         const valuation = parseInt(valuationStr);
         if (isNaN(valuation)) return;
@@ -225,7 +210,7 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
         // Calculate total amount committed to this round
         const totalRoundAmount = vcs.reduce((sum, vc) => sum + (vc.purchaseAmount || 0), 0);
         
-        // Create the round
+        // Create the round and store its ID
         const roundId = addRound({
           name: roundName,
           valuationCap: valuation,
@@ -241,8 +226,12 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
         if (!roundId) return;
         
         vcs.forEach(vc => {
+          // First add the VC to get its ID
           const vcId = addVC(vc);
+          
+          // Then add the VC to its round
           addVCToRound(vcId, roundId);
+          
           totalVCs++;
           importedAmount += vc.purchaseAmount || 0;
         });
@@ -261,7 +250,7 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
         ? `, created ${createdRoundsCount} rounds based on valuation caps`
         : "";
         
-      toast.success(`Successfully imported ${totalVCs} VCs with total commitment of $${formatAmount(importedAmount)}${roundsMessage}`);
+      toast.success(`Successfully imported ${totalVCs} VCs with total commitment of $${formatNumberWithCommas(importedAmount)}${roundsMessage}`);
       
       // Close the modal and reset form
       onOpenChange(false);
@@ -273,12 +262,6 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
     } finally {
       setIsLoading(false);
     }
-  };
-  
-  const formatAmount = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', { 
-      maximumFractionDigits: 0 
-    }).format(amount);
   };
 
   return (
