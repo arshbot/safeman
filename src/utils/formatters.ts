@@ -1,4 +1,3 @@
-
 /**
  * Formats a number with commas for thousands separators and optional specified decimals
  * @param value - The number to format
@@ -50,7 +49,8 @@ export const formatCurrency = (value: number): string => {
  * @returns The formatted percentage string
  */
 export const formatPercentage = (value: number): string => {
-  return `${formatNumberWithCommas(value, 1)}%`;
+  // Changed to display 2 decimal places for percentages
+  return `${formatNumberWithCommas(value, 2)}%`;
 };
 
 /**
