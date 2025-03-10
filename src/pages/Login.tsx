@@ -1,12 +1,17 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { SignIn } from "@clerk/clerk-react";
 
 const Login = () => {
   const { user, loading } = useAuth();
+  const location = useLocation();
+
+  // Extract potential error from URL if there was an authentication failure
+  const searchParams = new URLSearchParams(location.search);
+  const error = searchParams.get('error');
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -37,7 +42,13 @@ const Login = () => {
             </p>
           </div>
           
-          <SignIn />
+          {error && (
+            <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">
+              Authentication error. Please try again.
+            </div>
+          )}
+          
+          <SignIn path="/login" routing="path" signUpUrl="/login" />
         </div>
       </motion.div>
     </div>
