@@ -1,7 +1,7 @@
 import { Round, RoundSummary, RoundVisibility } from '@/types';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, Edit, Trash2, Plus, AlertCircle, EyeOff, Eye } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -145,6 +145,23 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
     return `$0`;
   };
 
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Focus the delete button when the delete dialog opens
+  useEffect(() => {
+    if (isDeleteDialogOpen && deleteButtonRef.current) {
+      deleteButtonRef.current.focus();
+    }
+  }, [isDeleteDialogOpen]);
+
+  // Handle keydown events for delete dialog
+  const handleDeleteDialogKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleDelete();
+    }
+  };
+
   return (
     <TooltipProvider>
       <div 
@@ -280,7 +297,10 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] glassmorphism">
+        <DialogContent 
+          className="sm:max-w-[425px] glassmorphism"
+          onKeyDown={handleDeleteDialogKeyDown}
+        >
           <DialogHeader>
             <DialogTitle>Delete Round</DialogTitle>
           </DialogHeader>
@@ -291,7 +311,12 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            <Button 
+              variant="destructive" 
+              onClick={handleDelete}
+              ref={deleteButtonRef}
+              autoFocus
+            >
               Delete
             </Button>
           </DialogFooter>

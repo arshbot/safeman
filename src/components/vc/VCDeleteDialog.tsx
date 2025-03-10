@@ -1,6 +1,7 @@
 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useEffect, useRef } from 'react';
 
 interface VCDeleteDialogProps {
   isOpen: boolean;
@@ -15,9 +16,29 @@ export function VCDeleteDialog({
   vcName, 
   handleDelete 
 }: VCDeleteDialogProps) {
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Focus the delete button when the dialog opens
+  useEffect(() => {
+    if (isOpen && deleteButtonRef.current) {
+      deleteButtonRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Handle keydown events to trigger delete on Enter
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleDelete();
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] glassmorphism">
+      <DialogContent 
+        className="sm:max-w-[425px] glassmorphism" 
+        onKeyDown={handleKeyDown}
+      >
         <DialogHeader>
           <DialogTitle>Delete VC</DialogTitle>
         </DialogHeader>
@@ -28,7 +49,12 @@ export function VCDeleteDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button 
+            variant="destructive" 
+            onClick={handleDelete}
+            ref={deleteButtonRef}
+            autoFocus
+          >
             Delete
           </Button>
         </DialogFooter>
