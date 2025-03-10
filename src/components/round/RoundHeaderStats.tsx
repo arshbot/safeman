@@ -24,8 +24,8 @@ export function RoundHeaderStats({
 }: RoundHeaderStatsProps) {
   return (
     <div className="flex-1">
-      <h3 className="font-semibold text-lg flex items-center">
-        {name}
+      <div className="font-semibold text-lg flex items-center">
+        {/* Removed the duplicate round name */}
         
         {/* Warning indicator for oversubscribed rounds */}
         {summary.isOversubscribed && (
@@ -42,7 +42,7 @@ export function RoundHeaderStats({
             </Tooltip>
           </TooltipProvider>
         )}
-      </h3>
+      </div>
       <div className="flex text-sm text-gray-500 space-x-4">
         <span>Target: {formatCurrency(targetAmount)}</span>
         <span>Cap: {formatCurrency(valuationCap)}</span>
