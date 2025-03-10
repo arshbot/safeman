@@ -1,11 +1,21 @@
 
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, Layers, Users } from "lucide-react";
+import { FileSpreadsheet, Layers, LogOut, User, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { AddVCModal } from "./AddVCModal";
 import { AddRoundModal } from "./AddRoundModal";
 import { ImportVCsModal } from "./ImportVCsModal";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PageHeaderProps {
   onAddVC: () => void;
@@ -14,6 +24,7 @@ interface PageHeaderProps {
 export function PageHeader({ onAddVC }: PageHeaderProps) {
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const { user, logout } = useAuth();
   
   return (
     <motion.div 
@@ -28,7 +39,7 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
           <span className="font-bold">SAFE</span> Allocation & Financing Equity <span className="font-bold">Man</span>ager
         </p>
       </div>
-      <div className="flex space-x-2">
+      <div className="flex space-x-2 items-center">
         <Button 
           variant="outline" 
           onClick={() => setIsImportModalOpen(true)}
@@ -64,6 +75,31 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
           open={isImportModalOpen}
           onOpenChange={setIsImportModalOpen}
         />
+        
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "User"} />
+                  <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled>
+                <User className="mr-2 h-4 w-4" />
+                <span>{user.displayName || user.email}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </motion.div>
   );
