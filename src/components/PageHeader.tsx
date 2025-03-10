@@ -25,7 +25,7 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">SAFEMAN</h1>
         <p className="text-xs text-muted-foreground mt-1">
-          SAFE Allocation & Financing Equity Manager
+          <span className="font-bold">SAFE</span> Allocation & Financing Equity <span className="font-bold">Man</span>ager
         </p>
       </div>
       <div className="flex space-x-2">
