@@ -3,7 +3,7 @@ import { CRMState, Round, VC, Status, MeetingNote, RoundVisibility } from '@/typ
 
 // Actions
 export type CRMAction =
-  | { type: 'ADD_ROUND'; payload: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded' | 'visibility'> }
+  | { type: 'ADD_ROUND'; payload: Omit<Round, 'vcs' | 'order' | 'isExpanded' | 'visibility'> & { id: string } }
   | { type: 'UPDATE_ROUND'; payload: Round }
   | { type: 'DELETE_ROUND'; payload: string }
   | { type: 'ADD_VC'; payload: { vc: Omit<VC, 'id'>; id: string } }
@@ -23,7 +23,7 @@ export type CRMAction =
 // Context type
 export interface CRMContextType {
   state: CRMState;
-  addRound: (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded' | 'visibility'>) => void;
+  addRound: (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded' | 'visibility'>) => string;
   updateRound: (round: Round) => void;
   deleteRound: (roundId: string) => void;
   addVC: (vc: Omit<VC, 'id'>) => string;

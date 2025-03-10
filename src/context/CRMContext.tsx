@@ -19,7 +19,9 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [state]);
 
   const addRound = (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded' | 'visibility'>) => {
-    dispatch({ type: 'ADD_ROUND', payload: round });
+    const id = uuidv4();
+    dispatch({ type: 'ADD_ROUND', payload: { ...round, id } });
+    return id;
   };
 
   const updateRound = (round: Round) => {

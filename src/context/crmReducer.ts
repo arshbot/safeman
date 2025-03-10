@@ -1,4 +1,3 @@
-
 import { CRMState, Round, VC, Status, MeetingNote, RoundVisibility } from '@/types';
 import { CRMAction } from './types';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,7 +22,6 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
   switch (action.type) {
     case 'ADD_ROUND': {
       const newRound: Round = {
-        id: uuidv4(),
         ...action.payload,
         vcs: [],
         order: state.rounds.length,
