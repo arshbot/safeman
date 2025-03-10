@@ -24,13 +24,13 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
   // Find the maximum value across both datasets for x-axis scaling
   const maxActualValue = actualEquityPoints.length > 0 
     ? Math.max(...actualEquityPoints.map(d => d.totalRaised)) 
-    : 0;
+    : 100;
   
   const maxTargetValue = targetEquityPoints.length > 0 
     ? Math.max(...targetEquityPoints.map(d => d.totalRaised)) 
-    : 0;
+    : 100;
   
-  const maxValue = Math.max(maxActualValue, maxTargetValue, 10); // Ensure at least 10M for scale
+  const maxValue = Math.max(maxActualValue, maxTargetValue, 100); // Ensure minimum for scale
   
   const xAxisTicks = createLogTicks(maxValue);
   
@@ -39,10 +39,11 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
 
   // Format the x-axis tick labels
   const formatXAxis = (value: number) => {
-    if (value < 1) {
-      return `$${value * 1000}K`;
+    // Convert from thousands to display format
+    if (value >= 1000) {
+      return `$${value/1000}M`;
     }
-    return `$${value}M`;
+    return `$${value}K`;
   };
 
   // Combine data points for the chart, marking which line they belong to
@@ -68,7 +69,7 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
           dataKey="totalRaised"
           type="number"
           scale="log"
-          domain={['auto', Math.max(...xAxisTicks)]}
+          domain={[100, Math.max(...xAxisTicks)]}
           ticks={xAxisTicks}
           tickFormatter={formatXAxis}
           tick={{ 
@@ -78,7 +79,7 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
           }}
           height={80}
           label={{ 
-            value: 'Total Raised ($ millions)', 
+            value: 'Total Raised', 
             position: 'bottom',
             offset: 40,
             style: { 

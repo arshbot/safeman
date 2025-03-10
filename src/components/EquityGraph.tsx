@@ -16,10 +16,10 @@ export function EquityGraph() {
   const { actualEquityPoints, targetEquityPoints } = generateEquityData(state);
   
   // Calculate total founder equity based ONLY on actual equity granted (not targets)
-  const totalEquityGranted = actualEquityPoints.reduce(
-    (total, point) => total + point.equityGranted, 
-    0
-  );
+  const totalEquityGranted = actualEquityPoints.length > 0 
+    ? actualEquityPoints[actualEquityPoints.length - 1].totalEquityGranted 
+    : 0;
+    
   const founderEquity = 100 - totalEquityGranted;
 
   return (

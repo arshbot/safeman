@@ -28,32 +28,32 @@ export const generateEquityData = (state: CRMState): {
   let actualPoints: EquityPoint[] = [];
   let targetPoints: EquityPoint[] = [];
   
-  let cumulativeActualRaised = 0;
   let cumulativeActualEquity = 0;
-  
-  let cumulativeTargetRaised = 0;
   let cumulativeTargetEquity = 0;
   
   // Process each round
   sortedRounds.forEach(round => {
-    // Calculate target amount and equity
-    const targetRaised = round.targetAmount / 1000000; // Convert to millions
-    const targetValuation = round.valuationCap > 0 ? round.valuationCap : 10000000; // Default to $10M if no valuation cap
-    const targetEquityGranted = (round.targetAmount / targetValuation) * 100;
+    // Calculate target amount and equity for this round
+    const targetRaised = round.targetAmount / 1000; // Convert to thousands (for K display)
+    const targetValuation = round.valuationCap;
+    const targetEquityGranted = targetValuation > 0 
+      ? (round.targetAmount / targetValuation) * 100
+      : 0;
     
-    // Add to cumulative targets
-    cumulativeTargetRaised += targetRaised;
+    // Add to cumulative target equity
     cumulativeTargetEquity += targetEquityGranted;
     
-    // Add target data point
-    targetPoints.push({
-      raised: targetRaised,
-      totalRaised: Math.max(cumulativeTargetRaised, 0.1), // Ensure minimum value for log scale
-      equityGranted: targetEquityGranted,
-      totalEquityGranted: cumulativeTargetEquity,
-      label: round.name,
-      order: round.order
-    });
+    // Add target data point (always add target point if it has a value)
+    if (targetRaised > 0) {
+      targetPoints.push({
+        raised: targetRaised,
+        totalRaised: targetRaised, // X-axis value is the target amount itself
+        equityGranted: targetEquityGranted,
+        totalEquityGranted: cumulativeTargetEquity,
+        label: round.name,
+        order: round.order
+      });
+    }
     
     // Get finalized VCs for this round
     const roundVCs = round.vcs
@@ -62,16 +62,17 @@ export const generateEquityData = (state: CRMState): {
     
     // Only add actual data point if there are finalized VCs with purchase amounts
     if (roundVCs.length > 0) {
-      const actualRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / 1000000;
-      const actualValuation = round.valuationCap > 0 ? round.valuationCap : 10000000;
-      const actualEquityGranted = (roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / actualValuation) * 100;
+      const actualRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / 1000;
+      const actualValuation = round.valuationCap;
+      const actualEquityGranted = actualValuation > 0
+        ? (roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / actualValuation) * 100
+        : 0;
       
-      cumulativeActualRaised += actualRaised;
       cumulativeActualEquity += actualEquityGranted;
       
       actualPoints.push({
         raised: actualRaised,
-        totalRaised: Math.max(cumulativeActualRaised, 0.1), // Ensure minimum value for log scale
+        totalRaised: actualRaised, // X-axis value is the actual amount raised
         equityGranted: actualEquityGranted,
         totalEquityGranted: cumulativeActualEquity,
         label: round.name,
@@ -90,20 +91,17 @@ export const generateEquityData = (state: CRMState): {
  * Create logarithmic tick values with better spread for the x-axis
  */
 export const createLogTicks = (maxValue: number): number[] => {
-  // Start with our minimum value for log scale
-  const ticks = [0.1];
+  // Start with 100K
+  const ticks = [100];
   
-  // Add additional values between 0.1 and 1
-  if (maxValue >= 0.5) ticks.push(0.5);
-  if (maxValue >= 1) ticks.push(1);
-  
-  // Add values from 2 to max, making sure we have a nice spread
-  if (maxValue >= 2) ticks.push(2);
-  if (maxValue >= 5) ticks.push(5);
-  if (maxValue >= 10) ticks.push(10);
-  if (maxValue >= 20) ticks.push(20);
-  if (maxValue >= 50) ticks.push(50);
-  if (maxValue >= 100) ticks.push(100);
+  // Add additional logarithmic points
+  if (maxValue >= 160) ticks.push(160);
+  if (maxValue >= 200) ticks.push(200);
+  if (maxValue >= 500) ticks.push(500);
+  if (maxValue >= 1000) ticks.push(1000);
+  if (maxValue >= 2000) ticks.push(2000);
+  if (maxValue >= 5000) ticks.push(5000);
+  if (maxValue >= 10000) ticks.push(10000);
   
   return ticks;
 };

@@ -22,7 +22,7 @@ export function EquityChartTooltip({ active, payload }: EquityChartTooltipProps)
       <p className="font-medium">{data.label}</p>
       <p className="text-sm text-gray-700">
         {isActual ? 'Actual Raised: ' : 'Target: '}
-        {formatCurrency(data.raised * 1000000)}
+        {formatCurrency(data.raised * 1000)}
       </p>
       <p className="text-sm text-gray-700">
         {isActual ? 'Equity Granted: ' : 'Target Equity: '}
