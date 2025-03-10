@@ -21,9 +21,9 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
       className="mb-8 flex justify-between items-center"
     >
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">VC Round Manager</h1>
-        <p className="text-muted-foreground mt-1">
-          Organize your investor relationships by funding rounds
+        <h1 className="text-3xl font-bold tracking-tight">SAFEMAN</h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          SAFE Allocation & Financing Equity Manager
         </p>
       </div>
       <div className="flex space-x-2">
