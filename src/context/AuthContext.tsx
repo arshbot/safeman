@@ -1,15 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { 
-  User, 
-  signInWithPopup, 
-  signOut, 
-  onAuthStateChanged 
-} from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+
+import React, { createContext, useContext } from "react";
+import { useUser, useClerk } from "@clerk/clerk-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AuthContextType {
-  user: User | null;
+  user: any;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
@@ -20,43 +15,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
   children 
 }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   const signInWithGoogle = async () => {
-    try {
-      setLoading(true);
-      await signInWithPopup(auth, googleProvider);
-      toast({
-        title: "Successfully signed in",
-        description: "Welcome to SAFEMAN!",
-      });
-    } catch (error) {
-      console.error("Error signing in with Google:", error);
-      toast({
-        title: "Failed to sign in",
-        description: "There was a problem signing in with Google.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+    // This function is kept for API compatibility with existing code
+    // but we're now using Clerk's SignIn component directly
+    toast({
+      title: "Using Clerk Authentication",
+      description: "Please use the Clerk sign-in widget",
+    });
+    return Promise.resolve();
   };
 
   const logout = async () => {
     try {
-      setLoading(true);
-      await signOut(auth);
+      await signOut();
       toast({
         title: "Successfully signed out",
         description: "You have been signed out of SAFEMAN.",
@@ -68,13 +43,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         description: "There was a problem signing out.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        loading: !isLoaded, 
+        signInWithGoogle, 
+        logout 
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
