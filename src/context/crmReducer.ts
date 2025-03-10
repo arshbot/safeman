@@ -54,13 +54,19 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
         toast.success(`Round ${roundToDelete.name} deleted`);
       }
       
-      // Move VCs from this round to unsorted
+      // Get all VCs in this round
       const roundVCs = state.rounds.find((r) => r.id === action.payload)?.vcs || [];
+      
+      // Create a new vcs object without the VCs from the deleted round
+      const updatedVCs = { ...state.vcs };
+      for (const vcId of roundVCs) {
+        delete updatedVCs[vcId];
+      }
       
       return {
         ...state,
         rounds: state.rounds.filter((round) => round.id !== action.payload),
-        unsortedVCs: [...state.unsortedVCs, ...roundVCs],
+        vcs: updatedVCs
       };
     }
 
