@@ -129,12 +129,20 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      notation: 'compact',
-      maximumFractionDigits: 1,
-    }).format(amount);
+    // For values less than 1 million but greater than or equal to 1000
+    if (amount >= 1000 && amount < 1000000) {
+      return `$${(amount / 1000).toFixed(0)}k`;
+    }
+    // For values less than 1000 but greater than 0
+    else if (amount < 1000 && amount > 0) {
+      return `$${amount.toFixed(0)}`;
+    }
+    // For values greater than or equal to 1 million
+    else if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1)}M`;
+    }
+    // Default case for zero or negative values
+    return `$0`;
   };
 
   return (

@@ -20,7 +20,7 @@ export function EquitySummary({ founderEquity, totalCommitted, roundsCount }: Eq
         <div>
           <h3 className="font-bold text-left">Total Raised</h3>
           <p className="text-3xl font-semibold text-left">
-            {formatCurrency(totalCommitted / 1000000)}
+            {formatCurrency(totalCommitted)}
           </p>
         </div>
         

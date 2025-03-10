@@ -1,3 +1,4 @@
+
 /**
  * Formats a number with commas for thousands separators and optional specified decimals
  * @param value - The number to format
@@ -32,15 +33,25 @@ export const formatNumberWithCommas = (value: number | string, decimals = 2): st
 };
 
 /**
- * Formats a currency value with '$' prefix and 'M' suffix for millions
- * @param value - The number to format in millions
+ * Formats a currency value with '$' prefix and 'k' suffix for thousands, 'M' suffix for millions
+ * @param value - The number to format
  * @returns The formatted currency string
  */
 export const formatCurrency = (value: number): string => {
-  if (value < 0.01 && value > 0) {
-    return `$${(value * 1000).toFixed(0)}K`;
+  // For values less than 1 million but greater than or equal to 1000
+  if (value >= 1000 && value < 1000000) {
+    return `$${(value / 1000).toFixed(0)}k`;
   }
-  return `$${formatNumberWithCommas(value, 1)}M`;
+  // For values less than 1000 but greater than 0
+  else if (value < 1000 && value > 0) {
+    return `$${value.toFixed(0)}`;
+  }
+  // For values greater than or equal to 1 million
+  else if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  }
+  // Default case for zero or negative values
+  return `$0`;
 };
 
 /**
