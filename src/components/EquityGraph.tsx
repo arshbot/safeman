@@ -15,8 +15,9 @@ export function EquityGraph() {
   // Generate equity data points based on actual rounds
   const equityData = generateEquityData(state);
   
-  // Calculate founder equity
-  const founderEquity = 100 - (equityData.length > 0 ? equityData[equityData.length - 1].totalEquityGranted : 0);
+  // Calculate total founder equity by taking 100 and subtracting the sum of equity granted in each round
+  const totalEquityGranted = equityData.reduce((total, point) => total + point.equityGranted, 0);
+  const founderEquity = Math.max(0, 100 - totalEquityGranted);
 
   return (
     <Card className="mb-8">
