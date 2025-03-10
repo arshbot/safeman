@@ -9,7 +9,6 @@ import { UnsortedVCSection } from "@/components/UnsortedVCSection";
 import { useVCSorting } from "@/hooks/useVCSorting";
 import { useDragEndHandler } from "@/hooks/useDragEndHandler";
 import { DnDProvider } from "@/context/DnDContext";
-import { EquityGraph } from "@/components/EquityGraph";
 
 // Reset server context for SSR compatibility
 resetServerContext();
@@ -31,9 +30,6 @@ const Index = () => {
     <div className="container mx-auto p-6 max-w-6xl">
       <PageHeader onAddVC={() => setSelectedRoundId(undefined)} />
       
-      {/* Equity Graph Component */}
-      <EquityGraph />
-
       <DnDProvider onDragEnd={handleDragEnd}>
         {state.rounds.length > 0 ? (
           <RoundsList
