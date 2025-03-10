@@ -123,7 +123,8 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         // Add VCs to the round
         for (const vc of vcs) {
           try {
-            const vcId = addVC(vc); // The addVC function returns a string ID
+            // Fix: Make sure to capture the string ID returned by addVC
+            const vcId: string = addVC(vc);
             addVCToRound(vcId, roundId);
             totalVCs++;
             importedAmount += vc.purchaseAmount || 0;
@@ -136,7 +137,8 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
       // Add VCs with no valuation
       for (const vc of noValuationVCs) {
         try {
-          const vcId = addVC(vc); // Also capture the ID here, even if not using it directly
+          // Fix: Capture the ID here too, even if not using it directly
+          const vcId: string = addVC(vc);
           totalVCs++;
           importedAmount += vc.purchaseAmount || 0;
         } catch (err) {
