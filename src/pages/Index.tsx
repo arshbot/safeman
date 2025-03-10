@@ -32,13 +32,22 @@ const Index = () => {
       
       <DnDProvider onDragEnd={handleDragEnd}>
         {state.rounds.length > 0 ? (
-          <RoundsList
-            rounds={state.rounds}
-            getRoundSummary={getRoundSummary}
-            onAddVC={handleAddVCToRound}
-            getVC={(id) => state.vcs[id]}
-            sortVCsByStatus={sortVCsByStatus}
-          />
+          <>
+            <div className="mb-4 p-2 bg-secondary/20 rounded-lg">
+              <h2 className="text-lg font-semibold mb-2">Funding Rounds</h2>
+              <p className="text-sm text-muted-foreground mb-2">
+                Drag and drop to reorder rounds or move VCs between rounds.
+              </p>
+            </div>
+
+            <RoundsList
+              rounds={state.rounds}
+              getRoundSummary={getRoundSummary}
+              onAddVC={handleAddVCToRound}
+              getVC={(id) => state.vcs[id]}
+              sortVCsByStatus={sortVCsByStatus}
+            />
+          </>
         ) : (
           <EmptyRoundsPrompt />
         )}

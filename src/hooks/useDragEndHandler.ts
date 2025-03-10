@@ -127,6 +127,7 @@ export function useDragEndHandler() {
       }));
       
       reorderRounds(updatedRounds);
+      toast.success("Rounds reordered successfully");
       return;
     }
     

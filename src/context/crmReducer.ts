@@ -313,6 +313,7 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
     }
 
     case 'REORDER_ROUNDS': {
+      toast.success("Rounds reordered successfully");
       return {
         ...state,
         rounds: action.payload,

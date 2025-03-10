@@ -1,6 +1,6 @@
 
 import { Round, RoundSummary, VC } from "@/types";
-import { Droppable, Draggable } from "react-beautiful-dnd";
+import { Droppable, Draggable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
 import { RoundHeader } from "./RoundHeader";
 import { DroppableVCList } from "./DroppableVCList";
 
@@ -44,10 +44,17 @@ export function RoundsList({
         return sortVCsByStatus(vcs);
     }
   };
+
+  const getDraggableStyles = (isDragging: boolean) => ({
+    // Add these transition styles for smoother dragging
+    transition: isDragging ? 'none' : 'transform 0.3s ease, box-shadow 0.3s ease',
+    boxShadow: isDragging ? '0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23)' : 'none',
+    margin: isDragging ? '0' : '0 0 16px 0',
+  });
   
   return (
     <Droppable droppableId="rounds" type="ROUND">
-      {(provided, snapshot) => (
+      {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
         <div 
           {...provided.droppableProps} 
           ref={provided.innerRef} 
@@ -62,7 +69,15 @@ export function RoundsList({
             return (
               <Draggable key={round.id} draggableId={round.id} index={index}>
                 {(provided, snapshot) => (
-                  <div ref={provided.innerRef} className="bg-secondary/50 p-4 rounded-lg py-px">
+                  <div 
+                    ref={provided.innerRef} 
+                    {...provided.draggableProps}
+                    className="bg-secondary/50 p-4 rounded-lg py-px"
+                    style={{
+                      ...provided.draggableProps.style,
+                      ...getDraggableStyles(snapshot.isDragging)
+                    }}
+                  >
                     {/* Droppable area for the round header to accept VCs */}
                     <Droppable droppableId={`round-${round.id}`} type="VC">
                       {(dropProvided, dropSnapshot) => (
@@ -71,7 +86,7 @@ export function RoundsList({
                           {...dropProvided.droppableProps} 
                           className={`${dropSnapshot.isDraggingOver ? 'bg-primary/10' : ''} rounded-md transition-colors`}
                         >
-                          <RoundHeader round={round} summary={summary} onAddVC={onAddVC} />
+                          <RoundHeader round={round} summary={summary} onAddVC={onAddVC} dragHandleProps={provided.dragHandleProps} />
                           {dropProvided.placeholder}
                         </div>
                       )}
