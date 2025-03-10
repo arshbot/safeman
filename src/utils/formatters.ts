@@ -63,3 +63,19 @@ export const parseFormattedNumber = (value: string): number => {
   const cleanValue = value.replace(/[^\d.-]/g, '');
   return parseFloat(cleanValue) || 0;
 };
+
+/**
+ * Parses an Excel value that might be a number or formatted string
+ * @param value - The Excel value to parse
+ * @returns The parsed number or 0 if invalid
+ */
+export const parseExcelValue = (value: any): number => {
+  if (typeof value === 'number') {
+    return value;
+  } else if (typeof value === 'string') {
+    // Remove currency symbols, commas, etc. and parse
+    const cleanedValue = value.replace(/[^\d.-]/g, '');
+    return parseFloat(cleanedValue) || 0;
+  }
+  return 0;
+};

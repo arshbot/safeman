@@ -70,7 +70,7 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       const worksheet = workbook.Sheets[sheetName];
       
       // Convert to JSON - raw data
-      const jsonData = xlsx.utils.sheet_to_json(worksheet);
+      const jsonData = xlsx.utils.sheet_to_json(worksheet, { header: 'A' });
       
       if (jsonData.length === 0) {
         throw new Error("No data found in the Convertible Ledger sheet");
@@ -78,47 +78,88 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
 
       console.log("Parsed Excel data:", jsonData);
       
-      // Find the row with column headers (usually row 4, index 3)
-      // Then find the actual data rows (starting from row 5, index 4)
-      const actualDataRows = jsonData.slice(3); // Skip header rows
-      
-      if (actualDataRows.length === 0) {
-        throw new Error("Could not find data rows in the spreadsheet");
+      // Find the row with column headers by looking for "Stakeholder Name" or similar
+      let headerRowIndex = -1;
+      for (let i = 0; i < jsonData.length; i++) {
+        const row = jsonData[i] as any;
+        const values = Object.values(row);
+        
+        // Look for strings that might indicate this is the header row
+        const isHeaderRow = values.some(val => 
+          typeof val === 'string' && 
+          (val.includes("Stakeholder Name") || val.includes("stakeholder name"))
+        );
+        
+        if (isHeaderRow) {
+          headerRowIndex = i;
+          break;
+        }
       }
       
-      // Extract VCs data by looking at the correct fields in each row
+      if (headerRowIndex === -1) {
+        throw new Error("Could not find the header row in the spreadsheet");
+      }
+
+      // Get the header row to determine column positions
+      const headerRow = jsonData[headerRowIndex] as any;
+      console.log("Header row:", headerRow);
+      
+      // Map column letters to their meanings
+      const columnMap: {[key: string]: string} = {};
+      Object.entries(headerRow).forEach(([colKey, value]) => {
+        if (typeof value === 'string') {
+          const valueLower = value.toLowerCase();
+          if (valueLower.includes("stakeholder name")) columnMap.name = colKey;
+          else if (valueLower.includes("stakeholder email")) columnMap.email = colKey;
+          else if (valueLower.includes("principal")) columnMap.principal = colKey;
+        }
+      });
+      
+      console.log("Column mapping:", columnMap);
+      
+      if (!columnMap.name || !columnMap.principal) {
+        throw new Error("Could not identify the necessary columns in the spreadsheet. Make sure it contains Stakeholder Name and Principal columns.");
+      }
+      
+      // Extract VCs data from all rows after the header
       const importedVCs: Omit<VC, 'id'>[] = [];
       
-      for (let i = 1; i < actualDataRows.length; i++) { // Start from 1 to skip the header row
-        const row = actualDataRows[i];
+      for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+        const row = jsonData[i] as any;
         
-        // Extract data by using the row properties
-        // For Carta exports, we need to check multiple possible column names
-        const name = findValueInRow(row, ['__EMPTY_1', 'Stakeholder Name']);
-        const email = findValueInRow(row, ['__EMPTY_2', 'Stakeholder Email']);
-        const principalRaw = findValueInRow(row, ['__EMPTY_3', 'Principal']);
+        // Skip rows without essential data
+        if (!row[columnMap.name] || !row[columnMap.principal]) continue;
         
-        // Check if we have the essential data (name and principal amount)
-        if (name && principalRaw) {
-          const principal = typeof principalRaw === 'number' 
-            ? principalRaw 
-            : parseFloat(String(principalRaw).replace(/[^\d.-]/g, ''));
-          
-          if (!isNaN(principal) && principal > 0) {
-            importedVCs.push({
-              name,
-              email: email || undefined,
-              status: 'finalized' as const,
-              purchaseAmount: principal,
-              notes: `Imported from Carta on ${new Date().toLocaleDateString()}`
-            });
-          }
+        const name = row[columnMap.name];
+        const email = columnMap.email ? row[columnMap.email] : undefined;
+        const principalRaw = row[columnMap.principal];
+        
+        // Parse the principal amount - handle different formats
+        let principal = 0;
+        if (typeof principalRaw === 'number') {
+          principal = principalRaw;
+        } else if (typeof principalRaw === 'string') {
+          // Remove currency symbols, commas, etc. and parse
+          const cleanedValue = principalRaw.replace(/[^\d.-]/g, '');
+          principal = parseFloat(cleanedValue);
+        }
+        
+        if (!isNaN(principal) && principal > 0) {
+          importedVCs.push({
+            name,
+            email: email || undefined,
+            status: 'finalized' as const,
+            purchaseAmount: principal,
+            notes: `Imported from Carta on ${new Date().toLocaleDateString()}`
+          });
         }
       }
       
       if (importedVCs.length === 0) {
         throw new Error("No valid VC data found in the spreadsheet. Make sure the file contains columns for Stakeholder Name, Stakeholder Email, and Principal.");
       }
+      
+      console.log("VCs to import:", importedVCs);
       
       // Add VCs to the CRM
       const addedCount = importedVCs.length;
@@ -142,16 +183,6 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
     } finally {
       setIsLoading(false);
     }
-  };
-  
-  // Helper function to find values in complex row objects
-  const findValueInRow = (row: any, possibleKeys: string[]): any => {
-    for (const key of possibleKeys) {
-      if (row[key] !== undefined) {
-        return row[key];
-      }
-    }
-    return null;
   };
   
   const formatAmount = (amount: number): string => {
@@ -242,4 +273,3 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
     </Dialog>
   );
 }
-
