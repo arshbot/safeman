@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -217,36 +216,33 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       });
       
       // Then add VCs and associate them with rounds
-      Object.entries(vcsByValuation).forEach(([valuationStr, vcs]) => {
+      for (const [valuationStr, vcs] of Object.entries(vcsByValuation)) {
         const roundId = createdRoundIds[valuationStr];
-        if (!roundId) return;
+        if (!roundId) continue;
         
-        vcs.forEach(vc => {
-          // Make sure to capture the returned ID
+        for (const vc of vcs) {
           const vcId = addVC(vc);
           if (!vcId) {
             console.error('Failed to create VC:', vc);
-            return;
+            continue;
           }
           
-          // Add the VC to its round
           addVCToRound(vcId, roundId);
-          
           totalVCs++;
           importedAmount += vc.purchaseAmount || 0;
-        });
-      });
+        }
+      }
       
       // Add VCs with no valuation to unsorted
-      noValuationVCs.forEach(vc => {
+      for (const vc of noValuationVCs) {
         const vcId = addVC(vc);
         if (!vcId) {
           console.error('Failed to create VC:', vc);
-          return;
+          continue;
         }
         totalVCs++;
         importedAmount += vc.purchaseAmount || 0;
-      });
+      }
       
       // Show success message
       const createdRoundsCount = Object.keys(createdRoundIds).length;
