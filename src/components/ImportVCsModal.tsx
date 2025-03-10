@@ -199,9 +199,9 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       let importedAmount = 0;
       
       // First create rounds for each valuation group
-      Object.entries(vcsByValuation).forEach(([valuationStr, vcs]) => {
+      for (const [valuationStr, vcs] of Object.entries(vcsByValuation)) {
         const valuation = parseInt(valuationStr);
-        if (isNaN(valuation)) return;
+        if (isNaN(valuation)) continue;
         
         const roundName = `$${(valuation / 1000000).toFixed(1)}M Cap`;
         const totalRoundAmount = vcs.reduce((sum, vc) => sum + (vc.purchaseAmount || 0), 0);
@@ -213,7 +213,7 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
         });
         
         createdRoundIds[valuationStr] = roundId;
-      });
+      }
       
       // Then add VCs and associate them with rounds
       for (const [valuationStr, vcs] of Object.entries(vcsByValuation)) {
@@ -221,27 +221,30 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
         if (!roundId) continue;
         
         for (const vc of vcs) {
-          const vcId = addVC(vc);
-          if (!vcId) {
-            console.error('Failed to create VC:', vc);
-            continue;
+          try {
+            const newVcId = addVC(vc);
+            if (newVcId) {
+              addVCToRound(newVcId, roundId);
+              totalVCs++;
+              importedAmount += vc.purchaseAmount || 0;
+            }
+          } catch (err) {
+            console.error('Failed to create VC:', vc, err);
           }
-          
-          addVCToRound(vcId, roundId);
-          totalVCs++;
-          importedAmount += vc.purchaseAmount || 0;
         }
       }
       
       // Add VCs with no valuation to unsorted
       for (const vc of noValuationVCs) {
-        const vcId = addVC(vc);
-        if (!vcId) {
-          console.error('Failed to create VC:', vc);
-          continue;
+        try {
+          const newVcId = addVC(vc);
+          if (newVcId) {
+            totalVCs++;
+            importedAmount += vc.purchaseAmount || 0;
+          }
+        } catch (err) {
+          console.error('Failed to create VC:', vc, err);
         }
-        totalVCs++;
-        importedAmount += vc.purchaseAmount || 0;
       }
       
       // Show success message
