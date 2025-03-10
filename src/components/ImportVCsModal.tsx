@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -239,7 +238,7 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       
       // Add VCs with no valuation to unsorted
       noValuationVCs.forEach(vc => {
-        addVC(vc);
+        const vcId = addVC(vc);
         totalVCs++;
         importedAmount += vc.purchaseAmount || 0;
       });
