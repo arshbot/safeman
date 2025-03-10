@@ -1,7 +1,8 @@
+
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { CRMState, Round, VC, MeetingNote } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
-import { crmReducer } from './crmReducer';
+import { crmReducer } from './reducers';
 import { loadState, saveState } from './storage';
 import { getRoundSummary } from './crmUtils';
 import { CRMContextType } from './types';
