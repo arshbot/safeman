@@ -85,12 +85,14 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         throw new Error("No valid VC data found in the spreadsheet");
       }
 
+      // Group VCs by their exact valuation cap value
       const vcsByValuation: Record<string, Array<Omit<VC, 'id'>>> = {};
       const noValuationVCs: Array<Omit<VC, 'id'>> = [];
       
       importedVCs.forEach(({ vc, valuationCap }) => {
         if (valuationCap) {
-          const valuationKey = String(Math.round(valuationCap / 1000000) * 1000000);
+          // Use the exact valuation cap as the key
+          const valuationKey = String(valuationCap);
           if (!vcsByValuation[valuationKey]) {
             vcsByValuation[valuationKey] = [];
           }
@@ -106,15 +108,16 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
       
       // Create rounds and add VCs
       for (const [valuationStr, vcs] of Object.entries(vcsByValuation)) {
-        const valuation = parseInt(valuationStr);
+        const valuation = parseFloat(valuationStr);
         if (isNaN(valuation)) continue;
         
+        // Format the round name with precise decimal places
         const roundName = `$${(valuation / 1000000).toFixed(1)}M Cap`;
         const totalRoundAmount = vcs.reduce((sum, vc) => sum + (vc.purchaseAmount || 0), 0);
         
         const roundId = addRound({
           name: roundName,
-          valuationCap: valuation,
+          valuationCap: valuation, // Use the exact valuation cap value
           targetAmount: Math.ceil(totalRoundAmount * 1.1),
         });
         
