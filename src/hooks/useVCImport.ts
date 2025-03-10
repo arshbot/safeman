@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useCRM } from "@/context/CRMContext";
 import { findHeaderRow, mapColumns, parseVCsFromExcel } from "@/utils/excelParser";
@@ -112,6 +111,7 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         const roundName = `$${(valuation / 1000000).toFixed(1)}M Cap`;
         const totalRoundAmount = vcs.reduce((sum, vc) => sum + (vc.purchaseAmount || 0), 0);
         
+        // Important: Explicitly store the roundId as a variable
         const roundId = addRound({
           name: roundName,
           valuationCap: valuation,
@@ -123,9 +123,10 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         // Add VCs to the round
         for (const vc of vcs) {
           try {
-            // Fix: Make sure to capture the string ID returned by addVC
-            const vcId: string = addVC(vc);
-            addVCToRound(vcId, roundId);
+            // Important: Make sure we properly store the return value from addVC
+            const newVcId = addVC(vc);
+            // Now use that ID to add the VC to the round
+            addVCToRound(newVcId, roundId);
             totalVCs++;
             importedAmount += vc.purchaseAmount || 0;
           } catch (err) {
@@ -137,8 +138,8 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
       // Add VCs with no valuation
       for (const vc of noValuationVCs) {
         try {
-          // Fix: Capture the ID here too, even if not using it directly
-          const vcId: string = addVC(vc);
+          // Important: Properly store the return value even if we don't use it directly
+          addVC(vc); // We don't need to store this ID since we're not adding to a round
           totalVCs++;
           importedAmount += vc.purchaseAmount || 0;
         } catch (err) {
