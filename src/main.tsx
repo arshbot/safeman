@@ -13,6 +13,7 @@ createRoot(document.getElementById("root")!).render(
   <ClerkProvider 
     publishableKey={PUBLISHABLE_KEY}
     routerPush={(to) => window.location.href = to}
+    routerReplace={(to) => window.location.href = to}
     signInUrl="/login"
   >
     <App />
