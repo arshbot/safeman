@@ -16,7 +16,7 @@ interface ImportVCsModalProps {
 }
 
 export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
-  const { addVC } = useCRM();
+  const { addVC, addRound, addVCToRound } = useCRM();
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,6 +112,9 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
           if (valueLower.includes("stakeholder name")) columnMap.name = colKey;
           else if (valueLower.includes("stakeholder email")) columnMap.email = colKey;
           else if (valueLower.includes("principal")) columnMap.principal = colKey;
+          else if (valueLower.includes("valuation")) columnMap.valuation = colKey;
+          // Look for column R specifically for valuation cap
+          else if (colKey === 'R') columnMap.valuationCap = colKey;
         }
       });
       
@@ -121,8 +124,16 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
         throw new Error("Could not identify the necessary columns in the spreadsheet. Make sure it contains Stakeholder Name and Principal columns.");
       }
       
+      // Ensure we have valuation data
+      if (!columnMap.valuationCap && !columnMap.valuation) {
+        console.warn("Valuation cap information not found in column R or any column with 'valuation' in the name");
+      }
+      
       // Extract VCs data from all rows after the header
-      const importedVCs: Omit<VC, 'id'>[] = [];
+      const importedVCs: Array<{
+        vc: Omit<VC, 'id'>;
+        valuationCap: number | null;
+      }> = [];
       
       for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
         const row = jsonData[i] as any;
@@ -133,6 +144,24 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
         const name = row[columnMap.name];
         const email = columnMap.email ? row[columnMap.email] : undefined;
         const principalRaw = row[columnMap.principal];
+        
+        // Get valuation cap from column R or any column identified as containing valuation info
+        const valuationCapKey = columnMap.valuationCap || columnMap.valuation;
+        let valuationCap = null;
+        
+        if (valuationCapKey && row[valuationCapKey]) {
+          const valuationRaw = row[valuationCapKey];
+          if (typeof valuationRaw === 'number') {
+            valuationCap = valuationRaw;
+          } else if (typeof valuationRaw === 'string') {
+            // Remove currency symbols, commas, etc. and parse
+            const cleanedValue = valuationRaw.replace(/[^\d.-]/g, '');
+            const parsed = parseFloat(cleanedValue);
+            if (!isNaN(parsed)) {
+              valuationCap = parsed;
+            }
+          }
+        }
         
         // Parse the principal amount - handle different formats
         let principal = 0;
@@ -146,11 +175,14 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
         
         if (!isNaN(principal) && principal > 0) {
           importedVCs.push({
-            name,
-            email: email || undefined,
-            status: 'finalized' as const,
-            purchaseAmount: principal,
-            notes: `Imported from Carta on ${new Date().toLocaleDateString()}`
+            vc: {
+              name,
+              email: email || undefined,
+              status: 'finalized' as const,
+              purchaseAmount: principal,
+              notes: `Imported from Carta on ${new Date().toLocaleDateString()}`
+            },
+            valuationCap
           });
         }
       }
@@ -161,17 +193,75 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       
       console.log("VCs to import:", importedVCs);
       
-      // Add VCs to the CRM
-      const addedCount = importedVCs.length;
+      // Group VCs by valuation cap
+      const vcsByValuation: Record<string, Array<Omit<VC, 'id'>>> = {};
+      const noValuationVCs: Array<Omit<VC, 'id'>> = [];
+      
+      importedVCs.forEach(({ vc, valuationCap }) => {
+        if (valuationCap) {
+          // Use the valuation as a key, rounded to nearest million for better grouping
+          const valuationKey = Math.round(valuationCap / 1000000) * 1000000;
+          if (!vcsByValuation[valuationKey]) {
+            vcsByValuation[valuationKey] = [];
+          }
+          vcsByValuation[valuationKey].push(vc);
+        } else {
+          noValuationVCs.push(vc);
+        }
+      });
+      
+      // Create rounds for each valuation group and add VCs
+      const createdRoundIds: Record<string, string> = {};
+      let totalVCs = 0;
       let importedAmount = 0;
       
-      importedVCs.forEach(vc => {
+      // First create rounds
+      Object.entries(vcsByValuation).forEach(([valuationStr, vcs]) => {
+        const valuation = parseInt(valuationStr);
+        if (isNaN(valuation)) return;
+        
+        const roundName = `$${(valuation / 1000000).toFixed(1)}M Cap`;
+        
+        // Calculate total amount committed to this round
+        const totalRoundAmount = vcs.reduce((sum, vc) => sum + (vc.purchaseAmount || 0), 0);
+        
+        // Create the round
+        const roundId = addRound({
+          name: roundName,
+          valuationCap: valuation,
+          targetAmount: Math.ceil(totalRoundAmount * 1.1), // Target amount slightly higher than committed
+        });
+        
+        createdRoundIds[valuationStr] = roundId;
+      });
+      
+      // Then add VCs to each round
+      Object.entries(vcsByValuation).forEach(([valuationStr, vcs]) => {
+        const roundId = createdRoundIds[valuationStr];
+        if (!roundId) return;
+        
+        vcs.forEach(vc => {
+          const vcId = addVC(vc);
+          addVCToRound(vcId, roundId);
+          totalVCs++;
+          importedAmount += vc.purchaseAmount || 0;
+        });
+      });
+      
+      // Add VCs with no valuation to unsorted
+      noValuationVCs.forEach(vc => {
         addVC(vc);
+        totalVCs++;
         importedAmount += vc.purchaseAmount || 0;
       });
       
       // Show success message
-      toast.success(`Successfully imported ${addedCount} VCs with total commitment of $${formatAmount(importedAmount)}`);
+      const createdRoundsCount = Object.keys(createdRoundIds).length;
+      const roundsMessage = createdRoundsCount > 0 
+        ? `, created ${createdRoundsCount} rounds based on valuation caps`
+        : "";
+        
+      toast.success(`Successfully imported ${totalVCs} VCs with total commitment of $${formatAmount(importedAmount)}${roundsMessage}`);
       
       // Close the modal and reset form
       onOpenChange(false);
@@ -235,7 +325,7 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
               disabled={isLoading}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              We'll extract VC data from the "Convertible Ledger" sheet.
+              We'll extract VC data from the "Convertible Ledger" sheet and create rounds based on valuation caps found in column R.
             </p>
           </div>
         </div>
