@@ -48,7 +48,7 @@ const Login = () => {
             </div>
           )}
           
-          <SignIn routing="path" signUpUrl="/sign-up" />
+          <SignIn path="/login" signUpUrl="/sign-up" />
         </div>
       </motion.div>
     </div>
