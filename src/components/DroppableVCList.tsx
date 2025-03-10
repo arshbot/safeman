@@ -18,7 +18,7 @@ export function DroppableVCList({
   vcs, 
   getVC, 
   roundId,
-  className = "pl-6 mt-2",
+  className = "pl-6 mt-2 pb-3",
   enableDropping = true
 }: DroppableVCListProps) {
   console.log(`[DEBUG] Rendering droppable list: ${droppableId} with ${vcs.length} VCs and roundId: ${roundId || 'none'}`);
@@ -63,13 +63,14 @@ export function DroppableVCList({
               height: 'auto',
               transition: { duration: 0.3 }
             }}
-            className={`${className} ${snapshot.isDraggingOver ? 'bg-primary/10 border-2 border-dashed border-primary/70' : ''}`}
+            className={`${className} ${snapshot.isDraggingOver ? 'bg-blue-50 border-2 border-dashed border-blue-200' : ''}`}
             style={{
-              minHeight: '120px',
+              minHeight: vcs.length > 0 ? '120px' : '0',
               transition: 'all 0.2s ease',
               padding: snapshot.isDraggingOver ? '8px 4px' : '4px 0',
               borderRadius: '8px',
               position: 'relative',
+              backgroundColor: snapshot.isDraggingOver ? 'rgba(239, 246, 255, 0.8)' : 'transparent',
             }}
             data-droppable-id={droppableId}
             data-is-dragging-over={snapshot.isDraggingOver}

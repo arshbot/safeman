@@ -65,7 +65,7 @@ export function RoundHeader({ round, summary, onAddVC, dragHandleProps }: RoundH
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {dragHandleProps && (
-            <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
+            <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-200 rounded">
               <GripVertical className="h-5 w-5 text-gray-500" />
             </div>
           )}

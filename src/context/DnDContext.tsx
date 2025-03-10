@@ -52,6 +52,13 @@ export const DnDProvider: React.FC<{
       } else if (result.destination.droppableId.startsWith('round-')) {
         console.log(`Destination is a round header: ${result.destination.droppableId}`);
       }
+      
+      // Prevent overlapping positions
+      if (result.source.droppableId === result.destination.droppableId && 
+          result.source.index === result.destination.index) {
+        console.log('Same position detected, no action needed');
+        return;
+      }
     } else {
       console.log('No destination - item was dropped outside a droppable area');
     }

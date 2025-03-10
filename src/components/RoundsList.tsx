@@ -21,7 +21,7 @@ export function RoundsList({
 }: RoundsListProps) {
   // Helper function for droppable styling
   const getListStyle = (isDraggingOver: boolean) => ({
-    background: isDraggingOver ? 'rgba(var(--secondary), 0.7)' : 'rgba(var(--secondary), 0.5)',
+    background: isDraggingOver ? 'rgba(240, 240, 240, 0.8)' : '#f3f3f3',
     padding: '8px',
     borderRadius: '8px'
   });
@@ -45,11 +45,25 @@ export function RoundsList({
     }
   };
 
-  const getDraggableStyles = (isDragging: boolean) => ({
-    // Add these transition styles for smoother dragging
-    transition: isDragging ? 'none' : 'transform 0.3s ease, box-shadow 0.3s ease',
-    boxShadow: isDragging ? '0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23)' : 'none',
-    margin: isDragging ? '0' : '0 0 16px 0',
+  // Fix for overlapping issue - provide clear visual distinction and spacing
+  const getDraggableStyles = (isDragging: boolean, draggableStyle: any) => ({
+    // Base styles
+    userSelect: 'none',
+    padding: 0,
+    margin: '0 0 16px 0',
+    background: '#ffffff',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    borderRadius: '8px',
+    
+    // Dragging styles
+    ...draggableStyle,
+    
+    // Provide clear visual feedback when dragging
+    ...(isDragging && {
+      boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
+      transform: draggableStyle?.transform ? `${draggableStyle.transform} scale(1.02)` : 'scale(1.02)',
+      zIndex: 9999, // Ensure dragged item is on top
+    }),
   });
   
   return (
@@ -72,11 +86,8 @@ export function RoundsList({
                   <div 
                     ref={provided.innerRef} 
                     {...provided.draggableProps}
-                    className="bg-secondary/50 p-4 rounded-lg py-px"
-                    style={{
-                      ...provided.draggableProps.style,
-                      ...getDraggableStyles(snapshot.isDragging)
-                    }}
+                    className="bg-white rounded-lg"
+                    style={getDraggableStyles(snapshot.isDragging, provided.draggableProps.style)}
                   >
                     {/* Droppable area for the round header to accept VCs */}
                     <Droppable droppableId={`round-${round.id}`} type="VC">
@@ -84,7 +95,7 @@ export function RoundsList({
                         <div 
                           ref={dropProvided.innerRef} 
                           {...dropProvided.droppableProps} 
-                          className={`${dropSnapshot.isDraggingOver ? 'bg-primary/10' : ''} rounded-md transition-colors`}
+                          className={`${dropSnapshot.isDraggingOver ? 'bg-blue-50' : ''} rounded-md transition-colors p-4`}
                         >
                           <RoundHeader round={round} summary={summary} onAddVC={onAddVC} dragHandleProps={provided.dragHandleProps} />
                           {dropProvided.placeholder}

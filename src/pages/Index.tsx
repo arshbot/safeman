@@ -33,7 +33,7 @@ const Index = () => {
       <DnDProvider onDragEnd={handleDragEnd}>
         {state.rounds.length > 0 ? (
           <>
-            <div className="mb-4 p-2 bg-secondary/20 rounded-lg">
+            <div className="mb-4 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
               <h2 className="text-lg font-semibold mb-2">Funding Rounds</h2>
               <p className="text-sm text-muted-foreground mb-2">
                 Drag and drop to reorder rounds or move VCs between rounds.

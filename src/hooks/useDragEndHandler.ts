@@ -205,6 +205,7 @@ export function useDragEndHandler() {
           newVcIds.splice(destination.index, 0, movedVcId);
           
           reorderVCs(actualRoundId, newVcIds);
+          toast.success(`VC reordered successfully`);
         }
       }
     }
