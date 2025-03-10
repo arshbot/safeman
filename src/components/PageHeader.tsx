@@ -1,9 +1,10 @@
 
 import { Button } from "@/components/ui/button";
-import { Layers, Users } from "lucide-react";
+import { FileSpreadsheet, Layers, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { AddVCModal } from "./AddVCModal";
 import { AddRoundModal } from "./AddRoundModal";
+import { ImportVCsModal } from "./ImportVCsModal";
 import { useState } from "react";
 
 interface PageHeaderProps {
@@ -12,6 +13,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ onAddVC }: PageHeaderProps) {
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   
   return (
     <motion.div 
@@ -27,6 +29,14 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
         </p>
       </div>
       <div className="flex space-x-2">
+        <Button 
+          variant="outline" 
+          onClick={() => setIsImportModalOpen(true)}
+          className="gap-1"
+        >
+          <FileSpreadsheet className="h-4 w-4" />
+          Import from Carta
+        </Button>
         <AddVCModal
           open={isAddVCModalOpen}
           onOpenChange={setIsAddVCModalOpen}
@@ -48,6 +58,11 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
               Add Round
             </Button>
           }
+        />
+        
+        <ImportVCsModal
+          open={isImportModalOpen}
+          onOpenChange={setIsImportModalOpen}
         />
       </div>
     </motion.div>

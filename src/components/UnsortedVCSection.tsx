@@ -1,8 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { Plus, FileSpreadsheet } from "lucide-react";
+import { Plus } from "lucide-react";
 import { AddVCModal } from "@/components/AddVCModal";
-import { ImportVCsModal } from "@/components/ImportVCsModal";
 import { useState } from "react";
 import { DroppableVCList } from "./DroppableVCList";
 import { VC } from "@/types";
@@ -15,7 +14,6 @@ interface UnsortedVCSectionProps {
 
 export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   
   console.log(`[DEBUG] Rendering UnsortedVCSection with ${vcs.length} VCs`, vcs);
   
@@ -27,15 +25,6 @@ export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Unsorted VCs</h2>
         <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setIsImportModalOpen(true)}
-            className="gap-1"
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            Import from Carta
-          </Button>
           <Button 
             variant="outline" 
             size="sm" 
@@ -96,11 +85,6 @@ export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
         open={isAddVCModalOpen}
         onOpenChange={setIsAddVCModalOpen}
         roundId={undefined}
-      />
-      
-      <ImportVCsModal
-        open={isImportModalOpen}
-        onOpenChange={setIsImportModalOpen}
       />
     </div>
   );
