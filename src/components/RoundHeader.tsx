@@ -1,15 +1,16 @@
-import { Round, RoundSummary, RoundVisibility } from '@/types';
+
+import { Round, RoundSummary } from '@/types';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Edit, Trash2, Plus, AlertCircle, EyeOff, Eye } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { Edit, Trash2, Plus } from 'lucide-react';
+import { useState } from 'react';
 import { useCRM } from '@/context/CRMContext';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { formatNumberWithCommas, parseFormattedNumber } from '@/utils/formatters';
 import { AddVCModal } from './AddVCModal';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { TooltipProvider } from './ui/tooltip';
+import { RoundHeaderDeleteDialog } from './round/RoundHeaderDeleteDialog';
+import { RoundHeaderEditDialog } from './round/RoundHeaderEditDialog';
+import { RoundHeaderVisibilityControls } from './round/RoundHeaderVisibilityControls';
+import { RoundHeaderStats } from './round/RoundHeaderStats';
 
 interface RoundHeaderProps {
   round: Round;
@@ -22,9 +23,6 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
-  const [editedRound, setEditedRound] = useState<Round>(round);
-  const [valuationCapFormatted, setValuationCapFormatted] = useState(formatNumberWithCommas(round.valuationCap));
-  const [targetAmountFormatted, setTargetAmountFormatted] = useState(formatNumberWithCommas(round.targetAmount));
 
   // Calculate equity granted for this round
   const calculateEquityGranted = () => {
@@ -52,37 +50,8 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
     cycleRoundVisibility(round.id);
   };
 
-  const getVisibilityIcon = (visibility: RoundVisibility) => {
-    switch (visibility) {
-      case 'expanded':
-        return <ChevronDown className="h-5 w-5 text-gray-500" />;
-      case 'collapsedShowFinalized':
-        return <ChevronRight className="h-5 w-5 text-gray-500" />;
-      case 'collapsedHideAll':
-        return <EyeOff className="h-5 w-5 text-gray-500" />;
-      default:
-        return <ChevronDown className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const getVisibilityTooltip = (visibility: RoundVisibility) => {
-    switch (visibility) {
-      case 'expanded':
-        return "Showing all VCs";
-      case 'collapsedShowFinalized':
-        return "Showing only finalized and close to buying VCs";
-      case 'collapsedHideAll':
-        return "Hiding all VCs";
-      default:
-        return "Click to change visibility";
-    }
-  };
-
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setEditedRound(round);
-    setValuationCapFormatted(formatNumberWithCommas(round.valuationCap));
-    setTargetAmountFormatted(formatNumberWithCommas(round.targetAmount));
     setIsEditDialogOpen(true);
   };
 
@@ -97,28 +66,7 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
     onAddVC(round.id);
   };
 
-  const handleValuationCapChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const numericValue = parseFormattedNumber(value);
-    setValuationCapFormatted(formatNumberWithCommas(numericValue));
-    setEditedRound({
-      ...editedRound,
-      valuationCap: numericValue
-    });
-  };
-
-  const handleTargetAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const numericValue = parseFormattedNumber(value);
-    setTargetAmountFormatted(formatNumberWithCommas(numericValue));
-    setEditedRound({
-      ...editedRound,
-      targetAmount: numericValue
-    });
-  };
-
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEditSubmit = (editedRound: Round) => {
     updateRound(editedRound);
     setIsEditDialogOpen(false);
   };
@@ -145,29 +93,6 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
     return `$0`;
   };
 
-  const deleteButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Focus the delete button when the delete dialog opens
-  useEffect(() => {
-    if (isDeleteDialogOpen && deleteButtonRef.current) {
-      deleteButtonRef.current.focus();
-    }
-  }, [isDeleteDialogOpen]);
-
-  // Handle keydown events for delete dialog
-  const handleDeleteDialogKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleDelete();
-    }
-  };
-
-  // Wrapping the delete dialog content in a form to handle Enter key press properly
-  const handleDeleteSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleDelete();
-  };
-
   return (
     <TooltipProvider>
       <div 
@@ -175,52 +100,20 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
         onClick={handleToggleVisibility}
       >
         <div className="flex-1 flex items-center">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="mr-2">
-                {getVisibilityIcon(round.visibility)}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{getVisibilityTooltip(round.visibility)}</p>
-            </TooltipContent>
-          </Tooltip>
-          <div className="flex-1">
-            <h3 className="font-semibold text-lg flex items-center">
-              {round.name}
-              
-              {/* Warning indicator for oversubscribed rounds */}
-              {summary.isOversubscribed && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="ml-2">
-                      <AlertCircle className="h-4 w-4 text-red-500" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p>This round is oversubscribed! Total committed: {formatCurrency(summary.totalCommitted)} exceeds target: {formatCurrency(round.targetAmount)}.</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </h3>
-            <div className="flex text-sm text-gray-500 space-x-4">
-              <span>Target: {formatCurrency(round.targetAmount)}</span>
-              <span>Cap: {formatCurrency(round.valuationCap)}</span>
-              <span>VCs: {summary.totalVCs}</span>
-              <span className="text-status-sold">Finalized: {summary.finalized}</span>
-              <span className="text-status-closeToBuying">Close: {summary.closeToBuying}</span>
-              {summary.totalCommitted > 0 && (
-                <span className={`font-medium ${summary.isOversubscribed ? 'text-red-500' : 'text-emerald-600'}`}>
-                  Committed: {formatCurrency(summary.totalCommitted)}
-                </span>
-              )}
-              {raisedAmount > 0 && (
-                <span className="font-medium text-purple-600">
-                  Equity Granted: {equityPercentage.toFixed(2)}%
-                </span>
-              )}
-            </div>
-          </div>
+          <RoundHeaderVisibilityControls 
+            visibility={round.visibility} 
+            onClick={handleToggleVisibility} 
+          />
+          
+          <RoundHeaderStats 
+            name={round.name}
+            summary={summary}
+            targetAmount={round.targetAmount}
+            valuationCap={round.valuationCap}
+            raisedAmount={raisedAmount}
+            equityPercentage={equityPercentage}
+            formatCurrency={formatCurrency}
+          />
         </div>
         <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
           <Button
@@ -259,74 +152,20 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
       />
 
       {/* Edit Round Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] glassmorphism">
-          <DialogHeader>
-            <DialogTitle>Edit Round</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleEditSubmit}>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Round Name</Label>
-                <Input
-                  id="name"
-                  value={editedRound.name}
-                  onChange={(e) => setEditedRound({ ...editedRound, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="valuationCap">Valuation Cap ($)</Label>
-                <Input
-                  id="valuationCap"
-                  value={valuationCapFormatted}
-                  onChange={handleValuationCapChange}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="targetAmount">Target Amount ($)</Label>
-                <Input
-                  id="targetAmount"
-                  value={targetAmountFormatted}
-                  onChange={handleTargetAmountChange}
-                  required
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit">Save Changes</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <RoundHeaderEditDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        round={round}
+        onSave={handleEditSubmit}
+      />
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] glassmorphism">
-          <DialogHeader>
-            <DialogTitle>Delete Round</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleDeleteSubmit}>
-            <p className="py-4">
-              Are you sure you want to delete the "{round.name}" round? This action cannot be undone.
-            </p>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                type="submit"
-                variant="destructive" 
-                ref={deleteButtonRef}
-                autoFocus
-              >
-                Delete
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <RoundHeaderDeleteDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        roundName={round.name}
+        onDelete={handleDelete}
+      />
     </TooltipProvider>
   );
 }
