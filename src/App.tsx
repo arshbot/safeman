@@ -10,28 +10,37 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import { ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
+import { Spinner } from "./components/ui/spinner";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider>
-        <CRMProvider>
-          <Toaster />
-          <Sonner position="top-right" closeButton />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Index />} />
-              </Route>
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </CRMProvider>
-      </AuthProvider>
+      <ClerkLoading>
+        <div className="flex items-center justify-center min-h-screen">
+          <Spinner />
+        </div>
+      </ClerkLoading>
+      <ClerkLoaded>
+        <AuthProvider>
+          <CRMProvider>
+            <Toaster />
+            <Sonner position="top-right" closeButton />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/" element={<Index />} />
+                </Route>
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </CRMProvider>
+        </AuthProvider>
+      </ClerkLoaded>
     </TooltipProvider>
   </QueryClientProvider>
 );

@@ -2,11 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { Navigate } from "react-router-dom";
-import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
+import { SignIn } from "@clerk/clerk-react";
 
 const Login = () => {
-  const { user, signInWithGoogle, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -21,7 +21,9 @@ const Login = () => {
         className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg"
       >
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">SAFEMAN</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            <span className="font-bold">SAFE</span>MAN
+          </h1>
           <p className="text-xs text-muted-foreground mt-1">
             <span className="font-bold">SAFE</span> Allocation & Financing Equity <span className="font-bold">Man</span>ager
           </p>
@@ -35,15 +37,7 @@ const Login = () => {
             </p>
           </div>
           
-          <Button
-            onClick={signInWithGoogle}
-            variant="outline"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-6"
-          >
-            <FcGoogle className="h-5 w-5" />
-            Sign in with Google
-          </Button>
+          <SignIn />
         </div>
       </motion.div>
     </div>
