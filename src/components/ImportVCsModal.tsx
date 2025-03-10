@@ -184,7 +184,6 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       
       importedVCs.forEach(({ vc, valuationCap }) => {
         if (valuationCap) {
-          // Use the valuation as a key, rounded to nearest million for better grouping
           const valuationKey = String(Math.round(valuationCap / 1000000) * 1000000);
           if (!vcsByValuation[valuationKey]) {
             vcsByValuation[valuationKey] = [];
@@ -200,36 +199,37 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       let totalVCs = 0;
       let importedAmount = 0;
       
-      // First create rounds for each valuation
+      // First create rounds for each valuation group
       Object.entries(vcsByValuation).forEach(([valuationStr, vcs]) => {
         const valuation = parseInt(valuationStr);
         if (isNaN(valuation)) return;
         
         const roundName = `$${(valuation / 1000000).toFixed(1)}M Cap`;
-        
-        // Calculate total amount committed to this round
         const totalRoundAmount = vcs.reduce((sum, vc) => sum + (vc.purchaseAmount || 0), 0);
         
-        // Create the round and store its ID
         const roundId = addRound({
           name: roundName,
           valuationCap: valuation,
-          targetAmount: Math.ceil(totalRoundAmount * 1.1), // Target amount slightly higher than committed
+          targetAmount: Math.ceil(totalRoundAmount * 1.1),
         });
         
         createdRoundIds[valuationStr] = roundId;
       });
       
-      // Then add VCs to each round
+      // Then add VCs and associate them with rounds
       Object.entries(vcsByValuation).forEach(([valuationStr, vcs]) => {
         const roundId = createdRoundIds[valuationStr];
         if (!roundId) return;
         
         vcs.forEach(vc => {
-          // First add the VC to get its ID
+          // Make sure to capture the returned ID
           const vcId = addVC(vc);
+          if (!vcId) {
+            console.error('Failed to create VC:', vc);
+            return;
+          }
           
-          // Then add the VC to its round
+          // Add the VC to its round
           addVCToRound(vcId, roundId);
           
           totalVCs++;
@@ -240,6 +240,10 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       // Add VCs with no valuation to unsorted
       noValuationVCs.forEach(vc => {
         const vcId = addVC(vc);
+        if (!vcId) {
+          console.error('Failed to create VC:', vc);
+          return;
+        }
         totalVCs++;
         importedAmount += vc.purchaseAmount || 0;
       });
