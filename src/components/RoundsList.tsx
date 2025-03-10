@@ -22,7 +22,7 @@ export function RoundsList({
   // Helper function for droppable styling
   const getListStyle = (isDraggingOver: boolean) => ({
     background: isDraggingOver ? 'rgba(240, 240, 240, 0.8)' : '#f3f3f3',
-    padding: '8px',
+    padding: '12px', // Increased padding
     borderRadius: '8px'
   });
 
@@ -50,10 +50,10 @@ export function RoundsList({
     // Base styles
     userSelect: 'none',
     padding: 0,
-    margin: '0 0 16px 0',
+    margin: '0 0 24px 0', // Increased bottom margin for rounds
     background: '#ffffff',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    borderRadius: '8px',
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+    borderRadius: '10px',
     
     // Dragging styles
     ...draggableStyle,
@@ -72,7 +72,7 @@ export function RoundsList({
         <div 
           {...provided.droppableProps} 
           ref={provided.innerRef} 
-          className="space-y-4" 
+          className="space-y-6" // Increased spacing between rounds
           style={getListStyle(snapshot.isDraggingOver)}
         >
           {rounds.sort((a, b) => a.order - b.order).map((round, index) => {
@@ -113,7 +113,7 @@ export function RoundsList({
                     )}
                     
                     {round.visibility === 'expanded' && filteredVCs.length === 0 && (
-                      <p className="text-center text-muted-foreground p-4">
+                      <p className="text-center text-muted-foreground p-6 my-4">
                         No VCs in this round yet. Add some!
                       </p>
                     )}

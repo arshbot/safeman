@@ -18,7 +18,7 @@ export function DroppableVCList({
   vcs, 
   getVC, 
   roundId,
-  className = "pl-6 mt-2 pb-3",
+  className = "pl-6 mt-4 pb-4", // Increased top and bottom padding
   enableDropping = true
 }: DroppableVCListProps) {
   console.log(`[DEBUG] Rendering droppable list: ${droppableId} with ${vcs.length} VCs and roundId: ${roundId || 'none'}`);
@@ -65,12 +65,13 @@ export function DroppableVCList({
             }}
             className={`${className} ${snapshot.isDraggingOver ? 'bg-blue-50 border-2 border-dashed border-blue-200' : ''}`}
             style={{
-              minHeight: vcs.length > 0 ? '120px' : '0',
+              minHeight: vcs.length > 0 ? '140px' : '0', // Increased minimum height
               transition: 'all 0.2s ease',
-              padding: snapshot.isDraggingOver ? '8px 4px' : '4px 0',
+              padding: snapshot.isDraggingOver ? '12px 8px' : '8px 4px', // Increased padding
               borderRadius: '8px',
               position: 'relative',
               backgroundColor: snapshot.isDraggingOver ? 'rgba(239, 246, 255, 0.8)' : 'transparent',
+              marginTop: '16px', // Added more top margin
             }}
             data-droppable-id={droppableId}
             data-is-dragging-over={snapshot.isDraggingOver}
