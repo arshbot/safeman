@@ -69,7 +69,7 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
       // Get the worksheet
       const worksheet = workbook.Sheets[sheetName];
       
-      // Convert to JSON
+      // Convert to JSON - raw data
       const jsonData = xlsx.utils.sheet_to_json(worksheet);
       
       if (jsonData.length === 0) {
@@ -78,31 +78,43 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
 
       console.log("Parsed Excel data:", jsonData);
       
-      // Extract VCs data - mapping column names which might vary
-      const importedVCs: Omit<VC, 'id'>[] = jsonData
-        .filter((row: any) => {
-          // Find the column that contains the VC name (should be "Stakeholder Name" or similar)
-          const stakeholderName = row["Stakeholder Name"] || row["stakeholder name"] || row["STAKEHOLDER NAME"];
-          // Find the column that contains the amount (should be "Principal" or similar)
-          const principal = row["Principal"] || row["principal"] || row["PRINCIPAL"];
+      // Find the row with column headers (usually row 4, index 3)
+      // Then find the actual data rows (starting from row 5, index 4)
+      const actualDataRows = jsonData.slice(3); // Skip header rows
+      
+      if (actualDataRows.length === 0) {
+        throw new Error("Could not find data rows in the spreadsheet");
+      }
+      
+      // Extract VCs data by looking at the correct fields in each row
+      const importedVCs: Omit<VC, 'id'>[] = [];
+      
+      for (let i = 1; i < actualDataRows.length; i++) { // Start from 1 to skip the header row
+        const row = actualDataRows[i];
+        
+        // Extract data by using the row properties
+        // For Carta exports, we need to check multiple possible column names
+        const name = findValueInRow(row, ['__EMPTY_1', 'Stakeholder Name']);
+        const email = findValueInRow(row, ['__EMPTY_2', 'Stakeholder Email']);
+        const principalRaw = findValueInRow(row, ['__EMPTY_3', 'Principal']);
+        
+        // Check if we have the essential data (name and principal amount)
+        if (name && principalRaw) {
+          const principal = typeof principalRaw === 'number' 
+            ? principalRaw 
+            : parseFloat(String(principalRaw).replace(/[^\d.-]/g, ''));
           
-          return stakeholderName && principal;
-        })
-        .map((row: any) => {
-          // Extract data from relevant columns
-          const name = row["Stakeholder Name"] || row["stakeholder name"] || row["STAKEHOLDER NAME"];
-          const email = row["Stakeholder Email"] || row["stakeholder email"] || row["STAKEHOLDER EMAIL"];
-          const amount = parseFloat(row["Principal"] || row["principal"] || row["PRINCIPAL"]) || 0;
-          
-          // Create VC object
-          return {
-            name,
-            email: email || undefined,
-            status: 'finalized' as const,
-            purchaseAmount: amount,
-            notes: `Imported from Carta on ${new Date().toLocaleDateString()}`
-          };
-        });
+          if (!isNaN(principal) && principal > 0) {
+            importedVCs.push({
+              name,
+              email: email || undefined,
+              status: 'finalized' as const,
+              purchaseAmount: principal,
+              notes: `Imported from Carta on ${new Date().toLocaleDateString()}`
+            });
+          }
+        }
+      }
       
       if (importedVCs.length === 0) {
         throw new Error("No valid VC data found in the spreadsheet. Make sure the file contains columns for Stakeholder Name, Stakeholder Email, and Principal.");
@@ -130,6 +142,16 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Helper function to find values in complex row objects
+  const findValueInRow = (row: any, possibleKeys: string[]): any => {
+    for (const key of possibleKeys) {
+      if (row[key] !== undefined) {
+        return row[key];
+      }
+    }
+    return null;
   };
   
   const formatAmount = (amount: number): string => {
@@ -220,3 +242,4 @@ export function ImportVCsModal({ open, onOpenChange }: ImportVCsModalProps) {
     </Dialog>
   );
 }
+
