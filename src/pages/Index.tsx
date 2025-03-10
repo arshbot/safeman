@@ -9,6 +9,7 @@ import { UnsortedVCSection } from "@/components/UnsortedVCSection";
 import { useVCSorting } from "@/hooks/useVCSorting";
 import { useDragEndHandler } from "@/hooks/useDragEndHandler";
 import { DnDProvider } from "@/context/DnDContext";
+import { AddVCModal } from "@/components/AddVCModal";
 
 // Reset server context for SSR compatibility
 resetServerContext();
@@ -16,11 +17,13 @@ resetServerContext();
 const Index = () => {
   const { state, getRoundSummary } = useCRM();
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(undefined);
+  const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const { sortVCsByStatus } = useVCSorting();
   const { handleDragEnd } = useDragEndHandler();
 
   const handleAddVCToRound = (roundId: string) => {
     setSelectedRoundId(roundId);
+    setIsAddVCModalOpen(true);
   };
 
   // Sort unsorted VCs by status
@@ -28,7 +31,10 @@ const Index = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
-      <PageHeader onAddVC={() => setSelectedRoundId(undefined)} />
+      <PageHeader onAddVC={() => {
+        setSelectedRoundId(undefined);
+        setIsAddVCModalOpen(true);
+      }} />
       
       <DnDProvider onDragEnd={handleDragEnd}>
         {state.rounds.length > 0 ? (
@@ -57,6 +63,13 @@ const Index = () => {
           getVC={(id) => state.vcs[id]}
         />
       </DnDProvider>
+
+      {/* Add VC Modal */}
+      <AddVCModal
+        open={isAddVCModalOpen}
+        onOpenChange={setIsAddVCModalOpen}
+        roundId={selectedRoundId}
+      />
     </div>
   );
 };
