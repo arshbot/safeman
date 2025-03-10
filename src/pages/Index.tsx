@@ -9,6 +9,7 @@ import { UnsortedVCSection } from "@/components/UnsortedVCSection";
 import { useVCSorting } from "@/hooks/useVCSorting";
 import { useDragEndHandler } from "@/hooks/useDragEndHandler";
 import { DnDProvider } from "@/context/DnDContext";
+import { UserMenu } from "@/components/UserMenu";
 
 // Reset server context for SSR compatibility
 resetServerContext();
@@ -28,7 +29,10 @@ const Index = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
-      <PageHeader onAddVC={() => setSelectedRoundId(undefined)} />
+      <div className="flex justify-between items-center mb-6">
+        <PageHeader onAddVC={() => setSelectedRoundId(undefined)} />
+        <UserMenu />
+      </div>
       
       <DnDProvider onDragEnd={handleDragEnd}>
         {state.rounds.length > 0 ? (
