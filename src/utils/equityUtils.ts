@@ -47,24 +47,20 @@ export const generateEquityData = (state: CRMState): EquityPoint[] => {
     cumulativeTargetEquity += targetEquityGranted;
     
     // Calculate actual raised amount based on finalized VCs
-    const roundRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / 1000000; // Convert to millions
-    
-    // For display purposes, if no VCs are finalized, use the target amount as the raised amount
-    // to ensure the data point appears at the correct position on the graph
-    const displayRaised = roundVCs.length > 0 ? roundRaised : targetRaised;
+    const actualRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / 1000000; // Convert to millions
     
     const actualValuation = round.valuationCap > 0 ? round.valuationCap : 10000000;
     
     // Calculate equity granted based on the actual amount raised
     const equityGranted = roundVCs.length > 0 ? 
-      (roundRaised * 1000000) / actualValuation * 100 : 
-      targetEquityGranted;
+      (roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0)) / actualValuation * 100 : 
+      0;
     
-    cumulativeRaised += displayRaised;
+    cumulativeRaised += actualRaised;
     cumulativeEquity += equityGranted;
     
     equityData.push({
-      raised: displayRaised,
+      raised: actualRaised,
       totalRaised: Math.max(cumulativeRaised, 0.1), // Ensure minimum value for log scale
       equityGranted: equityGranted,
       totalEquityGranted: cumulativeEquity,
