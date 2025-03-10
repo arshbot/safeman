@@ -162,6 +162,12 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
     }
   };
 
+  // Wrapping the delete dialog content in a form to handle Enter key press properly
+  const handleDeleteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleDelete();
+  };
+
   return (
     <TooltipProvider>
       <div 
@@ -297,29 +303,28 @@ export function RoundHeader({ round, summary, onAddVC }: RoundHeaderProps) {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent 
-          className="sm:max-w-[425px] glassmorphism"
-          onKeyDown={handleDeleteDialogKeyDown}
-        >
+        <DialogContent className="sm:max-w-[425px] glassmorphism">
           <DialogHeader>
             <DialogTitle>Delete Round</DialogTitle>
           </DialogHeader>
-          <p className="py-4">
-            Are you sure you want to delete the "{round.name}" round? This action cannot be undone.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleDelete}
-              ref={deleteButtonRef}
-              autoFocus
-            >
-              Delete
-            </Button>
-          </DialogFooter>
+          <form onSubmit={handleDeleteSubmit}>
+            <p className="py-4">
+              Are you sure you want to delete the "{round.name}" round? This action cannot be undone.
+            </p>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit"
+                variant="destructive" 
+                ref={deleteButtonRef}
+                autoFocus
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </TooltipProvider>
