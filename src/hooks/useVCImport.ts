@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useCRM } from "@/context/CRMContext";
 import { findHeaderRow, mapColumns, parseVCsFromExcel } from "@/utils/excelParser";
@@ -111,7 +112,6 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         const roundName = `$${(valuation / 1000000).toFixed(1)}M Cap`;
         const totalRoundAmount = vcs.reduce((sum, vc) => sum + (vc.purchaseAmount || 0), 0);
         
-        // Important: Explicitly store the roundId as a variable
         const roundId = addRound({
           name: roundName,
           valuationCap: valuation,
@@ -123,12 +123,12 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         // Add VCs to the round
         for (const vc of vcs) {
           try {
-            // Important: Make sure we properly store the return value from addVC
-            const newVcId = addVC(vc);
-            // Now use that ID to add the VC to the round
-            addVCToRound(newVcId, roundId);
-            totalVCs++;
-            importedAmount += vc.purchaseAmount || 0;
+            const vcId: string = addVC(vc);
+            if (vcId) {
+              addVCToRound(vcId, roundId);
+              totalVCs++;
+              importedAmount += vc.purchaseAmount || 0;
+            }
           } catch (err) {
             console.error('Failed to create VC:', vc, err);
           }
@@ -138,10 +138,11 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
       // Add VCs with no valuation
       for (const vc of noValuationVCs) {
         try {
-          // Important: Properly store the return value even if we don't use it directly
-          addVC(vc); // We don't need to store this ID since we're not adding to a round
-          totalVCs++;
-          importedAmount += vc.purchaseAmount || 0;
+          const vcId: string = addVC(vc);
+          if (vcId) {
+            totalVCs++;
+            importedAmount += vc.purchaseAmount || 0;
+          }
         } catch (err) {
           console.error('Failed to create VC:', vc, err);
         }
