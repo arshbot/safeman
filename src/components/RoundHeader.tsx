@@ -19,7 +19,7 @@ interface RoundHeaderProps {
 }
 
 export function RoundHeader({ round, summary, onAddVC, dragHandleProps }: RoundHeaderProps) {
-  const { dispatch } = useCRM();
+  const { updateRound, deleteRound } = useCRM();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -28,12 +28,12 @@ export function RoundHeader({ round, summary, onAddVC, dragHandleProps }: RoundH
   };
 
   const handleEditRound = (updatedRound: Round) => {
-    dispatch({ type: 'UPDATE_ROUND', payload: updatedRound });
+    updateRound(updatedRound);
     setIsEditDialogOpen(false);
   };
 
   const handleDeleteRound = () => {
-    dispatch({ type: 'DELETE_ROUND', payload: { roundId: round.id } });
+    deleteRound(round.id);
     setIsDeleteDialogOpen(false);
   };
 
@@ -54,9 +54,9 @@ export function RoundHeader({ round, summary, onAddVC, dragHandleProps }: RoundH
       }
     })();
     
-    dispatch({
-      type: 'UPDATE_ROUND',
-      payload: { ...round, visibility: nextVisibility }
+    updateRound({
+      ...round,
+      visibility: nextVisibility
     });
   };
 
