@@ -49,10 +49,6 @@ export interface EquityPoint {
   totalRaised: number;
   equityGranted: number;
   totalEquityGranted: number;
-  targetRaised: number;
-  totalTargetRaised: number;
-  targetEquityGranted: number;
-  totalTargetEquityGranted: number;
   label: string;
   order: number;
 }

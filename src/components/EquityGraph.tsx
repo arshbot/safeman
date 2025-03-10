@@ -12,12 +12,14 @@ export function EquityGraph() {
   // Calculate total committed across all rounds
   const totalCommitted = calculateTotalCommitted(state);
 
-  // Generate equity data points based on actual rounds
-  const equityData = generateEquityData(state);
+  // Generate equity data points with separate actual and target data
+  const { actualEquityPoints, targetEquityPoints } = generateEquityData(state);
   
-  // Calculate total founder equity by taking 100 and subtracting the sum of equity granted in each round
-  // Using precise calculation without rounding intermediary values
-  const totalEquityGranted = equityData.reduce((total, point) => total + point.equityGranted, 0);
+  // Calculate total founder equity based ONLY on actual equity granted (not targets)
+  const totalEquityGranted = actualEquityPoints.reduce(
+    (total, point) => total + point.equityGranted, 
+    0
+  );
   const founderEquity = 100 - totalEquityGranted;
 
   return (
@@ -28,7 +30,10 @@ export function EquityGraph() {
       <CardContent>
         {/* Chart with fixed height */}
         <div className="h-[550px]">
-          <EquityLineChart equityData={equityData} />
+          <EquityLineChart 
+            actualEquityPoints={actualEquityPoints} 
+            targetEquityPoints={targetEquityPoints}
+          />
         </div>
         
         <EquitySummary 

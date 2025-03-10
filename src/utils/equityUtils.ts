@@ -16,29 +16,28 @@ export const calculateTotalCommitted = (state: CRMState): number => {
 };
 
 /**
- * Generate equity data points based on actual rounds
+ * Generate equity data points with completely separate lines for actual and target values
  */
-export const generateEquityData = (state: CRMState): EquityPoint[] => {
-  const equityData: EquityPoint[] = [];
-  
+export const generateEquityData = (state: CRMState): { 
+  actualEquityPoints: EquityPoint[],
+  targetEquityPoints: EquityPoint[] 
+} => {
   // Sort rounds by their order
-  const sortedRounds = [...state.rounds].sort((a, b) => b.order - a.order);
+  const sortedRounds = [...state.rounds].sort((a, b) => a.order - b.order);
   
-  let cumulativeRaised = 0;
-  let cumulativeEquity = 0;
+  let actualPoints: EquityPoint[] = [];
+  let targetPoints: EquityPoint[] = [];
+  
+  let cumulativeActualRaised = 0;
+  let cumulativeActualEquity = 0;
+  
   let cumulativeTargetRaised = 0;
   let cumulativeTargetEquity = 0;
   
-  // For each round, calculate how much was raised and how much equity was granted
+  // Process each round
   sortedRounds.forEach(round => {
-    const roundVCs = round.vcs
-      .map(vcId => state.vcs[vcId])
-      .filter(vc => vc?.status === 'finalized' && vc.purchaseAmount);
-    
-    // Calculate target amount in millions and target equity percentage
+    // Calculate target amount and equity
     const targetRaised = round.targetAmount / 1000000; // Convert to millions
-    
-    // Calculate target equity based on target amount and valuation cap
     const targetValuation = round.valuationCap > 0 ? round.valuationCap : 10000000; // Default to $10M if no valuation cap
     const targetEquityGranted = (round.targetAmount / targetValuation) * 100;
     
@@ -46,43 +45,51 @@ export const generateEquityData = (state: CRMState): EquityPoint[] => {
     cumulativeTargetRaised += targetRaised;
     cumulativeTargetEquity += targetEquityGranted;
     
-    // Calculate actual raised amount based on finalized VCs
-    const actualRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / 1000000; // Convert to millions
-    
-    const actualValuation = round.valuationCap > 0 ? round.valuationCap : 10000000;
-    
-    // Calculate equity granted based on the actual amount raised
-    const equityGranted = roundVCs.length > 0 ? 
-      (roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0)) / actualValuation * 100 : 
-      0;
-    
-    cumulativeRaised += actualRaised;
-    cumulativeEquity += equityGranted;
-    
-    equityData.push({
-      raised: actualRaised,
-      totalRaised: Math.max(cumulativeRaised, 0.1), // Ensure minimum value for log scale
-      equityGranted: equityGranted,
-      totalEquityGranted: cumulativeEquity,
-      targetRaised: targetRaised,
-      totalTargetRaised: Math.max(cumulativeTargetRaised, 0.1),
-      targetEquityGranted: targetEquityGranted,
-      totalTargetEquityGranted: cumulativeTargetEquity,
+    // Add target data point
+    targetPoints.push({
+      raised: targetRaised,
+      totalRaised: Math.max(cumulativeTargetRaised, 0.1), // Ensure minimum value for log scale
+      equityGranted: targetEquityGranted,
+      totalEquityGranted: cumulativeTargetEquity,
       label: round.name,
       order: round.order
     });
+    
+    // Get finalized VCs for this round
+    const roundVCs = round.vcs
+      .map(vcId => state.vcs[vcId])
+      .filter(vc => vc?.status === 'finalized' && vc.purchaseAmount);
+    
+    // Only add actual data point if there are finalized VCs with purchase amounts
+    if (roundVCs.length > 0) {
+      const actualRaised = roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / 1000000;
+      const actualValuation = round.valuationCap > 0 ? round.valuationCap : 10000000;
+      const actualEquityGranted = (roundVCs.reduce((total, vc) => total + (vc.purchaseAmount || 0), 0) / actualValuation) * 100;
+      
+      cumulativeActualRaised += actualRaised;
+      cumulativeActualEquity += actualEquityGranted;
+      
+      actualPoints.push({
+        raised: actualRaised,
+        totalRaised: Math.max(cumulativeActualRaised, 0.1), // Ensure minimum value for log scale
+        equityGranted: actualEquityGranted,
+        totalEquityGranted: cumulativeActualEquity,
+        label: round.name,
+        order: round.order
+      });
+    }
   });
   
-  // Sort the equity data points by their order, lowest first (early rounds first)
-  return equityData.sort((a, b) => a.order - b.order);
+  return {
+    actualEquityPoints: actualPoints,
+    targetEquityPoints: targetPoints
+  };
 };
 
 /**
  * Create logarithmic tick values with better spread for the x-axis
  */
-export const createLogTicks = (equityData: EquityPoint[]): number[] => {
-  const maxValue = Math.max(...equityData.map(d => d.totalRaised), 10); // Ensure at least 10M for scale
-  
+export const createLogTicks = (maxValue: number): number[] => {
   // Start with our minimum value for log scale
   const ticks = [0.1];
   
