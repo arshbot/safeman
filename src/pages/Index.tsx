@@ -30,7 +30,7 @@ const Index = () => {
   const sortedUnsortedVCs = sortVCsByStatus(state.unsortedVCs);
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="container mx-auto p-6 max-w-6xl mb-12">
       <PageHeader onAddVC={() => {
         setSelectedRoundId(undefined);
         setIsAddVCModalOpen(true);
