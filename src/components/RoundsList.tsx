@@ -1,4 +1,3 @@
-
 import { Round, RoundSummary, VC } from "@/types";
 import { Droppable, Draggable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
 import { RoundHeader } from "./RoundHeader";
@@ -21,7 +20,7 @@ export function RoundsList({
 }: RoundsListProps) {
   // Helper function for droppable styling
   const getListStyle = (isDraggingOver: boolean) => ({
-    background: isDraggingOver ? 'rgba(240, 240, 240, 0.8)' : '#f3f3f3',
+    background: isDraggingOver ? 'rgba(240, 240, 240, 0.8)' : '#F1F5F980', // Updated to match the screenshot
     padding: '12px', // Increased padding
     borderRadius: '8px'
   });
@@ -72,7 +71,7 @@ export function RoundsList({
         <div 
           {...provided.droppableProps} 
           ref={provided.innerRef} 
-          className="space-y-6" // Increased spacing between rounds
+          className="space-y-6 bg-[#F1F5F980] mt-8 p-4 rounded-lg border-2 border-dashed border-transparent" // Updated background color and added the classes from the screenshot
           style={getListStyle(snapshot.isDraggingOver)}
         >
           {rounds.sort((a, b) => a.order - b.order).map((round, index) => {

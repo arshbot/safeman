@@ -19,7 +19,7 @@ export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
   
   return (
     <div 
-      className="mt-8 bg-secondary/50 p-4 rounded-lg border-2 border-dashed border-transparent hover:border-secondary transition-colors"
+      className="mt-8 bg-[#F1F5F980] p-4 rounded-lg border-2 border-dashed border-transparent hover:border-secondary transition-colors"
       data-section="unsorted-vcs"
     >
       <div className="flex justify-between items-center mb-4">

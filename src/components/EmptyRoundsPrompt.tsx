@@ -5,7 +5,7 @@ import { AddRoundModal } from "@/components/AddRoundModal";
 
 export function EmptyRoundsPrompt() {
   return (
-    <div className="text-center py-12 bg-secondary/30 rounded-lg border border-dashed border-muted">
+    <div className="text-center py-12 bg-[#F1F5F980] rounded-lg border border-dashed border-muted">
       <Layers className="mx-auto h-12 w-12 text-muted-foreground" />
       <h3 className="mt-4 text-lg font-semibold">No rounds yet</h3>
       <p className="mt-1 text-muted-foreground">
