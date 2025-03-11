@@ -73,7 +73,7 @@ export function VCRow({ vc, roundId }: VCRowProps) {
 
   return (
     <>
-      <div className="flex items-center p-4 bg-white rounded-md mb-1 hover:bg-gray-50 transition-all animate-fade-in">
+      <div className="flex items-center p-4 bg-white border border-gray-100 rounded-md hover:bg-gray-50 transition-all animate-fade-in">
         <VCDetails vc={vc} />
         <div className="flex items-center space-x-2">
           <StatusBadge status={vc.status} />
