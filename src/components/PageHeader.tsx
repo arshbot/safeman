@@ -31,41 +31,48 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mb-8 flex justify-between items-center"
+      className="mb-8 space-y-4 lg:space-y-0 lg:flex lg:justify-between lg:items-center"
     >
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">SAFEMAN</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">SAFEMAN</h1>
         <p className="text-xs text-muted-foreground mt-1">
           <span className="font-bold">SAFE</span> Allocation & Financing Equity <span className="font-bold">Man</span>ager
         </p>
       </div>
-      <div className="flex space-x-2 items-center">
+      <div className="flex flex-wrap gap-2 items-center">
         <Button 
           variant="outline" 
           onClick={() => setIsImportModalOpen(true)}
-          className="gap-1"
+          className="flex-1 sm:flex-none"
+          size="sm"
         >
-          <FileSpreadsheet className="h-4 w-4" />
-          Import from Carta
+          <FileSpreadsheet className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Import from Carta</span>
+          <span className="sm:hidden">Import</span>
         </Button>
         <AddVCModal
           open={isAddVCModalOpen}
           onOpenChange={setIsAddVCModalOpen}
           roundId={undefined}
           trigger={
-            <Button variant="outline" onClick={() => {
-              setIsAddVCModalOpen(true);
-              onAddVC();
-            }}>
-              <Users className="mr-2 h-4 w-4" />
+            <Button 
+              variant="outline"
+              className="flex-1 sm:flex-none"
+              size="sm"
+              onClick={() => {
+                setIsAddVCModalOpen(true);
+                onAddVC();
+              }}
+            >
+              <Users className="h-4 w-4 mr-2" />
               Add VC
             </Button>
           }
         />
         <AddRoundModal
           trigger={
-            <Button>
-              <Layers className="mr-2 h-4 w-4" />
+            <Button className="flex-1 sm:flex-none" size="sm">
+              <Layers className="h-4 w-4 mr-2" />
               Add Round
             </Button>
           }

@@ -10,6 +10,7 @@ import { useVCSorting } from "@/hooks/useVCSorting";
 import { useDragEndHandler } from "@/hooks/useDragEndHandler";
 import { DnDProvider } from "@/context/DnDContext";
 import { AddVCModal } from "@/components/AddVCModal";
+import { Scratchpad } from "@/components/Scratchpad";
 
 // Reset server context for SSR compatibility
 resetServerContext();
@@ -30,46 +31,49 @@ const Index = () => {
   const sortedUnsortedVCs = sortVCsByStatus(state.unsortedVCs);
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl mb-12">
-      <PageHeader onAddVC={() => {
-        setSelectedRoundId(undefined);
-        setIsAddVCModalOpen(true);
-      }} />
-      
-      <DnDProvider onDragEnd={handleDragEnd}>
-        {state.rounds.length > 0 ? (
-          <>
-            <div className="mb-4 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <h2 className="text-lg font-semibold mb-2">Funding Rounds</h2>
-              <p className="text-sm text-muted-foreground mb-2">
-                Drag and drop to reorder rounds or move VCs between rounds.
-              </p>
-            </div>
+    <div className="flex-1">
+      <div className="container mx-auto px-4 sm:px-6 lg:pr-80 pb-12">
+        <PageHeader onAddVC={() => {
+          setSelectedRoundId(undefined);
+          setIsAddVCModalOpen(true);
+        }} />
+        
+        <DnDProvider onDragEnd={handleDragEnd}>
+          {state.rounds.length > 0 ? (
+            <>
+              <div className="mb-4 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <h2 className="text-lg font-semibold mb-2">Funding Rounds</h2>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Drag and drop to reorder rounds or move VCs between rounds.
+                </p>
+              </div>
 
-            <RoundsList
-              rounds={state.rounds}
-              getRoundSummary={getRoundSummary}
-              onAddVC={handleAddVCToRound}
-              getVC={(id) => state.vcs[id]}
-              sortVCsByStatus={sortVCsByStatus}
-            />
-          </>
-        ) : (
-          <EmptyRoundsPrompt />
-        )}
+              <RoundsList
+                rounds={state.rounds}
+                getRoundSummary={getRoundSummary}
+                onAddVC={handleAddVCToRound}
+                getVC={(id) => state.vcs[id]}
+                sortVCsByStatus={sortVCsByStatus}
+              />
+            </>
+          ) : (
+            <EmptyRoundsPrompt />
+          )}
 
-        <UnsortedVCSection 
-          vcs={sortedUnsortedVCs}
-          getVC={(id) => state.vcs[id]}
+          <UnsortedVCSection 
+            vcs={sortedUnsortedVCs}
+            getVC={(id) => state.vcs[id]}
+          />
+        </DnDProvider>
+
+        <AddVCModal
+          open={isAddVCModalOpen}
+          onOpenChange={setIsAddVCModalOpen}
+          roundId={selectedRoundId}
         />
-      </DnDProvider>
-
-      {/* Add VC Modal */}
-      <AddVCModal
-        open={isAddVCModalOpen}
-        onOpenChange={setIsAddVCModalOpen}
-        roundId={selectedRoundId}
-      />
+      </div>
+      
+      <Scratchpad />
     </div>
   );
 };
