@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,6 +34,17 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
   const { addVC, addVCToRound } = useCRM();
 
   const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'finalized'];
+
+  const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.trim();
+    
+    // If the value is not empty and doesn't start with a protocol
+    if (value && !value.match(/^https?:\/\//)) {
+      value = `https://${value}`;
+    }
+    
+    setWebsite(value);
+  };
 
   // Reset form when modal opens or closes
   useEffect(() => {
@@ -127,16 +137,18 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
                 placeholder="contact@example.com"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="website">Website (Optional)</Label>
-              <Input
-                id="website"
-                type="url"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                placeholder="https://example.com"
-              />
-            </div>
+            
+        <div className="grid gap-2">
+          <Label htmlFor="website">Website (Optional)</Label>
+          <Input
+            id="website"
+            type="url"
+            value={website}
+            onChange={handleWebsiteChange}
+            placeholder="example.com"
+          />
+        </div>
+
             <div className="grid gap-2">
               <Label htmlFor="status">Status</Label>
               <Select

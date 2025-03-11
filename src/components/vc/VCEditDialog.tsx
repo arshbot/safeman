@@ -49,6 +49,17 @@ export function VCEditDialog({
     });
   };
 
+  const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.trim();
+    
+    // If the value is not empty and doesn't start with a protocol
+    if (value && !value.match(/^https?:\/\//)) {
+      value = `https://${value}`;
+    }
+    
+    setEditedVC({ ...editedVC, website: value || undefined });
+  };
+
   const handleStatusChange = (value: Status) => {
     // If changing to finalized, ensure purchaseAmount has a default value if not set
     if (value === 'finalized' && !editedVC.purchaseAmount) {
@@ -103,8 +114,8 @@ export function VCEditDialog({
                 id="website"
                 type="url"
                 value={editedVC.website || ''}
-                onChange={(e) => setEditedVC({ ...editedVC, website: e.target.value || undefined })}
-                placeholder="https://example.com"
+                onChange={handleWebsiteChange}
+                placeholder="example.com"
               />
             </div>
             <div className="grid gap-2">
