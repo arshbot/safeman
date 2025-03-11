@@ -1,5 +1,5 @@
 
-export type Status = 'notContacted' | 'contacted' | 'closeToBuying' | 'finalized';
+export type Status = 'notContacted' | 'contacted' | 'closeToBuying' | 'finalized' | 'likelyPassed';
 export type RoundVisibility = 'expanded' | 'collapsedShowFinalized' | 'collapsedHideAll';
 
 export interface MeetingNote {

@@ -27,7 +27,7 @@ export function VCEditDialog({
   handleRemoveFromRound,
   roundId,
 }: VCEditDialogProps) {
-  const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'finalized'];
+  const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'finalized', 'likelyPassed'];
   const [purchaseAmountFormatted, setPurchaseAmountFormatted] = useState(
     editedVC.purchaseAmount ? formatNumberWithCommas(editedVC.purchaseAmount) : ''
   );

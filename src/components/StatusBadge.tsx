@@ -24,6 +24,10 @@ const statusConfig: Record<Status, { label: string; className: string }> = {
     label: 'Finalized',
     className: 'bg-status-sold text-white',
   },
+  likelyPassed: {
+    label: 'Likely Passed',
+    className: 'bg-red-200 text-red-800',
+  },
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

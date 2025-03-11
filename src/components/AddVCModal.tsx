@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,7 +34,7 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
   const [purchaseAmountFormatted, setPurchaseAmountFormatted] = useState("");
   const { addVC, addVCToRound } = useCRM();
 
-  const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'finalized'];
+  const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'finalized', 'likelyPassed'];
 
   const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.trim();
@@ -138,16 +139,16 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
               />
             </div>
             
-        <div className="grid gap-2">
-          <Label htmlFor="website">Website (Optional)</Label>
-          <Input
-            id="website"
-            type="url"
-            value={website}
-            onChange={handleWebsiteChange}
-            placeholder="example.com"
-          />
-        </div>
+            <div className="grid gap-2">
+              <Label htmlFor="website">Website (Optional)</Label>
+              <Input
+                id="website"
+                type="url"
+                value={website}
+                onChange={handleWebsiteChange}
+                placeholder="example.com"
+              />
+            </div>
 
             <div className="grid gap-2">
               <Label htmlFor="status">Status</Label>
@@ -156,15 +157,12 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
                 onValueChange={handleStatusChange}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((status) => (
                     <SelectItem key={status} value={status}>
-                      <div className="flex items-center">
-                        <StatusBadge status={status} className="mr-2" />
-                        {status}
-                      </div>
+                      <StatusBadge status={status} className="mr-2" />
                     </SelectItem>
                   ))}
                 </SelectContent>
