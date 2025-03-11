@@ -1,3 +1,4 @@
+
 import { VC, Status } from '@/types';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -125,14 +126,15 @@ export function VCEditDialog({
                 onValueChange={handleStatusChange}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder="Select status">
+                    <StatusBadge status={editedVC.status} className="mr-2" />
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      <div className="flex items-center">
-                        <StatusBadge status={status} className="mr-2" />
-                        {status}
+                    <SelectItem key={status} value={status} className="py-2">
+                      <div className="flex flex-col space-y-1">
+                        <StatusBadge status={status} className="mr-2" showDescription={true} />
                       </div>
                     </SelectItem>
                   ))}

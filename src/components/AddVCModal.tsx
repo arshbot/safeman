@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -157,12 +156,16 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
                 onValueChange={handleStatusChange}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    <StatusBadge status={status} className="mr-2" />
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      <StatusBadge status={status} className="mr-2" />
+                    <SelectItem key={status} value={status} className="py-2">
+                      <div className="flex flex-col space-y-1">
+                        <StatusBadge status={status} className="mr-2" showDescription={true} />
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
