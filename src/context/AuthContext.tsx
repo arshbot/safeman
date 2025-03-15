@@ -30,7 +30,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             dividerText: "hidden"
           }
         },
-        initialFirstFactor: "oauth_google"
+        // Use the firstFactorIdentification instead of initialFirstFactor
+        firstFactorIdentification: {
+          strategy: "oauth_google"
+        }
       });
     } catch (error) {
       console.error("Error signing in with Google:", error);
