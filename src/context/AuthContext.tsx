@@ -16,17 +16,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children 
 }) => {
   const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  const { signOut, openSignIn } = useClerk();
   const { toast } = useToast();
 
   const signInWithGoogle = async () => {
-    // This function is kept for API compatibility with existing code
-    // but we're now using Clerk's SignIn component directly
-    toast({
-      title: "Using Clerk Authentication",
-      description: "Please use the Clerk sign-in widget",
-    });
-    return Promise.resolve();
+    try {
+      // Open Clerk sign-in modal with Google as the selected provider
+      await openSignIn({
+        redirectUrl: '/',
+        appearance: {
+          elements: {
+            footer: "hidden",
+            dividerText: "hidden"
+          }
+        },
+        initialFirstFactor: "oauth_google"
+      });
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+      toast({
+        title: "Sign-in failed",
+        description: "There was a problem signing in with Google. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const logout = async () => {

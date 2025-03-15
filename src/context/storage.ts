@@ -8,10 +8,13 @@ export const initialState: CRMState = {
   unsortedVCs: [],
 };
 
-// Load state from localStorage
+// Load state from localStorage with user-specific key
 export const loadState = (): CRMState => {
   try {
-    const serializedState = localStorage.getItem('crmState');
+    const userId = localStorage.getItem('clerk-user-id');
+    const storageKey = userId ? `crmState-${userId}` : 'crmState-anonymous';
+    
+    const serializedState = localStorage.getItem(storageKey);
     if (serializedState === null) {
       return initialState;
     }
@@ -22,11 +25,14 @@ export const loadState = (): CRMState => {
   }
 };
 
-// Save state to localStorage
+// Save state to localStorage with user-specific key
 export const saveState = (state: CRMState): void => {
   try {
+    const userId = localStorage.getItem('clerk-user-id');
+    const storageKey = userId ? `crmState-${userId}` : 'crmState-anonymous';
+    
     const serializedState = JSON.stringify(state);
-    localStorage.setItem('crmState', serializedState);
+    localStorage.setItem(storageKey, serializedState);
   } catch (err) {
     console.error('Error saving state to localStorage', err);
   }

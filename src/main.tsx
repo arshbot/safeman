@@ -15,6 +15,9 @@ createRoot(document.getElementById("root")!).render(
     routerPush={(to) => window.location.href = to}
     routerReplace={(to) => window.location.href = to}
     signInUrl="/login"
+    signUpUrl="/sign-up"
+    afterSignInUrl="/"
+    afterSignUpUrl="/"
   >
     <App />
   </ClerkProvider>

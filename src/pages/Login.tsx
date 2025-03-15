@@ -4,9 +4,10 @@ import { useAuth } from "@/context/AuthContext";
 import { Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { SignIn } from "@clerk/clerk-react";
+import { FcGoogle } from "react-icons/fc";
 
 const Login = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, signInWithGoogle } = useAuth();
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
@@ -47,7 +48,30 @@ const Login = () => {
             </div>
           )}
           
-          <SignIn path="/login" signUpUrl="/sign-up" routing="path" />
+          <div className="flex flex-col gap-4">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={signInWithGoogle}
+            >
+              <FcGoogle className="mr-2 h-5 w-5" />
+              Sign in with Google
+            </Button>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  or continue with
+                </span>
+              </div>
+            </div>
+            
+            <SignIn path="/login" signUpUrl="/sign-up" routing="path" />
+          </div>
         </div>
       </motion.div>
     </div>
