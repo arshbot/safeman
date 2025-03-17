@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { Navigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { SignIn } from "@clerk/clerk-react";
+import { SignIn, useClerk } from "@clerk/clerk-react";
 import { FcGoogle } from "react-icons/fc";
 
 const Login = () => {
   const { user, loading, signInWithGoogle } = useAuth();
   const location = useLocation();
+  const { openSignIn } = useClerk();
 
   const searchParams = new URLSearchParams(location.search);
   const error = searchParams.get('error');
@@ -16,6 +17,22 @@ const Login = () => {
   if (user) {
     return <Navigate to="/" replace />;
   }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await openSignIn({
+        redirectUrl: '/',
+        appearance: {
+          elements: {
+            footer: "hidden",
+            dividerText: "hidden"
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error with Google sign-in:", error);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center flex-grow py-12 bg-secondary/30">
@@ -53,7 +70,7 @@ const Login = () => {
               variant="outline"
               size="lg"
               className="w-full"
-              onClick={signInWithGoogle}
+              onClick={handleGoogleSignIn}
             >
               <FcGoogle className="mr-2 h-5 w-5" />
               Sign in with Google

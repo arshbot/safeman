@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext } from "react";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -28,9 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             footer: "hidden",
             dividerText: "hidden"
           }
-        },
-        // Use OAuth provider directly
-        firstFactors: ["oauth_google"]
+        }
       });
     } catch (error) {
       console.error("Error signing in with Google:", error);
