@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext } from "react";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -30,10 +29,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             dividerText: "hidden"
           }
         },
-        // Use the firstFactorIdentification instead of initialFirstFactor
-        firstFactorIdentification: {
-          strategy: "oauth_google"
-        }
+        // Use OAuth provider directly
+        firstFactors: ["oauth_google"]
       });
     } catch (error) {
       console.error("Error signing in with Google:", error);

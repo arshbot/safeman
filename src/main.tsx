@@ -16,10 +16,8 @@ createRoot(document.getElementById("root")!).render(
     routerReplace={(to) => window.location.href = to}
     signInUrl="/login"
     signUpUrl="/sign-up"
-    // Replace deprecated props with newer ones
-    fallbackRedirectUrl="/"
-    signInFallbackRedirectUrl="/"
-    signUpFallbackRedirectUrl="/"
+    afterSignInUrl="/"
+    afterSignUpUrl="/"
   >
     <App />
   </ClerkProvider>
