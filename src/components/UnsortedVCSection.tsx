@@ -71,7 +71,7 @@ export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
                 <p className="text-xs mt-2">Drop a VC here to move it from a round</p>
                 {snapshot.isDraggingOver && (
                   <div className="mt-4 py-2 px-4 bg-primary/10 text-primary font-medium rounded-md inline-block">
-                    Drop here to add to unsorted
+                    Drop here to move to Unsorted
                   </div>
                 )}
               </div>

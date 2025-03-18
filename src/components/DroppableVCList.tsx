@@ -48,6 +48,13 @@ export function DroppableVCList({
     );
   }
   
+  // Get a friendly display name for the drop area
+  const getDropAreaName = (id: string): string => {
+    if (id === 'unsorted') return 'Unsorted';
+    if (roundId) return 'this round';
+    return 'this section';
+  };
+  
   return (
     <Droppable droppableId={droppableId} type="VC" isDropDisabled={!enableDropping}>
       {(provided, snapshot) => {
@@ -96,11 +103,11 @@ export function DroppableVCList({
             })}
             {provided.placeholder}
             
-            {/* Enhanced drop indicator */}
+            {/* Enhanced drop indicator with user-friendly message */}
             {snapshot.isDraggingOver && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="text-sm text-primary font-semibold text-center py-2 px-4 bg-primary/10 rounded-md shadow-sm border border-primary/30">
-                  Drop here to {droppableId === 'unsorted' ? 'move to unsorted' : roundId ? `add to ${roundId}` : 'add'}
+                  Drop here to add to {getDropAreaName(droppableId)}
                 </div>
               </div>
             )}

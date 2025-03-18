@@ -1,3 +1,4 @@
+
 import { Round, RoundSummary, VC } from "@/types";
 import { Droppable, Draggable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
 import { RoundHeader } from "./RoundHeader";
@@ -98,6 +99,13 @@ export function RoundsList({
                         >
                           <RoundHeader round={round} summary={summary} onAddVC={onAddVC} dragHandleProps={provided.dragHandleProps} />
                           {dropProvided.placeholder}
+                          
+                          {/* Add visual indicator when dragging over round header */}
+                          {dropSnapshot.isDraggingOver && (
+                            <div className="mt-2 py-2 px-4 bg-primary/10 text-primary font-medium rounded-md text-center text-sm">
+                              Drop here to add to {round.name}
+                            </div>
+                          )}
                         </div>
                       )}
                     </Droppable>
