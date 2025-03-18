@@ -25,7 +25,8 @@ export const useDataPersistence = (
           return;
         }
         
-        const loadedState = await loadState(sharedOwnerId);
+        // Always load user's own data, ignore sharedOwnerId
+        const loadedState = await loadState(null);
         if (loadedState) {
           dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
         }
@@ -42,14 +43,12 @@ export const useDataPersistence = (
     if (!authLoading) {
       loadData();
     }
-  }, [user, sharedOwnerId, authLoading, dispatch, setIsLoading]);
+  }, [user, authLoading, dispatch, setIsLoading]);
 
-  // Save state when it changes
+  // Save state when it changes - always save user's own data
   useEffect(() => {
-    const shouldSave = !isReadOnly && !sharedOwnerId && user;
-    
-    if (shouldSave) {
+    if (user) {
       saveState(state);
     }
-  }, [state, isReadOnly, sharedOwnerId, user]);
+  }, [state, user]);
 };

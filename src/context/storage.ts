@@ -11,15 +11,14 @@ export const initialState: CRMState = {
   scratchpadNotes: "",
 };
 
-// Load state from localStorage or Supabase
-export const loadState = async (sharedOwnerId: string | null = null): Promise<CRMState> => {
+// Load state from localStorage or Supabase - removing shared data functionality
+export const loadState = async (): Promise<CRMState> => {
   try {
     // First try to load from Supabase if user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session?.user) {
-      // If we have a sharedOwnerId, load that user's data instead
-      const userId = sharedOwnerId || session.user.id;
+      const userId = session.user.id;
       
       const { data, error } = await supabase
         .from('user_crm_data')
@@ -30,12 +29,7 @@ export const loadState = async (sharedOwnerId: string | null = null): Promise<CR
       if (error) {
         console.error('Error loading state from Supabase:', error);
         // If there's an error loading from Supabase, fall back to localStorage
-        // But only if we're not trying to load shared data
-        if (!sharedOwnerId) {
-          return loadFromLocalStorage();
-        } else {
-          return initialState;
-        }
+        return loadFromLocalStorage();
       }
       
       if (data) {
@@ -52,29 +46,19 @@ export const loadState = async (sharedOwnerId: string | null = null): Promise<CR
           return stateData;
         } else {
           console.error('Invalid state data from Supabase, falling back to localStorage');
-          if (!sharedOwnerId) {
-            return loadFromLocalStorage();
-          } else {
-            return initialState;
-          }
+          return loadFromLocalStorage();
         }
       }
       
       // If no data in Supabase, try localStorage and then save to Supabase
-      // But only if we're not trying to load shared data
-      if (!sharedOwnerId) {
-        const localState = loadFromLocalStorage();
-        
-        // Save the local state to Supabase for future use
-        if (localState !== initialState) {
-          saveToSupabase(session.user.id, localState);
-        }
-        
-        return localState;
+      const localState = loadFromLocalStorage();
+      
+      // Save the local state to Supabase for future use
+      if (localState !== initialState) {
+        saveToSupabase(session.user.id, localState);
       }
       
-      // If we're trying to load shared data but none exists, return initial state
-      return initialState;
+      return localState;
     }
     
     // If not authenticated, use localStorage
