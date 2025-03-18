@@ -63,7 +63,7 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
     return { 
       ...state, 
       isEditRoundModalOpen: true,
-      selectedRoundId: action.type === 'OPEN_EDIT_ROUND_MODAL' ? action.payload : null
+      selectedRoundId: action.payload 
     };
   }
   
@@ -75,7 +75,7 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
     return { 
       ...state, 
       isEditVcModalOpen: true,
-      selectedVcId: action.type === 'OPEN_EDIT_VC_MODAL' ? action.payload : null
+      selectedVcId: action.payload 
     };
   }
   
