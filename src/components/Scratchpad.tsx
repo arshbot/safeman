@@ -104,31 +104,31 @@ export function Scratchpad() {
 
   return (
     <div className="hidden lg:block fixed right-0 top-20 z-10 transition-all duration-300 ease-in-out">
-      {/* Pull tab */}
-      <div 
-        className={cn(
-          "absolute top-1/2 -left-6 -translate-y-1/2 bg-primary/10 hover:bg-primary/20 rounded-l-md p-1 cursor-pointer shadow-md transition-colors",
-          "border border-r-0 border-border"
-        )}
-        onClick={toggleCollapse}
-        aria-label={isCollapsed ? "Expand scratchpad" : "Collapse scratchpad"}
-        role="button"
-        tabIndex={0}
-      >
-        {isCollapsed ? (
-          <ChevronLeft className="h-5 w-5 text-primary" />
-        ) : (
-          <ChevronRight className="h-5 w-5 text-primary" />
-        )}
-      </div>
-      
-      {/* Scratchpad card */}
+      {/* Scratchpad card with attached collapse control */}
       <Card 
         className={cn(
           "w-72 h-[calc(100vh-6rem)] shadow-lg transition-all duration-300 ease-in-out",
           isCollapsed ? "translate-x-[calc(100%-12px)]" : ""
         )}
       >
+        {/* Collapse/expand button attached to the card */}
+        <div 
+          className={cn(
+            "absolute top-1/2 -left-6 -translate-y-1/2 bg-primary/10 hover:bg-primary/20 rounded-l-md p-1 cursor-pointer shadow-md transition-colors",
+            "border border-r-0 border-border"
+          )}
+          onClick={toggleCollapse}
+          aria-label={isCollapsed ? "Expand scratchpad" : "Collapse scratchpad"}
+          role="button"
+          tabIndex={0}
+        >
+          {isCollapsed ? (
+            <ChevronLeft className="h-5 w-5 text-primary" />
+          ) : (
+            <ChevronRight className="h-5 w-5 text-primary" />
+          )}
+        </div>
+        
         <div className="p-4 h-full flex flex-col">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-semibold">Scratchpad</h3>
