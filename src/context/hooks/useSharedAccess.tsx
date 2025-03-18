@@ -19,6 +19,8 @@ export const useSharedAccess = (user: User | null) => {
       
       try {
         // Check if this user has been granted access to someone else's data
+        // We use the user's email from the user object directly rather than 
+        // trying to query auth.users
         const { data, error } = await supabase
           .from('shared_access')
           .select('owner_id, can_edit')
