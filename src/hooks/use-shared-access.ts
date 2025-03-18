@@ -45,7 +45,7 @@ export function useSharedAccess() {
       setError(error.message || "Failed to load shared access data");
       toast({
         title: "Failed to load shared access",
-        description: error.message || "There was a problem loading your shared access data.",
+        description: "There was a problem loading your shared access data. This might be due to missing database permissions.",
         variant: "destructive",
       });
     } finally {
@@ -160,6 +160,9 @@ export function useSharedAccess() {
   useEffect(() => {
     if (user) {
       loadSharedAccess();
+    } else {
+      setSharedAccess([]);
+      setIsLoading(false);
     }
   }, [user]);
 
