@@ -1,10 +1,12 @@
 
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Upload } from "lucide-react";
+import { AlertCircle, Upload, FileInput } from "lucide-react";
 import { DialogFooter } from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ImportVCFormProps {
   file: File | null;
@@ -23,6 +25,16 @@ export function ImportVCForm({
   onImport,
   onCancel
 }: ImportVCFormProps) {
+  const [isFileInputActive, setIsFileInputActive] = useState(false);
+  
+  const handleFileInputClick = () => {
+    setIsFileInputActive(true);
+    // Reset the active state after a delay
+    setTimeout(() => {
+      setIsFileInputActive(false);
+    }, 1000);
+  };
+
   return (
     <>
       <div className="space-y-4 py-4">
@@ -35,13 +47,22 @@ export function ImportVCForm({
         
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="excelFile">Excel File</Label>
-          <Input
-            id="excelFile"
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={onFileChange}
-            disabled={isLoading}
-          />
+          <div className="relative">
+            <Input
+              id="excelFile"
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={onFileChange}
+              onClick={handleFileInputClick}
+              disabled={isLoading}
+              className={`pr-10 ${isFileInputActive ? 'bg-muted border-primary' : ''}`}
+            />
+            {isFileInputActive && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <Spinner className="w-5 h-5" />
+              </div>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground mt-1">
             We'll extract VC data from the "Convertible Ledger" sheet and create rounds based on valuation caps found in column R.
           </p>
