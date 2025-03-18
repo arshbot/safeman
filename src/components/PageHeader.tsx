@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PageHeaderProps {
   onAddVC: () => void;
@@ -27,6 +28,7 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isManageAccessModalOpen, setIsManageAccessModalOpen] = useState(false);
   const { user, logout } = useAuth();
+  const isMobile = useIsMobile();
   
   return (
     <motion.div 
@@ -46,7 +48,7 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
           variant="outline" 
           onClick={() => setIsImportModalOpen(true)}
           className="flex-1 sm:flex-none"
-          size="sm"
+          size={isMobile ? "sm" : "default"}
         >
           <FileSpreadsheet className="h-4 w-4 mr-2" />
           <span className="hidden sm:inline">Import from Carta</span>
@@ -60,7 +62,7 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
             <Button 
               variant="outline"
               className="flex-1 sm:flex-none"
-              size="sm"
+              size={isMobile ? "sm" : "default"}
               onClick={() => {
                 setIsAddVCModalOpen(true);
                 onAddVC();
@@ -73,7 +75,10 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
         />
         <AddRoundModal
           trigger={
-            <Button className="flex-1 sm:flex-none" size="sm">
+            <Button 
+              className="flex-1 sm:flex-none" 
+              size={isMobile ? "sm" : "default"}
+            >
               <Layers className="h-4 w-4 mr-2" />
               Add Round
             </Button>
@@ -83,7 +88,7 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
         <Button
           variant="outline"
           className="flex-1 sm:flex-none"
-          size="sm"
+          size={isMobile ? "sm" : "default"}
           onClick={() => setIsManageAccessModalOpen(true)}
         >
           <Share2 className="h-4 w-4 mr-2" />

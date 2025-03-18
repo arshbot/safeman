@@ -32,7 +32,7 @@ const Index = () => {
 
   return (
     <div className="flex-1 pt-6">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl pb-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl pb-12">
         <PageHeader onAddVC={() => {
           setSelectedRoundId(undefined);
           setIsAddVCModalOpen(true);
