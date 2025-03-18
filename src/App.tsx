@@ -11,61 +11,58 @@ import { Footer } from "./components/Footer";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
-import { ClerkLoaded, ClerkLoading, useUser } from "@clerk/clerk-react";
-import { Spinner } from "./components/ui/spinner";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
-// This component captures the user ID and stores it in localStorage
-const UserIdCapture = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useUser();
-  
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('clerk-user-id', user.id);
-    } else {
-      localStorage.removeItem('clerk-user-id');
-    }
-  }, [user]);
-  
-  return <>{children}</>;
-};
+const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ClerkLoading>
-        <div className="flex items-center justify-center min-h-screen">
-          <Spinner />
-        </div>
-      </ClerkLoading>
-      <ClerkLoaded>
+  useEffect(() => {
+    // Check if the auth session is ready
+    const checkAuth = async () => {
+      await supabase.auth.getSession();
+      setIsLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
         <AuthProvider>
-          <UserIdCapture>
-            <CRMProvider>
-              <div className="flex flex-col min-h-screen">
-                <Toaster />
-                <Sonner position="top-right" closeButton />
-                <BrowserRouter>
-                  <Routes>
-                    <Route path="/login/*" element={<Login />} />
-                    <Route path="/sign-up/*" element={<Login />} />
-                    <Route element={<ProtectedRoute />}>
-                      <Route path="/" element={<Index />} />
-                    </Route>
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <Footer />
-                </BrowserRouter>
-              </div>
-            </CRMProvider>
-          </UserIdCapture>
+          <CRMProvider>
+            <div className="flex flex-col min-h-screen">
+              <Toaster />
+              <Sonner position="top-right" closeButton />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/login/*" element={<Login />} />
+                  <Route path="/sign-up/*" element={<Login />} />
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/" element={<Index />} />
+                  </Route>
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Footer />
+              </BrowserRouter>
+            </div>
+          </CRMProvider>
         </AuthProvider>
-      </ClerkLoaded>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

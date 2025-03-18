@@ -1,3 +1,4 @@
+
 // This file serves as the entry point for all reducers
 import { CRMState } from '@/types';
 import { CRMAction } from '../types';
@@ -8,6 +9,11 @@ import { dragAndDropReducers } from './dragAndDropReducers';
 
 // Main reducer that delegates to specific reducers based on action type
 export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
+  // Special action for initializing state
+  if (action.type === 'INITIALIZE_STATE') {
+    return action.payload;
+  }
+  
   // Round-related actions
   if (action.type.startsWith('ADD_ROUND') || 
       action.type.startsWith('UPDATE_ROUND') || 

@@ -1,9 +1,9 @@
 
-import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, useEffect, useState } from 'react';
 import { CRMState, Round, VC, MeetingNote } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { crmReducer } from './reducers';
-import { loadState, saveState } from './storage';
+import { loadState, saveState, initialState } from './storage';
 import { getRoundSummary } from './crmUtils';
 import { CRMContextType } from './types';
 
@@ -12,12 +12,35 @@ const CRMContext = createContext<CRMContextType | undefined>(undefined);
 
 // Provider
 export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(crmReducer, loadState());
+  const [state, dispatch] = useReducer(crmReducer, initialState);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Save state to localStorage when it changes
+  // Load state on mount
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const loadedState = await loadState();
+        // Create a new action to initialize state
+        if (loadedState) {
+          dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
+        }
+      } catch (error) {
+        console.error('Error loading CRM state:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Save state when it changes
+  useEffect(() => {
+    if (!isLoading) {
+      saveState(state);
+    }
+  }, [state, isLoading]);
 
   const addRound = (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded' | 'visibility'>) => {
     const id = uuidv4();
@@ -116,6 +139,10 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const deleteMeetingNote = (vcId: string, noteId: string) => {
     dispatch({ type: 'DELETE_MEETING_NOTE', payload: { vcId, noteId } });
   };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading your data...</div>;
+  }
 
   return (
     <CRMContext.Provider

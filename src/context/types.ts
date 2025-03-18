@@ -3,6 +3,7 @@ import { CRMState, Round, VC, Status, MeetingNote, RoundVisibility } from '@/typ
 
 // Actions
 export type CRMAction =
+  | { type: 'INITIALIZE_STATE'; payload: CRMState }
   | { type: 'ADD_ROUND'; payload: Omit<Round, 'vcs' | 'order' | 'isExpanded' | 'visibility'> & { id: string } }
   | { type: 'UPDATE_ROUND'; payload: Round }
   | { type: 'DELETE_ROUND'; payload: string }
