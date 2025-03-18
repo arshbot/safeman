@@ -1,6 +1,7 @@
 
 import { CRMState } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 // Initial state
 export const initialState: CRMState = {
@@ -30,7 +31,16 @@ export const loadState = async (): Promise<CRMState> => {
       
       if (data) {
         console.log('Loaded state from Supabase');
-        return data.data as CRMState;
+        // Cast data.data to CRMState with type assertion
+        const stateData = data.data as unknown as CRMState;
+        
+        // Validate that the data has the expected structure
+        if (isValidCRMState(stateData)) {
+          return stateData;
+        } else {
+          console.error('Invalid state data from Supabase, falling back to localStorage');
+          return loadFromLocalStorage();
+        }
       }
       
       // If no data in Supabase, try localStorage and then save to Supabase
@@ -51,6 +61,14 @@ export const loadState = async (): Promise<CRMState> => {
     console.error('Error in loadState:', err);
     return loadFromLocalStorage();
   }
+};
+
+// Function to validate if data has CRMState structure
+const isValidCRMState = (data: any): data is CRMState => {
+  return data 
+    && Array.isArray(data.rounds) 
+    && typeof data.vcs === 'object' 
+    && Array.isArray(data.unsortedVCs);
 };
 
 // Helper function to load from localStorage
@@ -103,11 +121,17 @@ const saveToSupabase = async (userId: string, state: CRMState): Promise<void> =>
       return;
     }
     
+    // Convert state to a type compatible with Supabase's Json type
+    const jsonData = state as unknown as Json;
+    
     if (data) {
       // Update existing record
       const { error: updateError } = await supabase
         .from('user_crm_data')
-        .update({ data: state, updated_at: new Date().toISOString() })
+        .update({ 
+          data: jsonData,
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', data.id);
       
       if (updateError) {
@@ -117,7 +141,10 @@ const saveToSupabase = async (userId: string, state: CRMState): Promise<void> =>
       // Insert new record
       const { error: insertError } = await supabase
         .from('user_crm_data')
-        .insert({ user_id: userId, data: state });
+        .insert({ 
+          user_id: userId, 
+          data: jsonData 
+        });
       
       if (insertError) {
         console.error('Error inserting data to Supabase:', insertError);

@@ -1,5 +1,12 @@
 
 import { CRMState, Round, VC, Status, MeetingNote, RoundVisibility } from '@/types';
+import { User } from '@supabase/supabase-js';
+
+// Add AuthUser type to extend Supabase User with display properties
+export interface AuthUser extends User {
+  displayName?: string | null;
+  photoURL?: string | null;
+}
 
 // Actions
 export type CRMAction =

@@ -2,10 +2,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Session, User } from "@supabase/supabase-js";
+import { Session } from "@supabase/supabase-js";
+import { AuthUser } from "./types";
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
@@ -18,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
   children 
 }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const { toast } = useToast();
@@ -28,7 +29,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
+        
+        // If we have a user, enhance it with display properties
+        if (session?.user) {
+          const enhancedUser: AuthUser = {
+            ...session.user,
+            displayName: session.user.email?.split('@')[0] || null,
+            photoURL: null,
+          };
+          setUser(enhancedUser);
+        } else {
+          setUser(null);
+        }
+        
         setLoading(false);
 
         // Store user ID in localStorage for storage key
@@ -44,7 +57,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const initializeAuth = async () => {
       const { data } = await supabase.auth.getSession();
       setSession(data.session);
-      setUser(data.session?.user ?? null);
+      
+      if (data.session?.user) {
+        const enhancedUser: AuthUser = {
+          ...data.session.user,
+          displayName: data.session.user.email?.split('@')[0] || null,
+          photoURL: null,
+        };
+        setUser(enhancedUser);
+      } else {
+        setUser(null);
+      }
+      
       setLoading(false);
       
       if (data.session?.user?.id) {
