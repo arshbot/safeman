@@ -1,4 +1,3 @@
-
 import { CRMState } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
@@ -9,6 +8,12 @@ export const initialState: CRMState = {
   vcs: {},
   unsortedVCs: [],
   scratchpadNotes: "",
+  isAddRoundModalOpen: false,
+  isAddVcModalOpen: false,
+  isEditRoundModalOpen: false,
+  isEditVcModalOpen: false,
+  selectedRoundId: null,
+  selectedVcId: null
 };
 
 // Load state from localStorage or Supabase
