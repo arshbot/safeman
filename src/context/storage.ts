@@ -43,7 +43,12 @@ export const loadState = async (): Promise<CRMState | null> => {
           if (!stateData.scratchpadNotes) {
             stateData.scratchpadNotes = "";
           }
-          return stateData;
+          
+          // Add source information (non-persisted, just for debugging)
+          return {
+            ...stateData,
+            _dataSource: 'Supabase'
+          };
         } else {
           console.error('Invalid state data from Supabase, falling back to localStorage');
           return loadFromLocalStorage();
@@ -85,6 +90,7 @@ const isValidCRMState = (data: any): data is CRMState => {
 // Helper function to load from localStorage
 const loadFromLocalStorage = (): CRMState | null => {
   try {
+    // For backward compatibility, try both keys
     const userId = localStorage.getItem('clerk-user-id');
     const storageKey = userId ? `crmState-${userId}` : 'crmState-anonymous';
     
@@ -103,7 +109,11 @@ const loadFromLocalStorage = (): CRMState | null => {
       parsedState.scratchpadNotes = "";
     }
     
-    return parsedState;
+    // Add source information (non-persisted, just for debugging)
+    return {
+      ...parsedState,
+      _dataSource: 'localStorage'
+    };
   } catch (err) {
     console.error('Error loading state from localStorage', err);
     return null;
@@ -113,24 +123,27 @@ const loadFromLocalStorage = (): CRMState | null => {
 // Save state to Supabase and localStorage for backup
 export const saveState = async (state: CRMState): Promise<void> => {
   try {
-    // Save to localStorage as backup
-    const userId = localStorage.getItem('clerk-user-id');
-    const storageKey = userId ? `crmState-${userId}` : 'crmState-anonymous';
+    // Create a copy of the state without the _dataSource field (which is just for debugging)
+    const stateToPersist = { ...state };
+    // @ts-ignore - Remove non-persistent field
+    delete stateToPersist._dataSource;
     
-    const serializedState = JSON.stringify(state);
-    localStorage.setItem(storageKey, serializedState);
+    // Save to localStorage as backup
+    const serializedState = JSON.stringify(stateToPersist);
+    localStorage.setItem('crmState-anonymous', serializedState);
     console.log('State saved to localStorage');
     
     // If authenticated, also save to Supabase
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       console.log('User authenticated, saving to Supabase');
-      await saveToSupabase(session.user.id, state);
+      await saveToSupabase(session.user.id, stateToPersist);
     } else {
       console.log('User not authenticated, state only saved to localStorage');
     }
   } catch (err) {
     console.error('Error saving state:', err);
+    throw err; // Re-throw to handle in the component
   }
 };
 
@@ -140,18 +153,29 @@ const saveToSupabase = async (userId: string, state: CRMState): Promise<void> =>
     // Convert state to a type compatible with Supabase's Json type
     const jsonData = state as unknown as Record<string, any>;
     
+    // Check if we have existing data
     const { data, error: checkError } = await supabase
       .from('user_crm_data')
-      .select('id')
+      .select('id, data')
       .eq('user_id', userId)
       .maybeSingle();
     
     if (checkError) {
       console.error('Error checking for existing data:', checkError);
-      return;
+      throw checkError;
     }
     
+    // Only save if data has changed
     if (data) {
+      const existingData = data.data as unknown as Record<string, any>;
+      const existingJSON = JSON.stringify(existingData);
+      const newJSON = JSON.stringify(jsonData);
+      
+      if (existingJSON === newJSON) {
+        console.log('Data unchanged, skipping Supabase update');
+        return;
+      }
+      
       // Update existing record
       console.log('Updating existing record in Supabase');
       const { error: updateError } = await supabase
@@ -164,6 +188,7 @@ const saveToSupabase = async (userId: string, state: CRMState): Promise<void> =>
       
       if (updateError) {
         console.error('Error updating data in Supabase:', updateError);
+        throw updateError;
       } else {
         console.log('Successfully updated data in Supabase');
       }
@@ -179,11 +204,13 @@ const saveToSupabase = async (userId: string, state: CRMState): Promise<void> =>
       
       if (insertError) {
         console.error('Error inserting data to Supabase:', insertError);
+        throw insertError;
       } else {
         console.log('Successfully inserted data to Supabase');
       }
     }
   } catch (err) {
     console.error('Error in saveToSupabase:', err);
+    throw err; // Re-throw to handle in the component
   }
 };

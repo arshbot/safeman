@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Trash2 } from 'lucide-react';
 import { useRef, useEffect } from 'react';
 
@@ -36,6 +36,9 @@ export function RoundHeaderDeleteDialog({
       <DialogContent className="sm:max-w-[425px] glassmorphism">
         <DialogHeader>
           <DialogTitle>Delete Round</DialogTitle>
+          <DialogDescription>
+            This action cannot be undone. The round will be permanently deleted.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <p className="py-4">

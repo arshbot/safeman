@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
@@ -37,6 +37,9 @@ export function VCDeleteDialog({
       <DialogContent className="sm:max-w-[425px] glassmorphism">
         <DialogHeader>
           <DialogTitle>Delete VC</DialogTitle>
+          <DialogDescription>
+            This action cannot be undone. This VC will be removed from all rounds.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <p className="py-4">

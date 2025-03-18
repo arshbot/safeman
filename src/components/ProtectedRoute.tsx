@@ -15,6 +15,7 @@ export const ProtectedRoute = () => {
       toast({
         title: "Authentication required",
         description: "Please sign in to access this page",
+        variant: "default",
       });
     }
   }, [loading, user, toast]);
