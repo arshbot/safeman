@@ -1,4 +1,3 @@
-
 import { CRMState, VC } from '@/types';
 import { CRMAction } from '../types';
 import { v4 as uuidv4 } from 'uuid';
@@ -79,7 +78,10 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
         id: uuidv4(),
       };
       
-      toast.success(`VC ${duplicatedVC.name} duplicated`);
+      toast({
+        title: "VC Duplicated",
+        description: `${duplicatedVC.name} has been duplicated`,
+      });
       
       // Find the target round
       const updatedRounds = state.rounds.map((round) => {
@@ -144,7 +146,10 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
       const updatedUnsortedVCs = state.unsortedVCs.filter((id) => id !== vcId);
       console.log(`[DEBUG REDUCER] Updated unsortedVCs:`, updatedUnsortedVCs);
       
-      toast.success(`Added ${vc.name} to ${round.name}`);
+      toast({
+        title: "VC Added to Round",
+        description: `Added ${vc.name} to ${round.name}`,
+      });
       
       // Return the updated state
       const newState = {
@@ -211,7 +216,10 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
       }
       
       console.log(`[DEBUG REDUCER] Adding VC ${vcId} to unsorted VCs`);
-      toast.success(`Removed ${vc.name} from ${round.name}`);
+      toast({
+        title: "VC Removed from Round",
+        description: `Removed ${vc.name} from ${round.name}`,
+      });
       
       // Create and return updated state
       const newState = {

@@ -1,4 +1,3 @@
-
 import { VC } from "@/types";
 import { parseExcelValue } from "./formatters";
 
@@ -72,7 +71,7 @@ export function parseVCsFromExcel(jsonData: any[], headerRowIndex: number, colum
           email: email || undefined,
           status: 'finalized' as const,
           purchaseAmount: principal,
-          notes: `Imported from Carta on ${new Date().toLocaleDateString()}`
+          description: `Imported from Carta on ${new Date().toLocaleDateString()}` // Changed from notes to description
         },
         valuationCap
       });

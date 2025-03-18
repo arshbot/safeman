@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useCRM } from "@/context/CRMContext";
 import { findHeaderRow, mapColumns, parseVCsFromExcel } from "@/utils/excelParser";
 import { formatNumberWithCommas } from "@/utils/formatters";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { VC } from "@/types";
 
 interface UseVCImportReturn {
@@ -156,7 +156,10 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         ? `, created ${createdRoundsCount} rounds based on valuation caps`
         : "";
         
-      toast.success(`Successfully imported ${totalVCs} VCs with total commitment of $${formatNumberWithCommas(importedAmount)}${roundsMessage}`);
+      toast({
+        title: "Import Successful",
+        description: `Successfully imported ${totalVCs} VCs with total commitment of $${formatNumberWithCommas(importedAmount)}${roundsMessage}`,
+      });
       
       onSuccess();
       resetForm();
