@@ -21,8 +21,8 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
   
-  // Shared access handling
-  const { isReadOnly, sharedOwnerId } = useSharedAccess(user);
+  // Shared access handling - now just returns fixed values
+  const { isReadOnly } = useSharedAccess();
 
   // Data loading and persistence
   useDataPersistence(
@@ -30,8 +30,6 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     authLoading,
     dispatch,
     state,
-    isReadOnly,
-    sharedOwnerId,
     setIsLoading
   );
 
