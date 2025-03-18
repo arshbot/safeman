@@ -1,3 +1,4 @@
+
 // This file serves as the entry point for all reducers
 import { CRMState } from '@/types';
 import { CRMAction } from '../types';
@@ -10,7 +11,7 @@ import { dragAndDropReducers } from './dragAndDropReducers';
 export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
   // Special action for initializing state
   if (action.type === 'INITIALIZE_STATE') {
-    return action.payload as CRMState;
+    return action.payload;
   }
   
   // Round-related actions
@@ -40,47 +41,6 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
   // Drag and drop / reordering actions
   if (action.type.startsWith('REORDER')) {
     return dragAndDropReducers(state, action);
-  }
-  
-  // UI modal actions
-  if (action.type === 'OPEN_ADD_ROUND_MODAL') {
-    return { ...state, isAddRoundModalOpen: true };
-  }
-  
-  if (action.type === 'CLOSE_ADD_ROUND_MODAL') {
-    return { ...state, isAddRoundModalOpen: false };
-  }
-  
-  if (action.type === 'OPEN_ADD_VC_MODAL') {
-    return { ...state, isAddVcModalOpen: true };
-  }
-  
-  if (action.type === 'CLOSE_ADD_VC_MODAL') {
-    return { ...state, isAddVcModalOpen: false };
-  }
-  
-  if (action.type === 'OPEN_EDIT_ROUND_MODAL') {
-    return { 
-      ...state, 
-      isEditRoundModalOpen: true,
-      selectedRoundId: action.payload 
-    };
-  }
-  
-  if (action.type === 'CLOSE_EDIT_ROUND_MODAL') {
-    return { ...state, isEditRoundModalOpen: false, selectedRoundId: null };
-  }
-  
-  if (action.type === 'OPEN_EDIT_VC_MODAL') {
-    return { 
-      ...state, 
-      isEditVcModalOpen: true,
-      selectedVcId: action.payload 
-    };
-  }
-  
-  if (action.type === 'CLOSE_EDIT_VC_MODAL') {
-    return { ...state, isEditVcModalOpen: false, selectedVcId: null };
   }
   
   // Default case - return state unchanged
