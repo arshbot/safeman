@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { DraggableProvidedDragHandleProps } from 'react-beautiful-dnd';
 import { Round, RoundSummary } from '@/types';
 import { Button } from './ui/button';
-import { CircleCheck, CircleDashed, PlusCircle, GripVertical } from 'lucide-react';
+import { CircleCheck, CircleDashed, PlusCircle, GripVertical, Trash2 } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { RoundHeaderStats } from './round/RoundHeaderStats';
 import { RoundHeaderVisibilityControls } from './round/RoundHeaderVisibilityControls';
@@ -88,9 +87,7 @@ export function RoundHeader({ round, summary, onAddVC, dragHandleProps }: RoundH
             className="h-8 w-8 p-0"
           >
             <span className="sr-only">Delete</span>
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5.5 1C5.22386 1 5 1.22386 5 1.5C5 1.77614 5.22386 2 5.5 2H9.5C9.77614 2 10 1.77614 10 1.5C10 1.22386 9.77614 1 9.5 1H5.5ZM3 3.5C3 3.22386 3.22386 3 3.5 3H11.5C11.7761 3 12 3.22386 12 3.5C12 3.77614 11.7761 4 11.5 4H3.5C3.22386 4 3 3.77614 3 3.5ZM3.5 5C3.22386 5 3 5.22386 3 5.5C3 5.77614 3.22386 6 3.5 6H11.5C11.7761 6 12 5.77614 12 5.5C12 5.22386 11.7761 5 11.5 5H3.5ZM4 8.5C4 8.22386 4.22386 8 4.5 8H10.5C10.7761 8 11 8.22386 11 8.5C11 8.77614 10.7761 9 10.5 9H4.5C4.22386 9 4 8.77614 4 8.5ZM4.5 10C4.22386 10 4 10.2239 4 10.5C4 10.7761 4.22386 11 4.5 11H10.5C10.7761 11 11 10.7761 11 10.5C11 10.2239 10.7761 10 10.5 10H4.5ZM5 12.5C5 12.2239 5.22386 12 5.5 12H9.5C9.77614 12 10 12.2239 10 12.5C10 12.7761 9.77614 13 9.5 13H5.5C5.22386 13 5 12.7761 5 12.5Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
-            </svg>
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
         
