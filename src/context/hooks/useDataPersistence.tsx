@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { CRMState } from '@/types';
 import { loadState, saveState, initialState } from '../storage';

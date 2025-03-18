@@ -2,7 +2,7 @@
 import { CRMState, VC } from '@/types';
 import { CRMAction } from '../types';
 import { v4 as uuidv4 } from 'uuid';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 // Reducers for VC-related actions
 export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
@@ -14,7 +14,10 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
         ...vc,
       };
       
-      toast.success(`VC ${newVC.name} added`);
+      toast({
+        title: "VC Added",
+        description: `${newVC.name} has been added`,
+      });
       
       return {
         ...state,
@@ -27,7 +30,10 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
     }
 
     case 'UPDATE_VC': {
-      toast.success(`VC ${action.payload.name} updated`);
+      toast({
+        title: "VC Updated",
+        description: `${action.payload.name} has been updated`,
+      });
       
       return {
         ...state,
@@ -41,7 +47,10 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
     case 'DELETE_VC': {
       const vcToDelete = state.vcs[action.payload];
       if (vcToDelete) {
-        toast.success(`VC ${vcToDelete.name} deleted`);
+        toast({
+          title: "VC Deleted",
+          description: `${vcToDelete.name} has been deleted`,
+        });
       }
       
       // Create a new vcs object without the deleted VC
