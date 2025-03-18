@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { Spinner } from "./ui/spinner";
+import { Alert, AlertDescription } from "./ui/alert";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -29,6 +30,7 @@ export function ShareAccessModal({ open, onOpenChange }: ShareAccessModalProps) 
   const { toast } = useToast();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -39,9 +41,13 @@ export function ShareAccessModal({ open, onOpenChange }: ShareAccessModalProps) 
   });
 
   const onSubmit = async (values: FormValues) => {
-    if (!user) return;
+    if (!user) {
+      setError("You must be logged in to share access");
+      return;
+    }
     
     setIsSubmitting(true);
+    setError(null);
     try {
       // Check if this email is already shared with
       const { data: existingShares, error: checkError } = await supabase
@@ -60,7 +66,8 @@ export function ShareAccessModal({ open, onOpenChange }: ShareAccessModalProps) 
             can_edit: values.canEdit,
             is_active: true,
           })
-          .eq('id', existingShares[0].id);
+          .eq('id', existingShares[0].id)
+          .eq('owner_id', user.id);
           
         if (updateError) throw updateError;
       } else {
@@ -85,6 +92,7 @@ export function ShareAccessModal({ open, onOpenChange }: ShareAccessModalProps) 
       onOpenChange(false);
     } catch (error: any) {
       console.error("Error sharing access:", error);
+      setError(error.message || "There was a problem granting access");
       toast({
         title: "Failed to share access",
         description: error.message || "There was a problem granting access. Please try again.",
@@ -106,60 +114,74 @@ export function ShareAccessModal({ open, onOpenChange }: ShareAccessModalProps) 
           </DialogDescription>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="colleague@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+        {!user ? (
+          <Alert variant="destructive">
+            <AlertDescription>
+              You need to be logged in to share access.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="canEdit"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Allow editing</FormLabel>
-                    <p className="text-sm text-muted-foreground">
-                      If checked, this user will be able to make changes to your data.
-                      Otherwise, they will have view-only access.
-                    </p>
-                  </div>
-                </FormItem>
-              )}
-            />
-            
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <Spinner className="mr-2" /> : null}
-                Share Access
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="colleague@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="canEdit"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Allow editing</FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        If checked, this user will be able to make changes to your data.
+                        Otherwise, they will have view-only access.
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <Spinner className="mr-2" /> : null}
+                  Share Access
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
