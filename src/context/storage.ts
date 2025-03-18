@@ -1,4 +1,3 @@
-
 import { CRMState } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
@@ -8,6 +7,7 @@ export const initialState: CRMState = {
   rounds: [],
   vcs: {},
   unsortedVCs: [],
+  scratchpadNotes: "",
 };
 
 // Load state from localStorage or Supabase
@@ -36,6 +36,10 @@ export const loadState = async (): Promise<CRMState> => {
         
         // Validate that the data has the expected structure
         if (isValidCRMState(stateData)) {
+          // Ensure scratchpadNotes exists (for backward compatibility)
+          if (!stateData.scratchpadNotes) {
+            stateData.scratchpadNotes = "";
+          }
           return stateData;
         } else {
           console.error('Invalid state data from Supabase, falling back to localStorage');
@@ -81,7 +85,15 @@ const loadFromLocalStorage = (): CRMState => {
     if (serializedState === null) {
       return initialState;
     }
-    return JSON.parse(serializedState);
+    
+    const parsedState = JSON.parse(serializedState);
+    
+    // Ensure scratchpadNotes exists (for backward compatibility)
+    if (!parsedState.scratchpadNotes) {
+      parsedState.scratchpadNotes = "";
+    }
+    
+    return parsedState;
   } catch (err) {
     console.error('Error loading state from localStorage', err);
     return initialState;

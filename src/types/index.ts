@@ -1,4 +1,3 @@
-
 export type Status = 'notContacted' | 'contacted' | 'closeToBuying' | 'finalized' | 'likelyPassed';
 export type RoundVisibility = 'expanded' | 'collapsedShowFinalized' | 'collapsedHideAll';
 
@@ -42,6 +41,7 @@ export interface CRMState {
   rounds: Round[];
   vcs: Record<string, VC>;
   unsortedVCs: string[]; // Array of VC IDs
+  scratchpadNotes?: string; // Added for scratchpad feature
 }
 
 export interface EquityPoint {
