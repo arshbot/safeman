@@ -1,7 +1,6 @@
 
 import { CRMState } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { Json } from '@/integrations/supabase/types';
 
 // Initial state
 export const initialState: CRMState = {
@@ -12,7 +11,7 @@ export const initialState: CRMState = {
 };
 
 // Load state from localStorage or Supabase
-export const loadState = async (): Promise<CRMState> => {
+export const loadState = async (): Promise<CRMState | null> => {
   try {
     // First try to load from Supabase if user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
@@ -53,8 +52,8 @@ export const loadState = async (): Promise<CRMState> => {
       // If no data in Supabase, try localStorage and then save to Supabase
       const localState = loadFromLocalStorage();
       
-      // Save the local state to Supabase for future use
-      if (localState !== initialState) {
+      // Save the local state to Supabase for future use if it's not the initial state
+      if (localState && localState !== initialState) {
         saveToSupabase(session.user.id, localState);
       }
       
@@ -79,14 +78,14 @@ const isValidCRMState = (data: any): data is CRMState => {
 };
 
 // Helper function to load from localStorage
-const loadFromLocalStorage = (): CRMState => {
+const loadFromLocalStorage = (): CRMState | null => {
   try {
     const userId = localStorage.getItem('clerk-user-id');
     const storageKey = userId ? `crmState-${userId}` : 'crmState-anonymous';
     
     const serializedState = localStorage.getItem(storageKey);
     if (serializedState === null) {
-      return initialState;
+      return null;
     }
     
     const parsedState = JSON.parse(serializedState);
@@ -99,7 +98,7 @@ const loadFromLocalStorage = (): CRMState => {
     return parsedState;
   } catch (err) {
     console.error('Error loading state from localStorage', err);
-    return initialState;
+    return null;
   }
 };
 

@@ -27,6 +27,9 @@ export const useDataPersistence = (
         const loadedState = await loadState();
         if (loadedState) {
           dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
+        } else {
+          // Initialize with empty state if no data found
+          dispatch({ type: 'INITIALIZE_STATE', payload: initialState });
         }
       } catch (error) {
         console.error('Error loading CRM state:', error);
