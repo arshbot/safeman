@@ -19,6 +19,7 @@ export const useSharedAccess = (user: User | null) => {
       
       try {
         // Check if this user has been granted access to someone else's data
+        // Only check the shared_access table, not the users table
         const { data, error } = await supabase
           .from('shared_access')
           .select('owner_id, can_edit')
