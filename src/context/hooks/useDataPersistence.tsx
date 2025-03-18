@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { CRMState } from '@/types';
 import { loadState, saveState, initialState } from '../storage';
@@ -32,13 +33,7 @@ export const useDataPersistence = (
           });
           dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
           
-          // Show toast for successful data load
-          if (user) {
-            toast({
-              title: "Data loaded",
-              description: `Your data has been loaded from ${loadedState._dataSource || 'storage'}`,
-            });
-          }
+          // Removed data loaded toast notification
         } else {
           // Initialize with empty state if no data found
           console.log('No data found, initializing with empty state');

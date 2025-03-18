@@ -1,7 +1,7 @@
 
-import { CRMState, MeetingNote } from '@/types';
+import { CRMState } from '@/types';
 import { CRMAction } from '../types';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 // Reducers for meeting note-related actions
 export const meetingNoteReducers = (state: CRMState, action: CRMAction): CRMState => {
@@ -17,7 +17,10 @@ export const meetingNoteReducers = (state: CRMState, action: CRMAction): CRMStat
         meetingNotes: [...(vc.meetingNotes || []), note],
       };
       
-      toast.success(`Added new meeting note for ${vc.name}`);
+      toast({
+        title: "Meeting Note Added",
+        description: `Added new meeting note for ${vc.name}`
+      });
       
       return {
         ...state,
@@ -38,7 +41,10 @@ export const meetingNoteReducers = (state: CRMState, action: CRMAction): CRMStat
         n.id === note.id ? note : n
       );
       
-      toast.success(`Updated meeting note for ${vc.name}`);
+      toast({
+        title: "Meeting Note Updated",
+        description: `Updated meeting note for ${vc.name}`
+      });
       
       return {
         ...state,
@@ -60,7 +66,10 @@ export const meetingNoteReducers = (state: CRMState, action: CRMAction): CRMStat
       
       const updatedNotes = vc.meetingNotes.filter(n => n.id !== noteId);
       
-      toast.success(`Deleted meeting note for ${vc.name}`);
+      toast({
+        title: "Meeting Note Deleted",
+        description: `Deleted meeting note for ${vc.name}`
+      });
       
       return {
         ...state,
