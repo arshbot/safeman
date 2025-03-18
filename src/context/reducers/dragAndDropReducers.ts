@@ -9,12 +9,13 @@ export const dragAndDropReducers = (state: CRMState, action: CRMAction): CRMStat
     toast.success("Rounds reordered successfully");
     return {
       ...state,
-      rounds: action.payload,
+      rounds: action.payload as any, // Type cast to avoid type error
     };
   }
 
   if (action.type === 'REORDER_VCS') {
-    const { roundId, vcIds } = action.payload;
+    const payload = action.payload as { roundId: string, vcIds: string[] };
+    const { roundId, vcIds } = payload;
     return {
       ...state,
       rounds: state.rounds.map(round => 

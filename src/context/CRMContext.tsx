@@ -26,6 +26,7 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     selectedRoundId: null,
     selectedVcId: null
   });
+  
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
   
