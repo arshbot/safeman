@@ -18,20 +18,6 @@ export const useSharedAccess = (user: User | null) => {
       }
       
       try {
-        // First check if the shared_access table exists and has proper RLS policies
-        const { data: tableInfo, error: tableError } = await supabase
-          .from('shared_access')
-          .select('id')
-          .limit(1);
-          
-        if (tableError) {
-          console.error("Error checking shared_access table:", tableError);
-          // Don't display error to user, just silently fall back to non-shared mode
-          setSharedOwnerId(null);
-          setIsReadOnly(false);
-          return;
-        }
-        
         // Check if this user has been granted access to someone else's data
         const { data, error } = await supabase
           .from('shared_access')

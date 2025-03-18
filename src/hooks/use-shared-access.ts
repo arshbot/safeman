@@ -25,6 +25,7 @@ export function useSharedAccess() {
     if (!user) {
       setError("You must be logged in to manage access");
       setIsLoading(false);
+      setSharedAccess([]);
       return;
     }
     
@@ -37,7 +38,10 @@ export function useSharedAccess() {
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error loading shared access:", error);
+        throw error;
+      }
       
       setSharedAccess(data || []);
     } catch (error: any) {
@@ -45,7 +49,7 @@ export function useSharedAccess() {
       setError(error.message || "Failed to load shared access data");
       toast({
         title: "Failed to load shared access",
-        description: "There was a problem loading your shared access data. This might be due to missing database permissions.",
+        description: "There was a problem loading your shared access data. Please try signing out and back in.",
         variant: "destructive",
       });
     } finally {
