@@ -31,6 +31,7 @@ export type CRMAction =
 // Context type
 export interface CRMContextType {
   state: CRMState;
+  isReadOnly: boolean;
   addRound: (round: Omit<Round, 'id' | 'vcs' | 'order' | 'isExpanded' | 'visibility'>) => string;
   updateRound: (round: Round) => void;
   deleteRound: (roundId: string) => void;

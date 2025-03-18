@@ -1,12 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, Layers, LogOut, User, Users } from "lucide-react";
+import { FileSpreadsheet, Layers, LogOut, User, Users, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { AddVCModal } from "./AddVCModal";
 import { AddRoundModal } from "./AddRoundModal";
 import { ImportVCsModal } from "./ImportVCsModal";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { ManageAccessModal } from "./ManageAccessModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,7 @@ interface PageHeaderProps {
 export function PageHeader({ onAddVC }: PageHeaderProps) {
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isManageAccessModalOpen, setIsManageAccessModalOpen] = useState(false);
   const { user, logout } = useAuth();
   
   return (
@@ -78,9 +80,25 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
           }
         />
         
+        <Button
+          variant="outline"
+          className="flex-1 sm:flex-none"
+          size="sm"
+          onClick={() => setIsManageAccessModalOpen(true)}
+        >
+          <Share2 className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Share Access</span>
+          <span className="sm:hidden">Share</span>
+        </Button>
+        
         <ImportVCsModal
           open={isImportModalOpen}
           onOpenChange={setIsImportModalOpen}
+        />
+        
+        <ManageAccessModal
+          open={isManageAccessModalOpen}
+          onOpenChange={setIsManageAccessModalOpen}
         />
         
         {user && (

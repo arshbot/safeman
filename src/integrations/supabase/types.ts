@@ -30,6 +30,33 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_access: {
+        Row: {
+          can_edit: boolean
+          created_at: string
+          id: string
+          is_active: boolean
+          owner_id: string
+          shared_with_email: string
+        }
+        Insert: {
+          can_edit?: boolean
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          owner_id: string
+          shared_with_email: string
+        }
+        Update: {
+          can_edit?: boolean
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          owner_id?: string
+          shared_with_email?: string
+        }
+        Relationships: []
+      }
       user_crm_data: {
         Row: {
           created_at: string | null
