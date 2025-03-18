@@ -9,7 +9,10 @@ export const ProtectedRoute = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Spinner />
+        <div className="flex flex-col items-center gap-4">
+          <Spinner />
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
       </div>
     );
   }

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, ReactNode, useEffect, useState } from 'react';
 import { CRMState, Round, VC, MeetingNote } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,13 +18,17 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [sharedOwnerId, setSharedOwnerId] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
   // Check if the current user has access to someone else's data
   useEffect(() => {
     const checkSharedAccess = async () => {
-      if (!user) return;
+      if (!user) {
+        setSharedOwnerId(null);
+        setIsReadOnly(false);
+        return;
+      }
       
       try {
         // Check if this user has been granted access to someone else's data
@@ -52,40 +55,51 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       } catch (error) {
         console.error("Error checking shared access:", error);
+        setSharedOwnerId(null);
+        setIsReadOnly(false);
       }
     };
     
     checkSharedAccess();
-  }, [user]);
+  }, [user, toast]);
 
-  // Load state on mount
+  // Load state once auth is ready
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
+        // If user is not logged in, initialize with empty state
+        if (!user) {
+          dispatch({ type: 'INITIALIZE_STATE', payload: initialState });
+          setIsLoading(false);
+          return;
+        }
+        
         const loadedState = await loadState(sharedOwnerId);
-        // Create a new action to initialize state
         if (loadedState) {
           dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
         }
       } catch (error) {
         console.error('Error loading CRM state:', error);
+        // Initialize with empty state on error
+        dispatch({ type: 'INITIALIZE_STATE', payload: initialState });
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (user) {
+    // Only load data when auth is not loading anymore
+    if (!authLoading) {
       loadData();
     }
-  }, [user, sharedOwnerId]);
+  }, [user, sharedOwnerId, authLoading]);
 
   // Save state when it changes
   useEffect(() => {
-    if (!isLoading && !isReadOnly && !sharedOwnerId) {
+    if (!isLoading && !isReadOnly && !sharedOwnerId && user) {
       saveState(state);
     }
-  }, [state, isLoading, isReadOnly, sharedOwnerId]);
+  }, [state, isLoading, isReadOnly, sharedOwnerId, user]);
 
   // Helper function to check if action is allowed
   const isActionAllowed = () => {
@@ -226,8 +240,27 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     dispatch({ type: 'DELETE_MEETING_NOTE', payload: { vcId, noteId } });
   };
 
+  // Show appropriate loading state
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading your data...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          <p className="text-muted-foreground">Loading your data...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
