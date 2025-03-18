@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet, Layers, LogOut, User, Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { AddVCModal } from "./AddVCModal";
 import { AddRoundModal } from "./AddRoundModal";
 import { ImportVCsModal } from "./ImportVCsModal";
 import { useState } from "react";
@@ -23,7 +22,6 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ onAddVC }: PageHeaderProps) {
-  const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
@@ -52,25 +50,6 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
           <span className="hidden sm:inline">Import from Carta</span>
           <span className="sm:hidden">Import</span>
         </Button>
-        <AddVCModal
-          open={isAddVCModalOpen}
-          onOpenChange={setIsAddVCModalOpen}
-          roundId={undefined}
-          trigger={
-            <Button 
-              variant="outline"
-              className="flex-1 sm:flex-none"
-              size={isMobile ? "sm" : "default"}
-              onClick={() => {
-                setIsAddVCModalOpen(true);
-                onAddVC();
-              }}
-            >
-              <Users className="h-4 w-4 mr-2" />
-              Add VC
-            </Button>
-          }
-        />
         <AddRoundModal
           trigger={
             <Button 
