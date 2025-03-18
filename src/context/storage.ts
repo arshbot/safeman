@@ -126,7 +126,7 @@ export const saveState = async (state: CRMState): Promise<void> => {
 const saveToSupabase = async (userId: string, state: CRMState): Promise<void> => {
   try {
     // Convert state to a type compatible with Supabase's Json type
-    const jsonData = state as unknown as Json;
+    const jsonData = state as unknown as Record<string, any>;
     
     const { data, error: checkError } = await supabase
       .from('user_crm_data')
