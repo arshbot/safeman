@@ -31,6 +31,7 @@ export function useSharedAccess() {
     
     setIsLoading(true);
     setError(null);
+    
     try {
       const { data, error } = await supabase
         .from('shared_access')

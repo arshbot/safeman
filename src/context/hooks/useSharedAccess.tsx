@@ -11,6 +11,7 @@ export const useSharedAccess = (user: User | null) => {
 
   useEffect(() => {
     const checkSharedAccess = async () => {
+      // Reset state if no user
       if (!user) {
         setSharedOwnerId(null);
         setIsReadOnly(false);
@@ -28,7 +29,6 @@ export const useSharedAccess = (user: User | null) => {
           
         if (error) {
           console.error("Error checking shared access:", error);
-          // Don't show error to user, just fall back to non-shared mode
           setSharedOwnerId(null);
           setIsReadOnly(false);
           return;
@@ -53,7 +53,10 @@ export const useSharedAccess = (user: User | null) => {
       }
     };
     
-    checkSharedAccess();
+    // Only check for shared access if we have a user with an email
+    if (user && user.email) {
+      checkSharedAccess();
+    }
   }, [user, toast]);
 
   return { isReadOnly, sharedOwnerId };
