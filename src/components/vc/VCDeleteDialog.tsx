@@ -1,6 +1,7 @@
 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 interface VCDeleteDialogProps {
@@ -51,6 +52,7 @@ export function VCDeleteDialog({
               ref={deleteButtonRef}
               autoFocus
             >
+              <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </Button>
           </DialogFooter>

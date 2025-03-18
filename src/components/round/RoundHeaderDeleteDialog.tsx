@@ -1,6 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Trash2 } from 'lucide-react';
 import { useRef, useEffect } from 'react';
 
 interface RoundHeaderDeleteDialogProps {
@@ -50,6 +51,7 @@ export function RoundHeaderDeleteDialog({
               ref={deleteButtonRef}
               autoFocus
             >
+              <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </Button>
           </DialogFooter>
