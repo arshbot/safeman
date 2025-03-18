@@ -16,7 +16,7 @@ import { Scratchpad } from "@/components/Scratchpad";
 resetServerContext();
 
 const Index = () => {
-  const { state, getRoundSummary } = useCRM();
+  const { state } = useCRM();
   const [selectedRoundId, setSelectedRoundId] = useState<string | undefined>(undefined);
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   const { sortVCsByStatus } = useVCSorting();
@@ -50,7 +50,6 @@ const Index = () => {
 
               <RoundsList
                 rounds={state.rounds}
-                getRoundSummary={getRoundSummary}
                 onAddVC={handleAddVCToRound}
                 getVC={(id) => state.vcs[id]}
                 sortVCsByStatus={sortVCsByStatus}

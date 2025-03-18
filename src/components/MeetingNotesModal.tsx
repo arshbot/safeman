@@ -54,10 +54,6 @@ export function MeetingNotesModal({ vc, open, onOpenChange }: MeetingNotesModalP
     return format(new Date(dateString), 'PPP p'); // e.g., "Apr 29, 2023, 3:24 PM"
   };
 
-  console.log("MeetingNotesModal rendering with VC:", vc);
-  console.log("Meeting notes:", vc.meetingNotes);
-  console.log("Sorted notes:", sortedNotes);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">

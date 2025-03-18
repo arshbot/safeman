@@ -1,7 +1,6 @@
 
 import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { MeetingNote } from '@/types';
 
 export const useMeetingNotes = (
   dispatch: React.Dispatch<any>,
@@ -10,7 +9,7 @@ export const useMeetingNotes = (
   const addMeetingNote = useCallback((vcId: string, content: string) => {
     if (isReadOnly) return;
     
-    const note: MeetingNote = {
+    const note = {
       id: uuidv4(),
       date: new Date().toISOString(),
       content,
@@ -19,7 +18,7 @@ export const useMeetingNotes = (
     dispatch({ type: 'ADD_MEETING_NOTE', payload: { vcId, note } });
   }, [dispatch, isReadOnly]);
   
-  const updateMeetingNote = useCallback((vcId: string, note: MeetingNote) => {
+  const updateMeetingNote = useCallback((vcId: string, note: { id: string; date: string; content: string }) => {
     if (isReadOnly) return;
     
     dispatch({ type: 'UPDATE_MEETING_NOTE', payload: { vcId, note } });

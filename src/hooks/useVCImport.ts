@@ -5,6 +5,7 @@ import { findHeaderRow, mapColumns, parseVCsFromExcel } from "@/utils/excelParse
 import { formatNumberWithCommas } from "@/utils/formatters";
 import { toast } from "sonner";
 import { VC } from "@/types";
+import { v4 as uuidv4 } from 'uuid';
 
 interface UseVCImportReturn {
   file: File | null;
@@ -115,9 +116,10 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         const roundName = `$${(valuation / 1000000).toFixed(1)}M Cap`;
         const totalRoundAmount = vcs.reduce((sum, vc) => sum + (vc.purchaseAmount || 0), 0);
         
+        // Create a round with the required properties
         const roundId = addRound({
           name: roundName,
-          valuationCap: valuation, // Use the exact valuation cap value
+          valuationCap: valuation,
           targetAmount: Math.ceil(totalRoundAmount * 1.1),
         });
         
@@ -126,7 +128,7 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         // Add VCs to the round
         for (const vc of vcs) {
           try {
-            const vcId: string = addVC(vc);
+            const vcId = addVC(vc);
             if (vcId) {
               addVCToRound(vcId, roundId);
               totalVCs++;
@@ -141,7 +143,7 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
       // Add VCs with no valuation
       for (const vc of noValuationVCs) {
         try {
-          const vcId: string = addVC(vc);
+          const vcId = addVC(vc);
           if (vcId) {
             totalVCs++;
             importedAmount += vc.purchaseAmount || 0;

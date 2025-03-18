@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,6 +17,7 @@ import { useCRM } from "@/context/CRMContext";
 import { Status } from "@/types";
 import { StatusBadge } from "./StatusBadge";
 import { formatNumberWithCommas, parseFormattedNumber } from "@/utils/formatters";
+import { v4 as uuidv4 } from 'uuid';
 
 interface AddVCModalProps {
   trigger?: React.ReactNode;

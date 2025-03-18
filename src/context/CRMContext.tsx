@@ -17,7 +17,15 @@ const CRMContext = createContext<CRMContextType | undefined>(undefined);
 
 // Provider
 export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(crmReducer, initialState);
+  const [state, dispatch] = useReducer(crmReducer, {
+    ...initialState,
+    isAddRoundModalOpen: false,
+    isAddVcModalOpen: false,
+    isEditRoundModalOpen: false,
+    isEditVcModalOpen: false,
+    selectedRoundId: null,
+    selectedVcId: null
+  });
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
   
