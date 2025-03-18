@@ -48,6 +48,43 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const uiActions = useUiActions(dispatch, state, isReadOnly);
   const meetingNoteActions = useMeetingNotes(dispatch, isReadOnly);
 
+  // UI modal actions
+  const openAddRoundModal = () => {
+    if (isReadOnly) return;
+    dispatch({ type: 'OPEN_ADD_ROUND_MODAL' });
+  };
+
+  const closeAddRoundModal = () => {
+    dispatch({ type: 'CLOSE_ADD_ROUND_MODAL' });
+  };
+
+  const openAddVcModal = () => {
+    if (isReadOnly) return;
+    dispatch({ type: 'OPEN_ADD_VC_MODAL' });
+  };
+
+  const closeAddVcModal = () => {
+    dispatch({ type: 'CLOSE_ADD_VC_MODAL' });
+  };
+
+  const openEditRoundModal = (roundId: string) => {
+    if (isReadOnly) return;
+    dispatch({ type: 'OPEN_EDIT_ROUND_MODAL', payload: roundId });
+  };
+
+  const closeEditRoundModal = () => {
+    dispatch({ type: 'CLOSE_EDIT_ROUND_MODAL' });
+  };
+
+  const openEditVcModal = (vcId: string) => {
+    if (isReadOnly) return;
+    dispatch({ type: 'OPEN_EDIT_VC_MODAL', payload: vcId });
+  };
+
+  const closeEditVcModal = () => {
+    dispatch({ type: 'CLOSE_EDIT_VC_MODAL' });
+  };
+
   // Show appropriate loading state
   if (authLoading) {
     return <LoadingState message="Checking authentication..." />;
@@ -65,6 +102,15 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ...crmActions,
         ...uiActions,
         ...meetingNoteActions,
+        // Add UI modal actions
+        openAddRoundModal,
+        closeAddRoundModal,
+        openAddVcModal,
+        closeAddVcModal,
+        openEditRoundModal,
+        closeEditRoundModal,
+        openEditVcModal,
+        closeEditVcModal,
       }}
     >
       {children}

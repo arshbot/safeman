@@ -1,4 +1,3 @@
-
 import { User } from "@supabase/supabase-js";
 import { Round, VC, Status, RoundVisibility } from "@/types";
 
@@ -12,6 +11,7 @@ export interface CRMState {
   isEditVcModalOpen: boolean;
   selectedRoundId: string | null;
   selectedVcId: string | null;
+  scratchpadNotes?: string; // Added for scratchpad feature
 }
 
 export type CRMAction =

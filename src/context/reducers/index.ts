@@ -9,8 +9,8 @@ import { dragAndDropReducers } from './dragAndDropReducers';
 // Main reducer that delegates to specific reducers based on action type
 export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
   // Special action for initializing state
-  if ((action as any).type === 'INITIALIZE_STATE') {
-    return (action as any).payload;
+  if (action.type === 'INITIALIZE_STATE') {
+    return action.payload;
   }
   
   // Round-related actions
@@ -39,7 +39,12 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
   
   // Drag and drop / reordering actions
   if (action.type.startsWith('REORDER')) {
-    return dragAndDropReducers(state, action as any);
+    return dragAndDropReducers(state, action);
+  }
+  
+  // UI state actions
+  if (action.type.startsWith('OPEN_') || action.type.startsWith('CLOSE_')) {
+    return state; // We'll implement these in the CRMContext directly
   }
   
   // Default case - return state unchanged
