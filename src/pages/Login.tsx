@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Spinner } from "@/components/ui/spinner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const Login = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
@@ -78,6 +80,15 @@ const Login = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setAuthError(null);
+    try {
+      await signInWithGoogle();
+    } catch (error: any) {
+      setAuthError(error.message || "Failed to sign in with Google");
+    }
+  };
+
   return (
     <div className="flex items-center justify-center flex-grow py-12 bg-secondary/30">
       <motion.div 
@@ -111,16 +122,17 @@ const Login = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {error && (
-                  <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">
-                    {error}
-                  </div>
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
                 )}
                 
                 <Button
                   variant="outline"
                   type="button"
                   className="w-full"
-                  onClick={signInWithGoogle}
+                  onClick={handleGoogleSignIn}
                   disabled={isLoading}
                 >
                   <FcGoogle className="mr-2 h-5 w-5" />
@@ -185,16 +197,17 @@ const Login = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {error && (
-                  <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">
-                    {error}
-                  </div>
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
                 )}
                 
                 <Button
                   variant="outline"
                   type="button"
                   className="w-full"
-                  onClick={signInWithGoogle}
+                  onClick={handleGoogleSignIn}
                   disabled={isLoading}
                 >
                   <FcGoogle className="mr-2 h-5 w-5" />

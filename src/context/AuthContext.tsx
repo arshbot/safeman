@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/login'
+          redirectTo: window.location.origin
         }
       });
 
@@ -96,7 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error("Error signing in with Google:", error);
         toast({
           title: "Sign-in failed",
-          description: error.message || "There was a problem signing in with Google. Please try again.",
+          description: error.message === "Unsupported provider: provider is not enabled" 
+            ? "Google sign-in is not currently enabled. Please use email/password instead." 
+            : error.message || "There was a problem signing in with Google. Please try again.",
           variant: "destructive",
         });
       }
