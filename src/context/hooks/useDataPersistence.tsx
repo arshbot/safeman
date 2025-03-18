@@ -9,8 +9,6 @@ export const useDataPersistence = (
   authLoading: boolean,
   dispatch: React.Dispatch<any>,
   state: CRMState,
-  isReadOnly: boolean,
-  sharedOwnerId: string | null,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   // Load state once auth is ready
@@ -25,8 +23,8 @@ export const useDataPersistence = (
           return;
         }
         
-        // Always load user's own data, ignore sharedOwnerId
-        const loadedState = await loadState(null);
+        // Load user's own data
+        const loadedState = await loadState();
         if (loadedState) {
           dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
         }

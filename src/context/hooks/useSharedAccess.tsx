@@ -1,10 +1,6 @@
-
-import { useState } from 'react';
-import { User } from '@supabase/supabase-js';
-
-// This hook now returns fixed values with no shared access functionality
-export const useSharedAccess = (_user: User | null) => {
-  // Returning fixed values as we're removing shared access functionality
+// This hook is now a placeholder since sharing functionality has been removed
+export const useSharedAccess = () => {
+  // Return fixed values as sharing access has been removed
   return { 
     isReadOnly: false, 
     sharedOwnerId: null 

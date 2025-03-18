@@ -11,7 +11,7 @@ export const initialState: CRMState = {
   scratchpadNotes: "",
 };
 
-// Load state from localStorage or Supabase - removing shared data functionality
+// Load state from localStorage or Supabase
 export const loadState = async (): Promise<CRMState> => {
   try {
     // First try to load from Supabase if user is authenticated
