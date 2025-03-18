@@ -26,7 +26,12 @@ export const useSharedAccess = (user: User | null) => {
           .eq('is_active', true)
           .maybeSingle();
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error checking shared access:", error);
+          setSharedOwnerId(null);
+          setIsReadOnly(false);
+          return;
+        }
         
         if (data) {
           setSharedOwnerId(data.owner_id);

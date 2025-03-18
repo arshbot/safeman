@@ -25,7 +25,7 @@ export const loadState = async (sharedOwnerId: string | null = null): Promise<CR
         .from('user_crm_data')
         .select('data')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error('Error loading state from Supabase:', error);
@@ -39,7 +39,7 @@ export const loadState = async (sharedOwnerId: string | null = null): Promise<CR
       }
       
       if (data) {
-        console.log('Loaded state from Supabase');
+        console.log('Loaded state from Supabase for user:', userId);
         // Cast data.data to CRMState with type assertion
         const stateData = data.data as unknown as CRMState;
         
@@ -130,8 +130,9 @@ export const saveState = async (state: CRMState): Promise<void> => {
     localStorage.setItem(storageKey, serializedState);
     
     // If authenticated, also save to Supabase
-    if (userId) {
-      await saveToSupabase(userId, state);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await saveToSupabase(session.user.id, state);
     }
   } catch (err) {
     console.error('Error saving state:', err);
@@ -141,19 +142,19 @@ export const saveState = async (state: CRMState): Promise<void> => {
 // Helper function to save to Supabase
 const saveToSupabase = async (userId: string, state: CRMState): Promise<void> => {
   try {
-    const { data, error } = await supabase
+    // Convert state to a type compatible with Supabase's Json type
+    const jsonData = state as unknown as Json;
+    
+    const { data, error: checkError } = await supabase
       .from('user_crm_data')
       .select('id')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
     
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
-      console.error('Error checking for existing data:', error);
+    if (checkError) {
+      console.error('Error checking for existing data:', checkError);
       return;
     }
-    
-    // Convert state to a type compatible with Supabase's Json type
-    const jsonData = state as unknown as Json;
     
     if (data) {
       // Update existing record
