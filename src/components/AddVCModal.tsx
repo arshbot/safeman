@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -106,7 +107,11 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      {trigger && (
+        <DialogTrigger asChild>
+          <div className="inline-block">{trigger}</div>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px] glassmorphism">
         <DialogHeader>
           <DialogTitle>Add New VC</DialogTitle>
