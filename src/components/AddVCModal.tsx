@@ -109,7 +109,7 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && (
         <DialogTrigger asChild>
-          <div className="inline-block">{trigger}</div>
+          <div className="inline-flex items-center justify-center">{trigger}</div>
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-[500px] glassmorphism">

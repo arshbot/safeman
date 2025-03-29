@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, Layers, LogOut, User, Users } from "lucide-react";
+import { FileSpreadsheet, Layers, LogOut, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { AddRoundModal } from "./AddRoundModal";
 import { ImportVCsModal } from "./ImportVCsModal";
@@ -17,11 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-interface PageHeaderProps {
-  onAddVC: () => void;
-}
-
-export function PageHeader({ onAddVC }: PageHeaderProps) {
+export function PageHeader() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
@@ -31,7 +27,7 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative z-10 mb-8 space-y-4 lg:space-y-0 lg:flex lg:justify-between lg:items-center"
+      className="relative z-20 mb-8 space-y-4 lg:space-y-0 lg:flex lg:justify-between lg:items-center"
     >
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">SAFEMAN</h1>
@@ -77,7 +73,7 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-white">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem disabled>
