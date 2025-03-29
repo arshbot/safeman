@@ -31,7 +31,7 @@ export function PageHeader({ onAddVC }: PageHeaderProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mb-8 space-y-4 lg:space-y-0 lg:flex lg:justify-between lg:items-center"
+      className="relative z-10 mb-8 space-y-4 lg:space-y-0 lg:flex lg:justify-between lg:items-center"
     >
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">SAFEMAN</h1>
