@@ -67,18 +67,22 @@ export const useDataPersistence = (
       return;
     }
     
-    // Simple debounce for saving state
+    // Increase debounce time to reduce save frequency
     const saveTimeout = setTimeout(async () => {
       try {
+        // Check if any modals are open by looking for open dialogs
+        const anyDialogOpen = document.querySelector('[data-state="open"][role="dialog"]');
+        
         console.log('Saving state, user:', user ? `${user.id}` : 'not logged in');
         const startTime = performance.now();
         await saveState(state);
         const duration = Math.round(performance.now() - startTime);
         console.log(`State saved successfully (${duration}ms)`);
         
-        // Show toast for successful save if it took more than 100ms
-        // (likely Supabase save rather than localStorage)
-        if (duration > 100) {
+        // Only show toast for successful save if:
+        // 1. It took more than 100ms (likely Supabase save rather than localStorage)
+        // 2. No dialogs are currently open to avoid disrupting modal interaction
+        if (duration > 100 && !anyDialogOpen) {
           toast({
             title: "Changes saved",
             description: user ? "Your changes have been saved to the cloud" : "Your changes have been saved locally",
@@ -92,7 +96,7 @@ export const useDataPersistence = (
           variant: "destructive",
         });
       }
-    }, 500);
+    }, 1500); // Increased from 500ms to 1500ms to reduce save frequency
     
     return () => clearTimeout(saveTimeout);
   }, [state, user, toast]);

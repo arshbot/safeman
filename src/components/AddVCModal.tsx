@@ -36,7 +36,8 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
   // Create a ref to track visibility changes related to tab switching
   const visibilityRef = useRef({
     wasOpen: false,
-    documentHidden: false
+    documentHidden: false,
+    preventClose: false
   });
 
   const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'finalized', 'likelyPassed'];
@@ -47,6 +48,7 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
       if (document.hidden) {
         // Page is now hidden (tab switch)
         visibilityRef.current.documentHidden = true;
+        visibilityRef.current.preventClose = true;
         if (open) {
           visibilityRef.current.wasOpen = true;
         }
@@ -54,8 +56,18 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
         // Page is now visible again
         if (visibilityRef.current.documentHidden && visibilityRef.current.wasOpen && !open) {
           // If the modal was open before tab switch and is now closed, reopen it
-          onOpenChange(true);
+          // Use setTimeout to ensure this happens after any state updates
+          setTimeout(() => {
+            onOpenChange(true);
+          }, 50);
         }
+        
+        // Keep preventClose true for a short while after becoming visible again
+        // to block any immediate close attempts triggered by state saves
+        setTimeout(() => {
+          visibilityRef.current.preventClose = false;
+        }, 500);
+        
         visibilityRef.current.documentHidden = false;
         visibilityRef.current.wasOpen = false;
       }
@@ -141,7 +153,13 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
 
   return (
     <Dialog open={open} onOpenChange={(newOpen) => {
-      // Only allow the modal to close if it's not due to tab switching
+      // Block modal close attempts when switching tabs or right after becoming visible
+      if (visibilityRef.current.preventClose && !newOpen) {
+        console.log("Preventing modal close due to tab switching");
+        return;
+      }
+      
+      // Otherwise allow normal open/close behavior
       if (!visibilityRef.current.documentHidden || newOpen) {
         onOpenChange(newOpen);
       }
