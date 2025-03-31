@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCRM } from "@/context/CRMContext";
 import { Status } from "@/types";
 import { StatusBadge } from "./StatusBadge";
@@ -33,8 +32,40 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
   const [purchaseAmount, setPurchaseAmount] = useState<number | undefined>(undefined);
   const [purchaseAmountFormatted, setPurchaseAmountFormatted] = useState("");
   const { addVC, addVCToRound } = useCRM();
+  
+  // Create a ref to track visibility changes related to tab switching
+  const visibilityRef = useRef({
+    wasOpen: false,
+    documentHidden: false
+  });
 
   const statusOptions: Status[] = ['notContacted', 'contacted', 'closeToBuying', 'finalized', 'likelyPassed'];
+
+  // Add visibility change event handler
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page is now hidden (tab switch)
+        visibilityRef.current.documentHidden = true;
+        if (open) {
+          visibilityRef.current.wasOpen = true;
+        }
+      } else {
+        // Page is now visible again
+        if (visibilityRef.current.documentHidden && visibilityRef.current.wasOpen && !open) {
+          // If the modal was open before tab switch and is now closed, reopen it
+          onOpenChange(true);
+        }
+        visibilityRef.current.documentHidden = false;
+        visibilityRef.current.wasOpen = false;
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [open, onOpenChange]);
 
   const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.trim();
@@ -50,13 +81,16 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
   // Reset form when modal opens or closes
   useEffect(() => {
     if (!open) {
-      // Reset form state on close
-      setName("");
-      setEmail("");
-      setWebsite("");
-      setStatus("notContacted");
-      setPurchaseAmount(undefined);
-      setPurchaseAmountFormatted("");
+      // Only reset form if the modal was intentionally closed, not due to tab switching
+      if (!visibilityRef.current.documentHidden) {
+        // Reset form state on close
+        setName("");
+        setEmail("");
+        setWebsite("");
+        setStatus("notContacted");
+        setPurchaseAmount(undefined);
+        setPurchaseAmountFormatted("");
+      }
     }
   }, [open]);
 
@@ -106,7 +140,12 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
     (status === 'finalized' && purchaseAmount !== undefined);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      // Only allow the modal to close if it's not due to tab switching
+      if (!visibilityRef.current.documentHidden || newOpen) {
+        onOpenChange(newOpen);
+      }
+    }}>
       {trigger && (
         <DialogTrigger asChild>
           <div className="inline-flex items-center justify-center">{trigger}</div>
