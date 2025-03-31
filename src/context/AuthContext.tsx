@@ -94,11 +94,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (error) {
         console.error("Error signing in with Google:", error);
+        let errorMessage = error.message;
+        
+        // Handle the specific case where Google provider is not enabled
+        if (error.message === "Unsupported provider: provider is not enabled") {
+          errorMessage = "Google sign-in is not currently enabled in this Supabase project. Please enable it in the Supabase dashboard or use email/password instead.";
+        }
+        
         toast({
           title: "Sign-in failed",
-          description: error.message === "Unsupported provider: provider is not enabled" 
-            ? "Google sign-in is not currently enabled. Please use email/password instead." 
-            : error.message || "There was a problem signing in with Google. Please try again.",
+          description: errorMessage,
           variant: "destructive",
         });
       }
