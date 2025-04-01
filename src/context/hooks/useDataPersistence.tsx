@@ -1,103 +1,146 @@
+import { CRMState, VC } from '@/types';
+import { CRMAction } from '../types';
+import { useEffect, useRef, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
-import { useEffect } from 'react';
-import { CRMState } from '@/types';
-import { loadState, saveState, initialState } from '../storage';
-import { User } from '@supabase/supabase-js';
-import { useToast } from '@/components/ui/use-toast';
-
-export const useDataPersistence = (
-  user: User | null,
+export function useDataPersistence(
+  user: any,
   authLoading: boolean,
-  dispatch: React.Dispatch<any>,
+  dispatch: React.Dispatch<CRMAction>,
   state: CRMState,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
-) => {
-  const { toast } = useToast();
-
-  // Load state once auth is ready
+  setIsLoading: (isLoading: boolean) => void
+) {
+  // Keep track of whether any modals are currently open
+  const [debounceTimer, setDebounceTimer] = useState<number | null>(null);
+  const stateRef = useRef(state);
+  
+  // Update the ref when state changes
   useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  // Load data from storage
+  useEffect(() => {
+    if (authLoading) return;
+
     const loadData = async () => {
       try {
-        setIsLoading(true);
-        console.log('Loading data, user state:', user ? `logged in as ${user.id}` : 'not logged in');
+        console.info("Loading data, user state:", user ? "logged in" : "not logged in");
         
-        // Load user's data
-        const loadedState = await loadState();
+        let loadedState: CRMState | null = null;
+        
+        if (user) {
+          // Load from Supabase for authenticated users
+          console.info("User authenticated, using Supabase");
+          const { data, error } = await supabase
+            .from('crm_data')
+            .select('data')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (error) {
+            console.error("Error fetching data from Supabase:", error);
+          } else if (data && data.data) {
+            loadedState = JSON.parse(data.data as string) as CRMState;
+          }
+        } else {
+          // Load from localStorage for anonymous users
+          console.info("User not authenticated, using localStorage");
+          const storageKey = 'crmState-anonymous';
+          const storedData = localStorage.getItem(storageKey);
+          if (storedData) {
+            loadedState = JSON.parse(storedData) as CRMState;
+          }
+        }
+        
+        // If we have loaded state, initialize the app with it
         if (loadedState) {
-          console.log('Data loaded successfully', {
+          dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
+          console.info("Data loaded successfully", {
             rounds: loadedState.rounds.length,
             vcs: Object.keys(loadedState.vcs).length,
             unsortedVCs: loadedState.unsortedVCs.length,
-            hasNotes: Boolean(loadedState.scratchpadNotes),
-            source: loadedState._dataSource || 'unknown'
+            hasNotes: Object.keys(loadedState.meetingNotes || {}).length > 0,
+            source: user ? "Supabase" : "localStorage"
           });
-          dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
-          
-          // Removed data loaded toast notification
-        } else {
-          // Initialize with empty state if no data found
-          console.log('No data found, initializing with empty state');
-          dispatch({ type: 'INITIALIZE_STATE', payload: initialState });
         }
+        
+        setIsLoading(false);
       } catch (error) {
-        console.error('Error loading CRM state:', error);
-        // Show error message to user
-        toast({
-          title: "Failed to load data",
-          description: "There was a problem loading your data. Please try refreshing the page.",
-          variant: "destructive",
-        });
-        // Initialize with empty state on error
-        dispatch({ type: 'INITIALIZE_STATE', payload: initialState });
-      } finally {
+        console.error("Error loading data:", error);
         setIsLoading(false);
       }
     };
 
-    // Only load data when auth is not loading anymore
-    if (!authLoading) {
-      loadData();
-    }
-  }, [user, authLoading, dispatch, setIsLoading, toast]);
+    loadData();
+  }, [authLoading, user, dispatch, setIsLoading]);
 
-  // Save state when it changes
+  // Save data when state changes, with enhanced debouncing and modal awareness
   useEffect(() => {
-    // Only save if the state has been initialized
-    if (Object.keys(state.vcs).length === 0 && state.rounds.length === 0 && !state.scratchpadNotes) {
-      return;
-    }
+    // Skip initial render to avoid unnecessary saves
+    if (authLoading) return;
     
-    // Increase debounce time to reduce save frequency
-    const saveTimeout = setTimeout(async () => {
+    // Check if any dialog/modal is currently open by looking for elements
+    const isModalOpen = () => {
+      const dialogElements = document.querySelectorAll('[role="dialog"]');
+      return dialogElements.length > 0;
+    };
+
+    // Debounce save operations to avoid too frequent saves
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    const timer = window.setTimeout(async () => {
+      const currentState = stateRef.current;
+      
       try {
-        // Check if any modals are open by looking for open dialogs
-        const anyDialogOpen = document.querySelector('[data-state="open"][role="dialog"]');
-        
-        console.log('Saving state, user:', user ? `${user.id}` : 'not logged in');
-        const startTime = performance.now();
-        await saveState(state);
-        const duration = Math.round(performance.now() - startTime);
-        console.log(`State saved successfully (${duration}ms)`);
-        
-        // Only show toast for successful save if:
-        // 1. It took more than 100ms (likely Supabase save rather than localStorage)
-        // 2. No dialogs are currently open to avoid disrupting modal interaction
-        if (duration > 100 && !anyDialogOpen) {
-          toast({
-            title: "Changes saved",
-            description: user ? "Your changes have been saved to the cloud" : "Your changes have been saved locally",
-          });
+        if (user) {
+          // Save to Supabase for authenticated users
+          const { data, error } = await supabase
+            .from('crm_data')
+            .upsert({
+              user_id: user.id,
+              data: JSON.stringify(currentState),
+            }, { onConflict: 'user_id' })
+            .select();
+          
+          if (error) {
+            console.error("Error saving data to Supabase:", error);
+          } else {
+            console.info("Data saved to Supabase successfully", {
+              rounds: currentState.rounds.length,
+              vcs: Object.keys(currentState.vcs).length,
+              unsortedVCs: currentState.unsortedVCs.length,
+              hasNotes: Object.keys(currentState.meetingNotes || {}).length > 0
+            });
+          }
+        } else {
+          // Save to localStorage for anonymous users
+          const storageKey = 'crmState-anonymous';
+          localStorage.setItem(storageKey, JSON.stringify(currentState));
+          
+          // Only show toast if not in the middle of modal interactions
+          // This prevents toast notifications from interfering with modals
+          if (!isModalOpen()) {
+            toast({
+              title: "Data Saved",
+              description: "Your progress has been saved locally.",
+            });
+          }
         }
       } catch (error) {
-        console.error('Error saving state:', error);
-        toast({
-          title: "Failed to save changes",
-          description: "There was a problem saving your changes. Please try again.",
-          variant: "destructive",
-        });
+        console.error("Error saving data:", error);
       }
-    }, 1500); // Increased from 500ms to 1500ms to reduce save frequency
+    }, 2000); // Increased debounce time to reduce save frequency
     
-    return () => clearTimeout(saveTimeout);
-  }, [state, user, toast]);
-};
+    setDebounceTimer(timer as any);
+    
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+    };
+  }, [state, user, authLoading]);
+}

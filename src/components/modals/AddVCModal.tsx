@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, useEffect, useRef } from "react";
 import { useCRM } from "@/context/CRMContext";
@@ -13,71 +14,123 @@ interface AddVCModalProps {
 export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalProps) {
   const { addVC, addVCToRound } = useCRM();
   
-  // Create a ref to track visibility changes related to tab switching
+  // Enhanced visibility tracking with additional safeguards
   const visibilityRef = useRef({
     wasOpen: false,
     documentHidden: false,
-    preventClose: false
+    preventClose: false,
+    lastStateUpdate: 0
   });
 
-  // Add visibility change event handler
+  // Add enhanced visibility change event handler
   useEffect(() => {
     const handleVisibilityChange = () => {
+      const now = Date.now();
+      
       if (document.hidden) {
         // Page is now hidden (tab switch)
         visibilityRef.current.documentHidden = true;
         visibilityRef.current.preventClose = true;
+        visibilityRef.current.lastStateUpdate = now;
+        
         if (open) {
           visibilityRef.current.wasOpen = true;
+          // Force the dialog to stay open
+          console.log("Tab hidden while modal open - marking for preservation");
         }
       } else {
         // Page is now visible again
-        if (visibilityRef.current.documentHidden && visibilityRef.current.wasOpen && !open) {
+        const wasHidden = visibilityRef.current.documentHidden;
+        const wasOpen = visibilityRef.current.wasOpen;
+        const currentlyClosed = !open;
+        
+        if (wasHidden && wasOpen && currentlyClosed) {
+          console.log("Modal was open before tab switch but is now closed - reopening");
           // If the modal was open before tab switch and is now closed, reopen it
-          // Use setTimeout to ensure this happens after any state updates
+          // Use a longer timeout to ensure any state updates are complete
           setTimeout(() => {
             onOpenChange(true);
-          }, 50);
+          }, 100);
         }
         
-        // Keep preventClose true for a short while after becoming visible again
-        // to block any immediate close attempts triggered by state saves
+        // Extended prevention period to block any close attempts triggered by state persistence
         setTimeout(() => {
           visibilityRef.current.preventClose = false;
-        }, 500);
+          console.log("Released preventClose lock after visibility change");
+        }, 1000);
         
         visibilityRef.current.documentHidden = false;
         visibilityRef.current.wasOpen = false;
       }
     };
 
+    // Listen for both visibility change and storage events which can happen
+    // when localStorage is updated by data persistence mechanisms
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('storage', () => {
+      if (open && !visibilityRef.current.documentHidden) {
+        visibilityRef.current.preventClose = true;
+        setTimeout(() => {
+          visibilityRef.current.preventClose = false;
+        }, 500);
+      }
+    });
+    
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', () => {});
     };
   }, [open, onOpenChange]);
 
+  // Add a safeguard against rapid state changes closing the modal
+  useEffect(() => {
+    if (open) {
+      // When modal opens, set a temporary lock to prevent any automatic closing
+      visibilityRef.current.preventClose = true;
+      setTimeout(() => {
+        visibilityRef.current.preventClose = false;
+      }, 500);
+    }
+  }, [open]);
+
   const handleSubmit = (vcData: any) => {
+    // Set a flag to prevent closing during the submission process
+    visibilityRef.current.preventClose = true;
+    
     // First close the modal to avoid DnD context issues
     onOpenChange(false);
     
-    // Small delay to ensure modal is completely closed before state updates
+    // Longer delay to ensure modal is completely closed before state updates
     setTimeout(() => {
-      // Add the VC to get its ID
-      const newVCId = addVC(vcData);
-      
-      // If roundId is provided, add the VC to that round
-      if (roundId && newVCId) {
-        addVCToRound(newVCId, roundId);
+      try {
+        // Add the VC to get its ID
+        const newVCId = addVC(vcData);
+        
+        // If roundId is provided, add the VC to that round
+        if (roundId && newVCId) {
+          addVCToRound(newVCId, roundId);
+        }
+      } finally {
+        // Always release the lock after state updates
+        setTimeout(() => {
+          visibilityRef.current.preventClose = false;
+        }, 500);
       }
-    }, 50);
+    }, 100);
   };
 
   return (
     <Dialog open={open} onOpenChange={(newOpen) => {
-      // Block modal close attempts when switching tabs or right after becoming visible
+      // Enhanced modal close prevention logic
       if (visibilityRef.current.preventClose && !newOpen) {
-        console.log("Preventing modal close due to tab switching");
+        console.log("Preventing modal close due to preventClose flag");
+        return;
+      }
+      
+      // Prevent modal from closing if we're in the middle of a state update
+      const timeSinceLastStateUpdate = Date.now() - visibilityRef.current.lastStateUpdate;
+      if (!newOpen && timeSinceLastStateUpdate < 1000) {
+        console.log(`Preventing modal close, only ${timeSinceLastStateUpdate}ms since last state update`);
         return;
       }
       
