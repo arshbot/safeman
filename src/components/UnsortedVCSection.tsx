@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { AddVCModal } from "@/components/AddVCModal";
+import { AddVCModal } from "@/components/modals/AddVCModal";
 import { useState } from "react";
 import { DroppableVCList } from "./DroppableVCList";
 import { VC } from "@/types";

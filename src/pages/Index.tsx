@@ -9,7 +9,7 @@ import { UnsortedVCSection } from "@/components/UnsortedVCSection";
 import { useVCSorting } from "@/hooks/useVCSorting";
 import { useDragEndHandler } from "@/hooks/useDragEndHandler";
 import { DnDProvider } from "@/context/DnDContext";
-import { AddVCModal } from "@/components/AddVCModal";
+import { AddVCModal } from "@/components/modals/AddVCModal";
 import { Scratchpad } from "@/components/Scratchpad";
 
 // Reset server context for SSR compatibility
