@@ -35,7 +35,7 @@ export function useDataPersistence(
           // Load from Supabase for authenticated users
           console.info("User authenticated, using Supabase");
           const { data, error } = await supabase
-            .from('user_crm_data')
+            .from('user_crm_data') // Corrected table name from crm_data to user_crm_data
             .select('data')
             .eq('user_id', user.id)
             .single();
@@ -62,7 +62,7 @@ export function useDataPersistence(
             rounds: loadedState.rounds.length,
             vcs: Object.keys(loadedState.vcs).length,
             unsortedVCs: loadedState.unsortedVCs.length,
-            hasNotes: loadedState.scratchpadNotes ? true : false,
+            hasNotes: loadedState.scratchpadNotes ? true : false, // Changed from meetingNotes to scratchpadNotes
             source: user ? "Supabase" : "localStorage"
           });
         }
@@ -100,7 +100,7 @@ export function useDataPersistence(
         if (user) {
           // Save to Supabase for authenticated users
           const { data, error } = await supabase
-            .from('user_crm_data')
+            .from('user_crm_data') // Corrected table name from crm_data to user_crm_data
             .upsert({
               user_id: user.id,
               data: JSON.stringify(currentState),
@@ -114,7 +114,7 @@ export function useDataPersistence(
               rounds: currentState.rounds.length,
               vcs: Object.keys(currentState.vcs).length,
               unsortedVCs: currentState.unsortedVCs.length,
-              hasNotes: currentState.scratchpadNotes ? true : false
+              hasNotes: currentState.scratchpadNotes ? true : false // Changed from meetingNotes to scratchpadNotes
             });
           }
         } else {
