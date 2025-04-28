@@ -12,11 +12,9 @@ export function useDataPersistence(
   state: CRMState,
   setIsLoading: (isLoading: boolean) => void
 ) {
-  // Keep track of whether any modals are currently open
   const [debounceTimer, setDebounceTimer] = useState<number | null>(null);
   const stateRef = useRef(state);
   
-  // Update the ref when state changes
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
@@ -35,15 +33,28 @@ export function useDataPersistence(
           // Load from Supabase for authenticated users
           console.info("User authenticated, using Supabase");
           const { data, error } = await supabase
-            .from('user_crm_data') // Corrected table name from crm_data to user_crm_data
+            .from('user_crm_data')
             .select('data')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
           
           if (error) {
             console.error("Error fetching data from Supabase:", error);
-          } else if (data && data.data) {
-            loadedState = JSON.parse(data.data as string) as CRMState;
+          } else if (data) {
+            // Data from Supabase is already JSON, no need to parse
+            loadedState = data.data as CRMState;
+
+            // Validate data structure
+            if (loadedState && 
+                typeof loadedState === 'object' && 
+                'vcs' in loadedState && 
+                'rounds' in loadedState &&
+                'unsortedVCs' in loadedState) {
+              console.info("Valid CRM state loaded from Supabase");
+            } else {
+              console.error("Invalid data structure in Supabase:", loadedState);
+              loadedState = null;
+            }
           }
         } else {
           // Load from localStorage for anonymous users
@@ -51,18 +62,21 @@ export function useDataPersistence(
           const storageKey = 'crmState-anonymous';
           const storedData = localStorage.getItem(storageKey);
           if (storedData) {
-            loadedState = JSON.parse(storedData) as CRMState;
+            try {
+              loadedState = JSON.parse(storedData) as CRMState;
+            } catch (parseError) {
+              console.error("Error parsing localStorage data:", parseError);
+            }
           }
         }
         
-        // If we have loaded state, initialize the app with it
         if (loadedState) {
           dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
           console.info("Data loaded successfully", {
             rounds: loadedState.rounds.length,
             vcs: Object.keys(loadedState.vcs).length,
             unsortedVCs: loadedState.unsortedVCs.length,
-            hasNotes: loadedState.scratchpadNotes ? true : false, // Changed from meetingNotes to scratchpadNotes
+            hasNotes: loadedState.scratchpadNotes ? true : false,
             source: user ? "Supabase" : "localStorage"
           });
         }
@@ -77,18 +91,15 @@ export function useDataPersistence(
     loadData();
   }, [authLoading, user, dispatch, setIsLoading]);
 
-  // Save data when state changes, with enhanced debouncing and modal awareness
+  // Save data when state changes
   useEffect(() => {
-    // Skip initial render to avoid unnecessary saves
     if (authLoading) return;
     
-    // Check if any dialog/modal is currently open by looking for elements
     const isModalOpen = () => {
       const dialogElements = document.querySelectorAll('[role="dialog"]');
       return dialogElements.length > 0;
     };
 
-    // Debounce save operations to avoid too frequent saves
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
@@ -99,11 +110,11 @@ export function useDataPersistence(
       try {
         if (user) {
           // Save to Supabase for authenticated users
-          const { data, error } = await supabase
-            .from('user_crm_data') // Corrected table name from crm_data to user_crm_data
+          const { error } = await supabase
+            .from('user_crm_data')
             .upsert({
               user_id: user.id,
-              data: JSON.stringify(currentState),
+              data: currentState, // No need to stringify, Supabase handles JSON
             }, { onConflict: 'user_id' })
             .select();
           
@@ -114,7 +125,7 @@ export function useDataPersistence(
               rounds: currentState.rounds.length,
               vcs: Object.keys(currentState.vcs).length,
               unsortedVCs: currentState.unsortedVCs.length,
-              hasNotes: currentState.scratchpadNotes ? true : false // Changed from meetingNotes to scratchpadNotes
+              hasNotes: currentState.scratchpadNotes ? true : false
             });
           }
         } else {
@@ -122,8 +133,6 @@ export function useDataPersistence(
           const storageKey = 'crmState-anonymous';
           localStorage.setItem(storageKey, JSON.stringify(currentState));
           
-          // Only show toast if not in the middle of modal interactions
-          // This prevents toast notifications from interfering with modals
           if (!isModalOpen()) {
             toast({
               title: "Data Saved",
@@ -134,7 +143,7 @@ export function useDataPersistence(
       } catch (error) {
         console.error("Error saving data:", error);
       }
-    }, 2000); // Increased debounce time to reduce save frequency
+    }, 2000);
     
     setDebounceTimer(timer as any);
     
