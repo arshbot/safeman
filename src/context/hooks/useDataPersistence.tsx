@@ -4,6 +4,7 @@ import { CRMAction } from '../types';
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { Json } from '@/integrations/supabase/types';
 
 export function useDataPersistence(
   user: any,
@@ -41,18 +42,19 @@ export function useDataPersistence(
           if (error) {
             console.error("Error fetching data from Supabase:", error);
           } else if (data) {
-            // Data from Supabase is already JSON, no need to parse
-            loadedState = data.data as CRMState;
-
+            // Type safety: cast Json to CRMState with validation
+            const supabaseData = data.data as Record<string, any>;
+            
             // Validate data structure
-            if (loadedState && 
-                typeof loadedState === 'object' && 
-                'vcs' in loadedState && 
-                'rounds' in loadedState &&
-                'unsortedVCs' in loadedState) {
+            if (supabaseData && 
+                typeof supabaseData === 'object' && 
+                'vcs' in supabaseData && 
+                'rounds' in supabaseData &&
+                'unsortedVCs' in supabaseData) {
               console.info("Valid CRM state loaded from Supabase");
+              loadedState = supabaseData as CRMState;
             } else {
-              console.error("Invalid data structure in Supabase:", loadedState);
+              console.error("Invalid data structure in Supabase:", supabaseData);
               loadedState = null;
             }
           }
@@ -110,11 +112,12 @@ export function useDataPersistence(
       try {
         if (user) {
           // Save to Supabase for authenticated users
+          // Cast the CRMState to Json type for Supabase compatibility
           const { error } = await supabase
             .from('user_crm_data')
             .upsert({
               user_id: user.id,
-              data: currentState, // No need to stringify, Supabase handles JSON
+              data: currentState as unknown as Json, // Type cast to Json
             }, { onConflict: 'user_id' })
             .select();
           
