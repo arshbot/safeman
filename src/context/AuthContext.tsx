@@ -33,7 +33,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // If we have a user, enhance it with display properties
         if (session?.user) {
           const enhancedUser: AuthUser = {
-            ...session.user,
+            id: session.user.id,
+            email: session.user.email || undefined,
             displayName: session.user.email?.split('@')[0] || null,
             photoURL: null,
           };
@@ -60,7 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       
       if (data.session?.user) {
         const enhancedUser: AuthUser = {
-          ...data.session.user,
+          id: data.session.user.id,
+          email: data.session.user.email || undefined,
           displayName: data.session.user.email?.split('@')[0] || null,
           photoURL: null,
         };

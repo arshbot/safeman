@@ -4,7 +4,7 @@ import { VC, Round, Status } from '@/types';
 // Define AuthUser type
 export interface AuthUser {
   id: string;
-  email: string | null;
+  email?: string; // Make email optional to match Supabase User type
   displayName: string | null;
   photoURL: string | null;
 }

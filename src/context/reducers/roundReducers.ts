@@ -1,141 +1,118 @@
 
-import { CRMState, Round, RoundVisibility } from '@/types';
-import { CRMAction } from '../types';
-import { toast } from 'sonner';
+import { CRMState, CRMAction } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { Round, RoundVisibility } from '@/types';
 
-// Helper function to cycle round visibility
-const cycleVisibility = (currentVisibility: RoundVisibility): RoundVisibility => {
-  switch (currentVisibility) {
-    case 'expanded':
-      return 'collapsedShowFinalized';
-    case 'collapsedShowFinalized':
-      return 'collapsedHideAll';
-    case 'collapsedHideAll':
-      return 'expanded';
-    default:
-      return 'expanded';
-  }
-};
-
-// Reducers for round-related actions
 export const roundReducers = (state: CRMState, action: CRMAction): CRMState => {
   switch (action.type) {
     case 'ADD_ROUND': {
+      const { name, targetAmount, valuationCap } = action.payload;
       const newRound: Round = {
-        id: uuidv4(), // Generate new ID for the round
-        name: action.payload.name,
+        id: uuidv4(),
+        name,
         vcs: [],
         order: state.rounds.length,
         isExpanded: false,
-        visibility: 'expanded',
-        targetAmount: action.payload.targetAmount,
-        valuationCap: action.payload.valuationCap
+        visibility: 'expanded' as RoundVisibility,
+        targetAmount,
+        valuationCap
       };
-      
-      toast.success(`Round ${newRound.name} created`);
       
       return {
         ...state,
-        rounds: [...state.rounds, newRound],
+        rounds: [...state.rounds, newRound]
       };
     }
-
+    
     case 'UPDATE_ROUND': {
-      toast.success(`Round ${action.payload.name || 'unknown'} updated`);
+      const updatedRound = action.payload;
       
       return {
         ...state,
-        rounds: state.rounds.map((round) =>
-          round.id === action.payload.id ? { ...round, ...action.payload } : round
-        ),
+        rounds: state.rounds.map(round => 
+          round.id === updatedRound.id ? { ...round, ...updatedRound } : round
+        )
       };
     }
-
+    
     case 'DELETE_ROUND': {
-      const roundToDelete = state.rounds.find(r => r.id === action.payload);
-      if (roundToDelete) {
-        toast.success(`Round ${roundToDelete.name} deleted`);
+      const roundId = action.payload;
+      const roundToDelete = state.rounds.find(r => r.id === roundId);
+      
+      if (!roundToDelete) {
+        return state;
       }
       
-      // Get all VCs in this round
-      const roundVCs = state.rounds.find((r) => r.id === action.payload)?.vcs || [];
-      
-      // Create a new vcs object without the VCs from the deleted round
-      const updatedVCs = { ...state.vcs };
-      for (const vcId of roundVCs) {
-        delete updatedVCs[vcId];
-      }
+      // Move all VCs from the round to unsorted
+      const vcsToMove = roundToDelete.vcs || [];
       
       return {
         ...state,
-        rounds: state.rounds.filter((round) => round.id !== action.payload),
-        vcs: updatedVCs
+        rounds: state.rounds.filter(r => r.id !== roundId),
+        unsortedVCs: [...state.unsortedVCs, ...vcsToMove]
       };
     }
-
-    case 'TOGGLE_ROUND':
-    case 'TOGGLE_ROUND_EXPAND': {
-      return {
-        ...state,
-        rounds: state.rounds.map((round) => {
-          if (round.id === action.payload) {
-            return {
-              ...round,
-              isExpanded: !round.isExpanded,
-            };
-          }
-          return round;
-        }),
-      };
-    }
-
+    
     case 'EXPAND_ROUND': {
+      const roundId = action.payload;
+      
       return {
         ...state,
-        rounds: state.rounds.map((round) => {
-          if (round.id === action.payload) {
-            return {
-              ...round,
-              isExpanded: true,
-            };
-          }
-          return round;
-        }),
+        expandedRoundIds: state.expandedRoundIds.includes(roundId) 
+          ? state.expandedRoundIds 
+          : [...state.expandedRoundIds, roundId]
       };
     }
-
+    
     case 'COLLAPSE_ROUND': {
+      const roundId = action.payload;
+      
       return {
         ...state,
-        rounds: state.rounds.map((round) => {
-          if (round.id === action.payload) {
-            return {
-              ...round,
-              isExpanded: false,
-            };
-          }
-          return round;
-        }),
+        expandedRoundIds: state.expandedRoundIds.filter(id => id !== roundId)
       };
     }
-
+    
+    case 'TOGGLE_ROUND_EXPAND': {
+      const roundId = action.payload;
+      
+      return {
+        ...state,
+        expandedRoundIds: state.expandedRoundIds.includes(roundId)
+          ? state.expandedRoundIds.filter(id => id !== roundId)
+          : [...state.expandedRoundIds, roundId]
+      };
+    }
+    
     case 'CYCLE_ROUND_VISIBILITY': {
+      const roundId = action.payload;
+      const round = state.rounds.find(r => r.id === roundId);
+      
+      if (!round) {
+        return state;
+      }
+      
+      let newVisibility: RoundVisibility;
+      
+      switch (round.visibility) {
+        case 'expanded':
+          newVisibility = 'collapsedShowFinalized';
+          break;
+        case 'collapsedShowFinalized':
+          newVisibility = 'collapsedHideAll';
+          break;
+        default:
+          newVisibility = 'expanded';
+      }
+      
       return {
         ...state,
-        rounds: state.rounds.map((round) => {
-          if (round.id === action.payload) {
-            const newVisibility = cycleVisibility(round.visibility);
-            return {
-              ...round,
-              visibility: newVisibility,
-            };
-          }
-          return round;
-        }),
+        rounds: state.rounds.map(r => 
+          r.id === roundId ? { ...r, visibility: newVisibility } : r
+        )
       };
     }
-
+    
     default:
       return state;
   }
