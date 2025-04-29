@@ -1,4 +1,3 @@
-
 // This file serves as the entry point for all reducers
 import { CRMState } from '@/types';
 import { CRMAction } from '../types';
@@ -6,6 +5,7 @@ import { roundReducers } from './roundReducers';
 import { vcReducers } from './vcReducers';
 import { meetingNoteReducers } from './meetingNoteReducers';
 import { dragAndDropReducers } from './dragAndDropReducers';
+import { scratchpadReducers } from './scratchpadReducers';
 
 // Main reducer that delegates to specific reducers based on action type
 export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
@@ -41,6 +41,11 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
   // Drag and drop / reordering actions
   if (action.type.startsWith('REORDER')) {
     return dragAndDropReducers(state, action);
+  }
+  
+  // Scratchpad actions
+  if (action.type.startsWith('SET_SCRATCHPAD')) {
+    return scratchpadReducers(state, action);
   }
   
   // Default case - return state unchanged

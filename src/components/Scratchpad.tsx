@@ -4,13 +4,14 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Check, Loader2, Save, ChevronLeft, ChevronRight } from "lucide-react";
-import { saveState, loadState } from "@/context/storage";
 import { cn } from "@/lib/utils";
+import { useCRM } from "@/context/CRMContext";
 
 // Enum for save status
 type SaveStatus = "saved" | "saving" | "unsaved";
 
 export function Scratchpad() {
+  const { state, setScratchpadNotes, isSaving } = useCRM();
   const [notes, setNotes] = useState<string>("");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
@@ -18,29 +19,15 @@ export function Scratchpad() {
   const saveTimeoutRef = useRef<number | null>(null);
   const { toast } = useToast();
   
-  // Load notes from storage on component mount
+  // Load notes from CRM state on component mount
   useEffect(() => {
-    const loadNotes = async () => {
-      try {
-        const state = await loadState();
-        if (state?.scratchpadNotes) {
-          setNotes(state.scratchpadNotes);
-          lastSavedNotes.current = state.scratchpadNotes;
-        }
-      } catch (error) {
-        console.error("Failed to load scratchpad notes:", error);
-        toast({
-          title: "Failed to load notes",
-          description: "Your previous notes couldn't be loaded.",
-          variant: "destructive",
-        });
-      }
-    };
-    
-    loadNotes();
-  }, [toast]);
+    if (state.scratchpadNotes) {
+      setNotes(state.scratchpadNotes);
+      lastSavedNotes.current = state.scratchpadNotes;
+    }
+  }, [state.scratchpadNotes]);
 
-  // Save notes with debounce
+  // Save notes with debounce when they change
   useEffect(() => {
     // If notes changed, mark as unsaved
     if (notes !== lastSavedNotes.current) {
@@ -52,19 +39,15 @@ export function Scratchpad() {
       }
       
       // Set a new timeout to save after 2 seconds of inactivity
-      saveTimeoutRef.current = window.setTimeout(async () => {
+      saveTimeoutRef.current = window.setTimeout(() => {
         setSaveStatus("saving");
         try {
-          const state = await loadState();
-          if (state) {
-            await saveState({
-              ...state,
-              scratchpadNotes: notes
-            });
-          }
-          
+          // Use the context's method to save notes
+          setScratchpadNotes(notes);
           lastSavedNotes.current = notes;
-          setSaveStatus("saved");
+          
+          // We don't immediately set to "saved" since the actual saving 
+          // is handled by the context's persistence mechanism
         } catch (error) {
           console.error("Failed to save scratchpad notes:", error);
           setSaveStatus("unsaved");
@@ -83,7 +66,14 @@ export function Scratchpad() {
         window.clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [notes, toast]);
+  }, [notes, toast, setScratchpadNotes]);
+
+  // Update save status when isSaving changes
+  useEffect(() => {
+    if (notes === lastSavedNotes.current) {
+      setSaveStatus(isSaving ? "saving" : "saved");
+    }
+  }, [isSaving, notes]);
 
   // Render the appropriate status icon
   const renderStatusIcon = () => {
