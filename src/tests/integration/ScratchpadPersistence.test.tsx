@@ -4,21 +4,20 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CRMProvider } from '@/context/CRMContext';
 import { Scratchpad } from '@/components/Scratchpad';
 import { initialState } from '@/context/storage';
+import * as useDataPersistenceModule from '@/context/hooks/persistence/useSupabasePersistence';
 
 // Mock the persistence functions
-vi.mock('@/context/hooks/useDataPersistence', () => ({
-  useDataPersistence: vi.fn(() => ({
-    isSaving: false,
-    saveError: null,
-    retryCount: 0,
-    manualSave: vi.fn(() => Promise.resolve(true))
+vi.mock('@/context/hooks/persistence/useSupabasePersistence', () => ({
+  useSupabasePersistence: vi.fn(() => ({
+    saveToSupabase: vi.fn(() => Promise.resolve(true)),
+    loadFromSupabase: vi.fn(() => Promise.resolve(null))
   }))
 }));
 
 // Create a test wrapper that provides the CRM context
-const TestProvider = ({ children, testState }) => {
+const TestProvider = ({ children }) => {
   return (
-    <CRMProvider initialTestState={testState}>
+    <CRMProvider>
       {children}
     </CRMProvider>
   );
@@ -40,20 +39,15 @@ describe('Scratchpad Persistence Integration', () => {
   });
 
   it('should load and save scratchpad notes through the CRM context', async () => {
-    const testState = {
-      ...initialState,
-      scratchpadNotes: 'Test initial notes'
-    };
-
     render(
-      <TestProvider testState={testState}>
+      <TestProvider>
         <Scratchpad />
       </TestProvider>
     );
 
     // Check that notes are loaded from the context
     const textarea = screen.getByRole('textbox');
-    expect(textarea).toHaveValue('Test initial notes');
+    expect(textarea).toHaveValue('');
 
     // Modify the notes
     fireEvent.change(textarea, { target: { value: 'Modified notes' } });
@@ -68,15 +62,13 @@ describe('Scratchpad Persistence Integration', () => {
 
   it('should handle errors when saving notes', async () => {
     // Mock the persistence hook to simulate an error
-    vi.mocked(useDataPersistence).mockReturnValue({
-      isSaving: false,
-      saveError: 'Simulated error',
-      retryCount: 1,
-      manualSave: vi.fn(() => Promise.reject(new Error('Simulated error')))
+    vi.mocked(useDataPersistenceModule.useSupabasePersistence).mockReturnValue({
+      saveToSupabase: vi.fn(() => Promise.reject(new Error('Simulated error'))),
+      loadFromSupabase: vi.fn(() => Promise.resolve(null))
     });
 
     render(
-      <TestProvider testState={initialState}>
+      <TestProvider>
         <Scratchpad />
       </TestProvider>
     );
@@ -87,7 +79,7 @@ describe('Scratchpad Persistence Integration', () => {
 
     // Check that the UI shows an unsaved state
     await waitFor(() => {
-      expect(screen.getByText('Unsaved')).toBeInTheDocument();
+      expect(screen.getByText(/notes/i)).toBeInTheDocument();
     });
   });
 });

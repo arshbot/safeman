@@ -1,27 +1,32 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Scratchpad } from '@/components/Scratchpad';
 import { CRMProvider } from '@/context/CRMContext';
-import { CRMState } from '@/types';
+import * as CRMContext from '@/context/CRMContext';
 
 // Mock the CRMContext
-vi.mock('@/context/CRMContext', () => ({
-  useCRM: vi.fn(() => ({
-    state: {
-      scratchpadNotes: 'Initial notes'
-    },
-    setScratchpadNotes: vi.fn(),
-    isSaving: false
-  })),
-  CRMProvider: ({ children }) => <>{children}</>
-}));
+vi.mock('@/context/CRMContext', async () => {
+  const actual = await vi.importActual('@/context/CRMContext');
+  return {
+    ...actual,
+    useCRM: vi.fn(() => ({
+      state: {
+        scratchpadNotes: 'Initial notes'
+      },
+      setScratchpadNotes: vi.fn(),
+      isSaving: false
+    })),
+    CRMProvider: ({ children }) => <>{children}</>
+  };
+});
 
 // Mock the toast hook
 vi.mock('@/components/ui/use-toast', () => ({
   useToast: vi.fn(() => ({
     toast: vi.fn()
-  }))
+  })),
+  toast: vi.fn()
 }));
 
 describe('Scratchpad Component', () => {
@@ -53,11 +58,11 @@ describe('Scratchpad Component', () => {
 
   it('should save notes after debounce period', async () => {
     const setScratchpadNotes = vi.fn();
-    vi.mocked(useCRM).mockReturnValue({
+    vi.mocked(CRMContext.useCRM).mockReturnValue({
       state: { scratchpadNotes: 'Initial notes' },
       setScratchpadNotes,
       isSaving: false
-    });
+    } as any);
     
     render(<Scratchpad />);
     
@@ -71,11 +76,11 @@ describe('Scratchpad Component', () => {
   });
 
   it('should show saving indicator when isSaving is true', () => {
-    vi.mocked(useCRM).mockReturnValue({
+    vi.mocked(CRMContext.useCRM).mockReturnValue({
       state: { scratchpadNotes: 'Initial notes' },
       setScratchpadNotes: vi.fn(),
       isSaving: true
-    });
+    } as any);
     
     render(<Scratchpad />);
     

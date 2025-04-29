@@ -1,7 +1,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { scratchpadReducers } from '@/context/reducers/scratchpadReducers';
-import { CRMState } from '@/types';
+import { CRMState, CRMAction } from '@/context/types';
 
 describe('Scratchpad Reducers', () => {
   const initialState: CRMState = {
@@ -15,7 +15,7 @@ describe('Scratchpad Reducers', () => {
 
   it('should update scratchpad notes', () => {
     const testNotes = 'Test scratchpad content';
-    const action = { type: 'SET_SCRATCHPAD_NOTES', payload: testNotes };
+    const action = { type: 'SET_SCRATCHPAD_NOTES', payload: testNotes } as CRMAction;
     
     const newState = scratchpadReducers(initialState, action);
     
@@ -30,7 +30,7 @@ describe('Scratchpad Reducers', () => {
       vcs: { 'test-vc': { id: 'test-vc', name: 'Test VC' } }
     };
     
-    const action = { type: 'SET_SCRATCHPAD_NOTES', payload: testNotes };
+    const action = { type: 'SET_SCRATCHPAD_NOTES', payload: testNotes } as CRMAction;
     
     const newState = scratchpadReducers(stateWithData, action);
     
@@ -40,7 +40,7 @@ describe('Scratchpad Reducers', () => {
   });
 
   it('should return unchanged state for unrelated actions', () => {
-    const action = { type: 'UNRELATED_ACTION', payload: {} };
+    const action = { type: 'UNRELATED_ACTION', payload: {} } as unknown as CRMAction;
     
     const newState = scratchpadReducers(initialState, action);
     
