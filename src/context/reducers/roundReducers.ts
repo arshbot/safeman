@@ -2,6 +2,7 @@
 import { CRMState, Round, RoundVisibility } from '@/types';
 import { CRMAction } from '../types';
 import { toast } from 'sonner';
+import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to cycle round visibility
 const cycleVisibility = (currentVisibility: RoundVisibility): RoundVisibility => {
@@ -22,11 +23,14 @@ export const roundReducers = (state: CRMState, action: CRMAction): CRMState => {
   switch (action.type) {
     case 'ADD_ROUND': {
       const newRound: Round = {
-        ...action.payload,
+        id: uuidv4(), // Generate new ID for the round
+        name: action.payload.name,
         vcs: [],
         order: state.rounds.length,
         isExpanded: false,
         visibility: 'expanded',
+        targetAmount: action.payload.targetAmount,
+        valuationCap: action.payload.valuationCap
       };
       
       toast.success(`Round ${newRound.name} created`);
@@ -38,12 +42,12 @@ export const roundReducers = (state: CRMState, action: CRMAction): CRMState => {
     }
 
     case 'UPDATE_ROUND': {
-      toast.success(`Round ${action.payload.name} updated`);
+      toast.success(`Round ${action.payload.name || 'unknown'} updated`);
       
       return {
         ...state,
         rounds: state.rounds.map((round) =>
-          round.id === action.payload.id ? action.payload : round
+          round.id === action.payload.id ? { ...round, ...action.payload } : round
         ),
       };
     }
@@ -70,6 +74,7 @@ export const roundReducers = (state: CRMState, action: CRMAction): CRMState => {
       };
     }
 
+    case 'TOGGLE_ROUND':
     case 'TOGGLE_ROUND_EXPAND': {
       return {
         ...state,
@@ -78,6 +83,36 @@ export const roundReducers = (state: CRMState, action: CRMAction): CRMState => {
             return {
               ...round,
               isExpanded: !round.isExpanded,
+            };
+          }
+          return round;
+        }),
+      };
+    }
+
+    case 'EXPAND_ROUND': {
+      return {
+        ...state,
+        rounds: state.rounds.map((round) => {
+          if (round.id === action.payload) {
+            return {
+              ...round,
+              isExpanded: true,
+            };
+          }
+          return round;
+        }),
+      };
+    }
+
+    case 'COLLAPSE_ROUND': {
+      return {
+        ...state,
+        rounds: state.rounds.map((round) => {
+          if (round.id === action.payload) {
+            return {
+              ...round,
+              isExpanded: false,
             };
           }
           return round;

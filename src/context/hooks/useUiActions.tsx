@@ -1,8 +1,7 @@
 
 import { useCallback } from 'react';
 import { Round } from '@/types';
-import { getRoundSummary as getRoundSummaryUtil } from '../crmUtils';
-import { CRMState } from '@/types';
+import { CRMState } from '../types';
 
 export const useUiActions = (
   dispatch: React.Dispatch<any>,
@@ -30,7 +29,31 @@ export const useUiActions = (
   }, [dispatch, isReadOnly]);
 
   const getRoundSummary = useCallback((roundId: string) => {
-    return getRoundSummaryUtil(state, roundId);
+    // Find the round
+    const round = state.rounds.find(r => r.id === roundId);
+    if (!round) return null;
+    
+    // Get VCs in this round
+    const roundVCs = round.vcs.map(vcId => state.vcs[vcId]).filter(Boolean);
+    
+    // Count by status
+    const finalized = roundVCs.filter(vc => vc.status === 'finalized').length;
+    const closeToBuying = roundVCs.filter(vc => vc.status === 'closeToBuying').length;
+    
+    // Calculate total committed
+    const totalCommitted = roundVCs
+      .filter(vc => vc.status === 'finalized')
+      .reduce((sum, vc) => sum + (vc.purchaseAmount || 0), 0);
+    
+    const isOversubscribed = round.targetAmount ? totalCommitted > round.targetAmount : false;
+    
+    return {
+      totalVCs: roundVCs.length,
+      finalized,
+      closeToBuying,
+      totalCommitted,
+      isOversubscribed,
+    };
   }, [state]);
 
   return {

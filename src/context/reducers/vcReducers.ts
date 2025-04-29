@@ -1,3 +1,4 @@
+
 import { CRMState, VC } from '@/types';
 import { CRMAction } from '../types';
 import { v4 as uuidv4 } from 'uuid';
@@ -7,7 +8,7 @@ import { toast } from '@/components/ui/use-toast';
 export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
   switch (action.type) {
     case 'ADD_VC': {
-      const { vc, id } = action.payload;
+      const { id, vc } = action.payload;
       const newVC: VC = {
         id,
         ...vc,

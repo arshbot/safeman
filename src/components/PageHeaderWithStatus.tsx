@@ -8,10 +8,10 @@ type PageHeaderWithStatusProps = {
   className?: string;
 };
 
-export function PageHeaderWithStatus(props: PageHeaderWithStatusProps) {
+export function PageHeaderWithStatus({ title, description, className }: PageHeaderWithStatusProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-      <PageHeader {...props} />
+      <PageHeader title={title} description={description} className={className} />
       <SaveStatusIndicator className="ml-auto" />
     </div>
   );

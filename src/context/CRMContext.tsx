@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useReducer, ReactNode, useState } from 'react';
 import { crmReducer } from './reducers';
 import { initialState } from './storage';
-import { CRMContextType, CRMState } from './types';
+import { CRMContextType, CRMState, AuthUser } from './types';
 import { useAuth } from './AuthContext';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useSharedAccess } from './hooks/useSharedAccess';
@@ -46,20 +46,31 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return <LoadingState message="Loading your data..." />;
   }
 
+  // Create context value with all required properties
+  const contextValue: CRMContextType = {
+    state,
+    isReadOnly,
+    isSaving,
+    saveError,
+    retryCount,
+    manualSave,
+    ...crmActions,
+    ...uiActions,
+    ...meetingNoteActions,
+    // Add missing methods for proper type compatibility
+    moveVCBetweenRounds: crmActions.moveVCBetweenRounds || (() => {}),
+    setScratchpadNotes: (notes: string) => dispatch({ type: 'SET_SCRATCHPAD_NOTES', payload: notes }),
+    expandRound: (roundId: string) => dispatch({ type: 'EXPAND_ROUND', payload: roundId }),
+    collapseRound: (roundId: string) => dispatch({ type: 'COLLAPSE_ROUND', payload: roundId }),
+    removeRoundIdFromVC: crmActions.removeRoundIdFromVC || (() => {}),
+    addRoundIdToVC: crmActions.addRoundIdToVC || (() => {}),
+    moveVCToUnsorted: crmActions.moveVCToUnsorted || (() => {}),
+    moveVCToRound: crmActions.moveVCToRound || (() => {}),
+    getRoundSummary: uiActions.getRoundSummary,
+  };
+
   return (
-    <CRMContext.Provider
-      value={{
-        state,
-        isReadOnly,
-        isSaving,
-        saveError,
-        retryCount,
-        manualSave,
-        ...crmActions,
-        ...uiActions,
-        ...meetingNoteActions,
-      }}
-    >
+    <CRMContext.Provider value={contextValue}>
       {children}
     </CRMContext.Provider>
   );

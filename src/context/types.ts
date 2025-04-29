@@ -1,6 +1,14 @@
 
 import { VC, Round, Status } from '@/types';
 
+// Define AuthUser type
+export interface AuthUser {
+  id: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
+
 // Define CRMAction type here to avoid circular imports
 export type CRMAction = 
   | { type: 'INITIALIZE_STATE'; payload: CRMState }
@@ -10,8 +18,9 @@ export type CRMAction =
   | { type: 'EXPAND_ROUND'; payload: string }
   | { type: 'COLLAPSE_ROUND'; payload: string }
   | { type: 'TOGGLE_ROUND'; payload: string }
+  | { type: 'TOGGLE_ROUND_EXPAND'; payload: string }
   | { type: 'CYCLE_ROUND_VISIBILITY'; payload: string }
-  | { type: 'ADD_VC'; payload: Omit<VC, 'id'> }
+  | { type: 'ADD_VC'; payload: { id: string; vc: Omit<VC, 'id'> } }
   | { type: 'UPDATE_VC'; payload: VC }
   | { type: 'DELETE_VC'; payload: string }
   | { type: 'DUPLICATE_VC'; payload: { vcId: string; roundId: string } }
@@ -36,6 +45,7 @@ export interface CRMState {
   scratchpadNotes: string;
   expandedRoundIds: string[];
   expandedVCIds: string[];
+  _dataSource?: string;
 }
 
 export interface CRMContextType {
@@ -76,6 +86,7 @@ export interface CRMContextType {
   setRoundVCs: (roundId: string, vcIds: string[]) => void;
   reorderRounds: (rounds: Round[]) => void;
   reorderVCs: (roundId: string, vcIds: string[]) => void;
+  getRoundSummary: (roundId: string) => any;
   
   // Meeting notes actions
   addMeetingNote: (vcId: string, content: string) => void;
