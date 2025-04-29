@@ -53,5 +53,7 @@ export interface CRMState {
   vcs: Record<string, VC>;
   unsortedVCs: string[];
   scratchpadNotes: string;
+  expandedRoundIds: string[];
+  expandedVCIds: string[];
   _dataSource?: string; // Property to track data source
 }

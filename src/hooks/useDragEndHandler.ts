@@ -5,11 +5,11 @@ import { toast } from "sonner";
 
 export function useDragEndHandler() {
   const { 
-    state, 
-    reorderRounds, 
-    reorderVCs, 
+    state,
     addVCToRound,
-    removeVCFromRound
+    removeVCFromRound,
+    reorderRounds,
+    reorderVCs 
   } = useCRM();
 
   // Extracts VC ID from draggableId

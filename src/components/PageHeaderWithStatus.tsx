@@ -2,7 +2,11 @@
 import { SaveStatusIndicator } from './SaveStatusIndicator';
 import { PageHeader } from './PageHeader';
 
-type PageHeaderWithStatusProps = React.ComponentProps<typeof PageHeader>;
+type PageHeaderWithStatusProps = {
+  title: string;
+  description?: string;
+  className?: string;
+};
 
 export function PageHeaderWithStatus(props: PageHeaderWithStatusProps) {
   return (

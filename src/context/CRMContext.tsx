@@ -1,9 +1,8 @@
 
 import React, { createContext, useContext, useReducer, ReactNode, useState } from 'react';
-import { CRMState } from '@/types';
 import { crmReducer } from './reducers';
 import { initialState } from './storage';
-import { CRMContextType } from './types';
+import { CRMContextType, CRMState } from './types';
 import { useAuth } from './AuthContext';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useSharedAccess } from './hooks/useSharedAccess';

@@ -5,15 +5,16 @@ import { useCRM } from '@/context/CRMContext';
 import { EquityLineChart } from './equity/EquityLineChart';
 import { EquitySummary } from './equity/EquitySummary';
 import { calculateTotalCommitted, generateEquityData } from '@/utils/equityUtils';
+import { CRMState as AppCRMState } from '@/context/types';
 
 export function EquityGraph() {
   const { state } = useCRM();
   
   // Calculate total committed across all rounds
-  const totalCommitted = calculateTotalCommitted(state);
+  const totalCommitted = calculateTotalCommitted(state as any);
 
   // Generate equity data points with separate actual and target data
-  const { actualEquityPoints, targetEquityPoints } = generateEquityData(state);
+  const { actualEquityPoints, targetEquityPoints } = generateEquityData(state as any);
   
   // Calculate total founder equity based ONLY on actual equity granted (not targets)
   const totalEquityGranted = actualEquityPoints.length > 0 

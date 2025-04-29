@@ -126,7 +126,13 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
         // Add VCs to the round
         for (const vc of vcs) {
           try {
-            const vcId: string = addVC(vc);
+            // Ensure we're passing a valid VC data structure with required status field
+            const vcWithStatus = {
+              ...vc,
+              status: vc.status || 'notContacted' as const
+            };
+            
+            const vcId: string = addVC(vcWithStatus);
             if (vcId) {
               addVCToRound(vcId, roundId);
               totalVCs++;
@@ -141,7 +147,13 @@ export function useVCImport(onSuccess: () => void): UseVCImportReturn {
       // Add VCs with no valuation
       for (const vc of noValuationVCs) {
         try {
-          const vcId: string = addVC(vc);
+          // Ensure we're passing a valid VC data structure with required status field
+          const vcWithStatus = {
+            ...vc,
+            status: vc.status || 'notContacted' as const
+          };
+          
+          const vcId: string = addVC(vcWithStatus);
           if (vcId) {
             totalVCs++;
             importedAmount += vc.purchaseAmount || 0;
