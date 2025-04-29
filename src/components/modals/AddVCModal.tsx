@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useState, useEffect, useRef } from "react";
 import { useCRM } from "@/context/CRMContext";
 import { VCForm } from "../forms/VCForm";
+import { toast } from "@/components/ui/use-toast";
 
 interface AddVCModalProps {
   trigger?: React.ReactNode;
@@ -12,7 +13,7 @@ interface AddVCModalProps {
 }
 
 export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalProps) {
-  const { addVC, addVCToRound } = useCRM();
+  const { addVC, addVCToRound, saveError } = useCRM();
   
   // Enhanced visibility tracking with additional safeguards
   const visibilityRef = useRef({
@@ -93,6 +94,18 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
     }
   }, [open]);
 
+  // Watch for save errors and notify the user
+  useEffect(() => {
+    if (saveError) {
+      toast({
+        title: "Warning: Save failed",
+        description: "Your new VC was created but we couldn't save all your data. Your changes might be lost if you close the app.",
+        variant: "destructive",
+        duration: 8000,
+      });
+    }
+  }, [saveError]);
+
   const handleSubmit = (vcData: any) => {
     // Set a flag to prevent closing during the submission process
     visibilityRef.current.preventClose = true;
@@ -109,7 +122,24 @@ export function AddVCModal({ trigger, roundId, open, onOpenChange }: AddVCModalP
         // If roundId is provided, add the VC to that round
         if (roundId && newVCId) {
           addVCToRound(newVCId, roundId);
+          
+          // Show success message
+          toast({
+            title: "VC Added Successfully",
+            description: roundId 
+              ? "VC was added to your database and round." 
+              : "VC was added to your database.",
+          });
         }
+      } catch (error) {
+        console.error("Error adding VC:", error);
+        
+        // Show error message
+        toast({
+          title: "Error Adding VC",
+          description: "There was a problem adding the VC. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         // Always release the lock after state updates
         setTimeout(() => {

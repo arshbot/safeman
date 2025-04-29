@@ -25,7 +25,7 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const { isReadOnly } = useSharedAccess();
 
   // Data loading and persistence
-  useDataPersistence(
+  const { isSaving, saveError, retryCount, manualSave } = useDataPersistence(
     user,
     authLoading,
     dispatch,
@@ -52,6 +52,10 @@ export const CRMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       value={{
         state,
         isReadOnly,
+        isSaving,
+        saveError,
+        retryCount,
+        manualSave,
         ...crmActions,
         ...uiActions,
         ...meetingNoteActions,
