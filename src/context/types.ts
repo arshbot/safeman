@@ -1,4 +1,3 @@
-
 import { VC, Round, Status } from '@/types';
 
 // Define AuthUser type
@@ -90,7 +89,7 @@ export interface CRMContextType {
   
   // Meeting notes actions
   addMeetingNote: (vcId: string, content: string) => void;
-  updateMeetingNote: (vcId: string, note: { id: string; content: string; date: string }) => void;
+  updateMeetingNote: (vcId: string, note: { id: string; content: string; date: string } }) => void;
   deleteMeetingNote: (vcId: string, noteId: string) => void;
   
   // Helper actions

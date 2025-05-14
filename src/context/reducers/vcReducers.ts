@@ -1,6 +1,7 @@
 
 import { CRMState, CRMAction } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { Status } from '@/types';
 
 export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
   switch (action.type) {
@@ -46,7 +47,7 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
         ...state.vcs,
         [vcId]: {
           ...state.vcs[vcId],
-          status: 'banished'
+          status: 'banished' as Status
         }
       };
       
