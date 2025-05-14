@@ -2,7 +2,8 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from '@/hooks/use-toast';
 
 interface VCDeleteDialogProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export function VCDeleteDialog({
   handleDelete 
 }: VCDeleteDialogProps) {
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Focus the delete button when the dialog opens
   useEffect(() => {
@@ -26,14 +28,42 @@ export function VCDeleteDialog({
     }
   }, [isOpen]);
 
-  // This approach directly passes the delete function to the form's onSubmit
-  const handleSubmit = (e: React.FormEvent) => {
+  // Handle the deletion with proper error handling
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    handleDelete();
+    
+    try {
+      setIsDeleting(true);
+      // Call the delete handler
+      handleDelete();
+      
+      // Close the dialog
+      onOpenChange(false);
+      
+      // Show toast notification
+      toast({
+        title: "VC deleted successfully",
+        description: `${vcName} has been removed.`
+      });
+    } catch (error) {
+      console.error('Error deleting VC:', error);
+      toast({
+        title: "Error deleting VC",
+        description: "There was a problem deleting the VC. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      // Only allow closing if we're not in the middle of deleting
+      if (!isDeleting || !open) {
+        onOpenChange(open);
+      }
+    }}>
       <DialogContent className="sm:max-w-[425px] glassmorphism">
         <DialogHeader>
           <DialogTitle>Delete VC</DialogTitle>
@@ -46,7 +76,12 @@ export function VCDeleteDialog({
             Are you sure you want to delete {vcName}? This action cannot be undone and will remove this VC from all rounds.
           </p>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isDeleting}
+            >
               Cancel
             </Button>
             <Button 
@@ -54,9 +89,10 @@ export function VCDeleteDialog({
               variant="destructive" 
               ref={deleteButtonRef}
               autoFocus
+              disabled={isDeleting}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              {isDeleting ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </form>

@@ -3,7 +3,7 @@ import { VC } from '@/types';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useCRM } from '@/context/CRMContext';
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { MeetingNotesModal } from './MeetingNotesModal';
 import { VCDetails } from './vc/VCDetails';
 import { VCActions } from './vc/VCActions';
@@ -40,7 +40,11 @@ export function VCRow({ vc, roundId }: VCRowProps) {
     if (roundId) {
       duplicateVC(vc.id, roundId);
     } else {
-      toast.error("Cannot duplicate - VC is not in a round");
+      toast({
+        title: "Cannot duplicate",
+        description: "VC is not in a round",
+        variant: "destructive"
+      });
     }
   };
 
@@ -62,14 +66,20 @@ export function VCRow({ vc, roundId }: VCRowProps) {
   };
 
   const handleDelete = () => {
-    deleteVC(vc.id);
-    setIsDeleteDialogOpen(false);
+    try {
+      deleteVC(vc.id);
+      // No need to close the dialog here, it will be handled by the VCDeleteDialog component
+    } catch (error) {
+      console.error("Error deleting VC:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete VC. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const meetingNotesCount = vc.meetingNotes?.length || 0;
-  
-  console.log(`VCRow for ${vc.name}, meetingNotes:`, vc.meetingNotes);
-  console.log(`Meeting notes count: ${meetingNotesCount}`);
 
   return (
     <>
