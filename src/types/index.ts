@@ -1,4 +1,3 @@
-
 export interface Round {
   id: string;
   name: string;
@@ -21,7 +20,7 @@ export interface VC {
   meetingNotes?: MeetingNote[];
 }
 
-export type Status = 'notContacted' | 'contacted' | 'closeToBuying' | 'finalized' | 'likelyPassed';
+export type Status = 'notContacted' | 'contacted' | 'closeToBuying' | 'finalized' | 'likelyPassed' | 'banished';
 
 export interface MeetingNote {
   id: string;

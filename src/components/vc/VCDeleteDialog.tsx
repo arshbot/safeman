@@ -42,14 +42,14 @@ export function VCDeleteDialog({
       
       // Show toast notification
       toast({
-        title: "VC deleted successfully",
+        title: "VC removed successfully",
         description: `${vcName} has been removed.`
       });
     } catch (error) {
-      console.error('Error deleting VC:', error);
+      console.error('Error removing VC:', error);
       toast({
-        title: "Error deleting VC",
-        description: "There was a problem deleting the VC. Please try again.",
+        title: "Error removing VC",
+        description: "There was a problem removing the VC. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -66,14 +66,14 @@ export function VCDeleteDialog({
     }}>
       <DialogContent className="sm:max-w-[425px] glassmorphism">
         <DialogHeader>
-          <DialogTitle>Delete VC</DialogTitle>
+          <DialogTitle>Remove VC</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This VC will be removed from all rounds.
+            This VC will be removed from all rounds.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <p className="py-4">
-            Are you sure you want to delete {vcName}? This action cannot be undone and will remove this VC from all rounds.
+            Are you sure you want to remove {vcName}? This will remove this VC from all rounds.
           </p>
           <DialogFooter>
             <Button 
@@ -92,7 +92,7 @@ export function VCDeleteDialog({
               disabled={isDeleting}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Removing..." : "Remove"}
             </Button>
           </DialogFooter>
         </form>

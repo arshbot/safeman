@@ -36,14 +36,21 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
     case 'DELETE_VC': {
       const vcId = action.payload;
       
-      // Check if VC exists before trying to delete
+      // Check if VC exists before trying to banish
       if (!state.vcs[vcId]) {
         return state;
       }
       
-      const { [vcId]: _, ...remainingVCs } = state.vcs;
+      // Instead of deleting, update the VC to have "banished" status
+      const updatedVCs = {
+        ...state.vcs,
+        [vcId]: {
+          ...state.vcs[vcId],
+          status: 'banished'
+        }
+      };
       
-      // Also remove from rounds and unsorted
+      // Remove from rounds and unsorted
       const updatedRounds = state.rounds.map(round => ({
         ...round,
         vcs: round.vcs.filter(id => id !== vcId)
@@ -51,7 +58,7 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
       
       return {
         ...state,
-        vcs: remainingVCs,
+        vcs: updatedVCs,
         rounds: updatedRounds,
         unsortedVCs: state.unsortedVCs.filter(id => id !== vcId),
         expandedVCIds: state.expandedVCIds.filter(id => id !== vcId)

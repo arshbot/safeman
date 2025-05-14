@@ -21,19 +21,25 @@ export function RoundsList({
 }: RoundsListProps) {
   // Helper function for droppable styling
   const getListStyle = (isDraggingOver: boolean) => ({
-    background: isDraggingOver ? 'rgba(240, 240, 240, 0.8)' : '#F1F5F980', // Updated to match the screenshot
-    padding: '12px', // Increased padding
+    background: isDraggingOver ? 'rgba(240, 240, 240, 0.8)' : '#F1F5F980',
+    padding: '12px',
     borderRadius: '8px'
   });
 
-  // Filter VCs for each round based on visibility state
+  // Filter VCs for each round based on visibility state and exclude banished VCs
   const getFilteredVCs = (roundId: string, vcs: string[], visibility: string): string[] => {
+    // First filter out banished VCs
+    const nonBanishedVCs = vcs.filter(vcId => {
+      const vc = getVC(vcId);
+      return vc && vc.status !== 'banished';
+    });
+    
     switch (visibility) {
       case 'expanded':
-        return sortVCsByStatus(vcs);
+        return sortVCsByStatus(nonBanishedVCs);
       case 'collapsedShowFinalized':
         // When in middle state, only show VCs with finalized or closeToBuying status
-        return sortVCsByStatus(vcs.filter(vcId => {
+        return sortVCsByStatus(nonBanishedVCs.filter(vcId => {
           const vc = getVC(vcId);
           return vc && (vc.status === 'finalized' || vc.status === 'closeToBuying');
         }));
@@ -41,7 +47,7 @@ export function RoundsList({
         // When fully collapsed, show no VCs
         return [];
       default:
-        return sortVCsByStatus(vcs);
+        return sortVCsByStatus(nonBanishedVCs);
     }
   };
 
@@ -72,7 +78,7 @@ export function RoundsList({
         <div 
           {...provided.droppableProps} 
           ref={provided.innerRef} 
-          className="space-y-6 bg-[#F1F5F980] mt-8 p-4 rounded-lg border-2 border-dashed border-transparent" // Updated background color and added the classes from the screenshot
+          className="space-y-6 bg-[#F1F5F980] mt-8 p-4 rounded-lg border-2 border-dashed border-transparent" 
           style={getListStyle(snapshot.isDraggingOver)}
         >
           {rounds.sort((a, b) => a.order - b.order).map((round, index) => {

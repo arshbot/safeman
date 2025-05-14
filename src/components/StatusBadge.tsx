@@ -34,6 +34,11 @@ const statusConfig: Record<Status, { label: string; className: string; descripti
     className: 'bg-red-200 text-red-800',
     description: 'VC has indicated they are unlikely to invest',
   },
+  banished: {
+    label: 'Banished',
+    className: 'bg-black text-white',
+    description: 'This VC has been banished',
+  },
 };
 
 export function StatusBadge({ status, className, showDescription = false }: StatusBadgeProps) {

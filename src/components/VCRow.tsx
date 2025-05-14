@@ -22,6 +22,11 @@ export function VCRow({ vc, roundId }: VCRowProps) {
   const [isMeetingNotesOpen, setIsMeetingNotesOpen] = useState(false);
   const [editedVC, setEditedVC] = useState<VC>(vc);
 
+  // Don't render if the VC is banished
+  if (vc.status === 'banished') {
+    return null;
+  }
+
   // Make sure we refresh editedVC when the VC prop changes
   useEffect(() => {
     setEditedVC(vc);
@@ -68,12 +73,16 @@ export function VCRow({ vc, roundId }: VCRowProps) {
   const handleDelete = () => {
     try {
       deleteVC(vc.id);
-      // No need to close the dialog here, it will be handled by the VCDeleteDialog component
+      toast({
+        title: "VC removed",
+        description: "The VC has been successfully removed",
+      });
+      setIsDeleteDialogOpen(false);
     } catch (error) {
-      console.error("Error deleting VC:", error);
+      console.error("Error removing VC:", error);
       toast({
         title: "Error",
-        description: "Failed to delete VC. Please try again.",
+        description: "Failed to remove VC. Please try again.",
         variant: "destructive"
       });
     }

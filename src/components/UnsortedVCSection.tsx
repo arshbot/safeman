@@ -15,7 +15,13 @@ interface UnsortedVCSectionProps {
 export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
   const [isAddVCModalOpen, setIsAddVCModalOpen] = useState(false);
   
-  console.log(`[DEBUG] Rendering UnsortedVCSection with ${vcs.length} VCs`, vcs);
+  // Filter out banished VCs
+  const filteredVCs = vcs.filter(vcId => {
+    const vc = getVC(vcId);
+    return vc && vc.status !== 'banished';
+  });
+  
+  console.log(`[DEBUG] Rendering UnsortedVCSection with ${filteredVCs.length} VCs`, filteredVCs);
   
   return (
     <div 
@@ -57,11 +63,11 @@ export function UnsortedVCSection({ vcs, getVC }: UnsortedVCSectionProps) {
             data-droppable-id="unsorted"
             data-is-dragging-over={snapshot.isDraggingOver}
           >
-            {vcs.length > 0 ? (
+            {filteredVCs.length > 0 ? (
               <DroppableVCList 
                 key="inner-unsorted-list"
                 droppableId="unsorted" 
-                vcs={vcs} 
+                vcs={filteredVCs} 
                 getVC={getVC}
                 enableDropping={false}
               />
