@@ -1,6 +1,5 @@
-
 import { describe, it, expect, vi } from 'vitest';
-import { vcReducers } from '@/context/reducers/vcReducers';
+import { vcReducers } from '@/context/reducers/vc';
 import { CRMState, CRMAction } from '@/context/types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -70,9 +69,9 @@ describe('VC Reducers', () => {
 
       const newState = vcReducers(initialState, action);
 
-      expect(newState.vcs['vc-1']).toBeUndefined();
+      expect(newState.vcs['vc-1']).toBeDefined();
+      expect(newState.vcs['vc-1'].status).toBe('banished');
       expect(newState.rounds[0].vcs).not.toContain('vc-1');
-      expect(Object.keys(newState.vcs)).toHaveLength(1);
     });
 
     it('should handle deleting a non-existent VC gracefully', () => {

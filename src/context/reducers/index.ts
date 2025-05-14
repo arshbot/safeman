@@ -3,7 +3,7 @@
 import { CRMState } from '@/types';
 import { CRMAction } from '../types';
 import { roundReducers } from './roundReducers';
-import { vcReducers } from './vcReducers';
+import { vcReducers } from './vc';
 import { meetingNoteReducers } from './meetingNoteReducers';
 import { dragAndDropReducers } from './dragAndDropReducers';
 import { scratchpadReducers } from './scratchpadReducers';
