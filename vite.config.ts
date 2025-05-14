@@ -18,4 +18,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 8080
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/tests/setup.ts'],
+    include: ['src/tests/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+  },
 }))
