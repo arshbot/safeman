@@ -10,32 +10,26 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { EquityChartTooltip } from './EquityChartTooltip';
-import { formatPercentage } from '@/utils/formatters';
-import { EquityPoint } from '@/types';
+import { formatCurrency } from '@/utils/formatters';
+import { Round } from '@/types';
 import { createLogTicks } from '@/utils/equityUtils';
 
 interface EquityLineChartProps {
-  actualEquityPoints: EquityPoint[];
-  targetEquityPoints: EquityPoint[];
+  totalCommitted: number;
+  rounds: Round[];
 }
 
-export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: EquityLineChartProps) {
-  // Find the maximum value across both datasets for x-axis scaling
-  const maxActualValue = actualEquityPoints.length > 0 
-    ? Math.max(...actualEquityPoints.map(d => d.totalRaised)) 
-    : 100;
+export function EquityLineChart({ totalCommitted, rounds }: EquityLineChartProps) {
+  // Create data points for funding rounds
+  const fundingData = rounds.map((round, index) => ({
+    name: round.name,
+    amount: round.targetAmount || 0,
+    index
+  }));
   
-  const maxTargetValue = targetEquityPoints.length > 0 
-    ? Math.max(...targetEquityPoints.map(d => d.totalRaised)) 
-    : 100;
-  
-  const maxValue = Math.max(maxActualValue, maxTargetValue, 100); // Ensure minimum for scale
+  const maxValue = Math.max(totalCommitted, 100); // Ensure minimum for scale
   
   const xAxisTicks = createLogTicks(maxValue);
-  
-  // For y-axis, create evenly distributed percentage ticks
-  const yAxisTicks = [0, 25, 50, 75, 100];
 
   // Format the x-axis tick labels
   const formatXAxis = (value: number) => {
@@ -46,17 +40,6 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
     return `$${value}K`;
   };
 
-  // Combine data points for the chart, marking which line they belong to
-  const actualPointsWithType = actualEquityPoints.map(point => ({
-    ...point,
-    dataType: 'actual'
-  }));
-  
-  const targetPointsWithType = targetEquityPoints.map(point => ({
-    ...point,
-    dataType: 'target'
-  }));
-
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart
@@ -66,7 +49,7 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
         
         {/* X-axis with explicit ticks for log scale */}
         <XAxis 
-          dataKey="totalRaised"
+          dataKey="amount"
           type="number"
           scale="log"
           domain={[100, Math.max(...xAxisTicks)]}
@@ -93,15 +76,14 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
         
         {/* Y-axis */}
         <YAxis 
-          tickFormatter={(value) => `${value}%`}
-          domain={[0, 100]}
-          ticks={yAxisTicks}
+          tickFormatter={(value) => formatCurrency(value)}
+          domain={[0, 'auto']}
           tick={{ fontSize: 14, fill: '#333', fontWeight: 500 }}
           axisLine={{ stroke: '#666' }}
           tickLine={{ stroke: '#666' }}
           width={60}
           label={{ 
-            value: 'Total Equity Granted (%)', 
+            value: 'Funding Amount', 
             angle: -90, 
             position: 'insideLeft',
             style: { 
@@ -114,7 +96,10 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
           }}
         />
         
-        <Tooltip content={<EquityChartTooltip />} />
+        <Tooltip 
+          formatter={(value) => formatCurrency(Number(value))}
+          labelFormatter={(label) => `Round: ${label}`}
+        />
         
         <Legend
           verticalAlign="top"
@@ -124,19 +109,18 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
           formatter={(value) => <span style={{ color: '#333', fontSize: '1rem', fontWeight: 500 }}>{value}</span>}
         />
         
-        {/* Render the first dataset (actual equity granted) */}
+        {/* Render funding data */}
         <Line 
-          data={actualPointsWithType}
+          data={fundingData}
           type="monotone" 
-          dataKey="totalEquityGranted" 
-          name="Total Equity Granted"
+          dataKey="amount" 
+          name="Funding Amount"
           stroke="#8884d8" 
           strokeWidth={3}
           dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4 }}
           activeDot={{ r: 8 }}
           label={({ x, y, value }) => {
-            // Only show labels for values greater than 1%
-            if (value > 1) {
+            if (value > 1000) {
               return (
                 <text 
                   x={x} 
@@ -146,25 +130,12 @@ export function EquityLineChart({ actualEquityPoints, targetEquityPoints }: Equi
                   dominantBaseline="middle"
                   fontWeight="500"
                 >
-                  {formatPercentage(value)}
+                  {formatCurrency(Number(value))}
                 </text>
               );
             }
             return null;
           }}
-          isAnimationActive={false}
-        />
-        
-        {/* Render the second dataset (target equity granted) */}
-        <Line 
-          data={targetPointsWithType}
-          type="monotone" 
-          dataKey="totalEquityGranted" 
-          name="Target Equity Granted"
-          stroke="#666" 
-          strokeDasharray="5 5"
-          strokeWidth={1.5}
-          dot={{ stroke: '#666', strokeWidth: 1, r: 3 }}
           isAnimationActive={false}
         />
       </LineChart>

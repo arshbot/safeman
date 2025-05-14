@@ -9,7 +9,6 @@ interface RoundHeaderStatsProps {
   targetAmount: number;
   valuationCap: number;
   raisedAmount: number;
-  equityPercentage: number;
   formatCurrency: (amount: number) => string;
 }
 
@@ -19,7 +18,6 @@ export function RoundHeaderStats({
   targetAmount, 
   valuationCap,
   raisedAmount,
-  equityPercentage,
   formatCurrency 
 }: RoundHeaderStatsProps) {
   return (
@@ -52,11 +50,6 @@ export function RoundHeaderStats({
         {summary.totalCommitted > 0 && (
           <span className={`font-medium ${summary.isOversubscribed ? 'text-red-500' : 'text-emerald-600'}`}>
             Committed: {formatCurrency(summary.totalCommitted)}
-          </span>
-        )}
-        {raisedAmount > 0 && (
-          <span className="font-medium text-purple-600">
-            Equity Granted: {equityPercentage.toFixed(2)}%
           </span>
         )}
       </div>
