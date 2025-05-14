@@ -35,6 +35,12 @@ export const vcReducers = (state: CRMState, action: CRMAction): CRMState => {
     
     case 'DELETE_VC': {
       const vcId = action.payload;
+      
+      // Check if VC exists before trying to delete
+      if (!state.vcs[vcId]) {
+        return state;
+      }
+      
       const { [vcId]: _, ...remainingVCs } = state.vcs;
       
       // Also remove from rounds and unsorted

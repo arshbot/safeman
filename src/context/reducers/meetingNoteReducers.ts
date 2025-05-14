@@ -35,9 +35,12 @@ export const meetingNoteReducers = (state: CRMState, action: CRMAction): CRMStat
       const { vcId, note } = action.payload;
       const vc = state.vcs[vcId];
       
-      if (!vc || !vc.meetingNotes) return state;
+      if (!vc) return state;
       
-      const updatedNotes = vc.meetingNotes.map(n => 
+      // Ensure meetingNotes exists
+      const meetingNotes = vc.meetingNotes || [];
+      
+      const updatedNotes = meetingNotes.map(n => 
         n.id === note.id ? note : n
       );
       
@@ -62,9 +65,12 @@ export const meetingNoteReducers = (state: CRMState, action: CRMAction): CRMStat
       const { vcId, noteId } = action.payload;
       const vc = state.vcs[vcId];
       
-      if (!vc || !vc.meetingNotes) return state;
+      if (!vc) return state;
       
-      const updatedNotes = vc.meetingNotes.filter(n => n.id !== noteId);
+      // Ensure meetingNotes exists
+      const meetingNotes = vc.meetingNotes || [];
+      
+      const updatedNotes = meetingNotes.filter(n => n.id !== noteId);
       
       toast({
         title: "Meeting Note Deleted",
@@ -80,6 +86,26 @@ export const meetingNoteReducers = (state: CRMState, action: CRMAction): CRMStat
             meetingNotes: updatedNotes,
           },
         },
+      };
+    }
+
+    case 'DELETE_VC': {
+      // We need to handle VC deletion properly to avoid errors when accessing meeting notes
+      const vcId = action.payload;
+      const { [vcId]: deletedVC, ...remainingVCs } = state.vcs;
+      
+      // Also remove from rounds and unsorted
+      const updatedRounds = state.rounds.map(round => ({
+        ...round,
+        vcs: round.vcs.filter(id => id !== vcId)
+      }));
+      
+      return {
+        ...state,
+        vcs: remainingVCs,
+        rounds: updatedRounds,
+        unsortedVCs: state.unsortedVCs.filter(id => id !== vcId),
+        expandedVCIds: state.expandedVCIds.filter(id => id !== vcId)
       };
     }
 

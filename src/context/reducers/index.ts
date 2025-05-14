@@ -1,3 +1,4 @@
+
 // This file serves as the entry point for all reducers
 import { CRMState } from '@/types';
 import { CRMAction } from '../types';
@@ -14,6 +15,14 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
     return action.payload;
   }
   
+  // Handle DELETE_VC in both VC and meeting note reducers to ensure proper cleanup
+  if (action.type === 'DELETE_VC') {
+    // First handle in vcReducers
+    const stateAfterVCDelete = vcReducers(state, action);
+    // Then also handle in meetingNoteReducers for any meeting note-specific cleanup
+    return meetingNoteReducers(stateAfterVCDelete, action);
+  }
+  
   // Round-related actions
   if (action.type.startsWith('ADD_ROUND') || 
       action.type.startsWith('UPDATE_ROUND') || 
@@ -25,8 +34,7 @@ export const crmReducer = (state: CRMState, action: CRMAction): CRMState => {
   
   // VC-related actions
   if (action.type.startsWith('ADD_VC') || 
-      action.type.startsWith('UPDATE_VC') || 
-      action.type.startsWith('DELETE_VC') ||
+      action.type.startsWith('UPDATE_VC') ||
       action.type.startsWith('DUPLICATE_VC') ||
       action.type.startsWith('ADD_VC_TO') ||
       action.type.startsWith('REMOVE_VC')) {
