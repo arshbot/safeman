@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DraggableProvidedDragHandleProps } from 'react-beautiful-dnd';
 import { Round, RoundSummary } from '@/types';
@@ -111,7 +110,6 @@ export function RoundHeader({ round, summary, onAddVC, dragHandleProps }: RoundH
         targetAmount={round.targetAmount}
         valuationCap={round.valuationCap}
         raisedAmount={summary.totalCommitted}
-        equityPercentage={summary.totalCommitted > 0 ? (summary.totalCommitted / (round.valuationCap || 1)) * 100 : 0}
         formatCurrency={formatCurrency}
       />
 
