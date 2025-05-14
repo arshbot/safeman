@@ -1,7 +1,6 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { CRMState } from '@/types';
 
