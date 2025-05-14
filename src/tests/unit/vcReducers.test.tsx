@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+
+import { describe, it, expect, vi } from 'vitest';
 import { vcReducers } from '@/context/reducers/vcReducers';
 import { CRMState, CRMAction } from '@/context/types';
 import { v4 as uuidv4 } from 'uuid';

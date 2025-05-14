@@ -1,8 +1,8 @@
-
 import React, { ReactNode } from 'react';
 import { CRMProvider } from '@/context/CRMContext';
 import { CRMState } from '@/types';
 import { vi } from 'vitest';
+import { render } from '@testing-library/react';
 
 // Mock for the toast functionality
 export const mockToast = () => {

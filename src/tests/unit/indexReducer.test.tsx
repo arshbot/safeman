@@ -70,7 +70,7 @@ describe('CRM Main Reducer', () => {
     // Test round reducer
     const roundAction: CRMAction = {
       type: 'ADD_ROUND',
-      payload: { id: 'new-round', name: 'New Round' }
+      payload: { name: 'New Round' } // Fixed: removed id which isn't in the type definition
     };
     
     const stateAfterRoundAction = crmReducer(initialState, roundAction);
